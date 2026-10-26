@@ -9,7 +9,7 @@
 <title>競馬AI HIVE</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
 <style>
 /* 黒い巣(ヘッダー・タブ)に金の蜜。中身はクリーム色の紙に、六角形のバッジで印と★を示す */
 :root {
@@ -75,7 +75,20 @@ header.top::after {
 .refresh svg { width: 18px; height: 18px; }
 .refresh.spin svg { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+@media (max-width: 640px) {
+  .wrap { padding-left: max(4px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+  .top-row { height: 76px; gap: 6px; overflow: hidden; }
+  .logo { width: auto; height: 70px; margin-left: -10px; }
+  .brand { font-size: 12px; letter-spacing: .2em; }
+  .top-right { font-size: 10px; }
+  .refresh { width: 32px; height: 32px; }
+}
+.day-nav { display: grid; gap: 6px; padding-bottom: 8px; }
+.day-nav-tools { display: flex; align-items: center; gap: 6px; }
+.day-step { flex: none; min-height: 34px; padding: 3px 10px; border: 1px solid rgba(247,201,72,.3); border-radius: 999px; background: rgba(247,201,72,.08); color: var(--honey); font-size: 12px; font-weight: 700; }
+.day-step:disabled { opacity: .4; }
+.day-picker { min-width: 0; min-height: 34px; padding: 3px 8px; border: 1px solid rgba(247,201,72,.3); border-radius: 999px; background: rgba(247,201,72,.08); color: var(--honey); font: inherit; font-size: 12px; color-scheme: dark; }
+.days { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .days::-webkit-scrollbar { display: none; }
 .day { flex: none; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(247,201,72,.3); color: rgba(251,241,220,.8); background: transparent; font-size: 13px; font-weight: 600; }
 .day.on { background: linear-gradient(135deg, var(--honey), var(--amber)); color: var(--comb); border-color: transparent; }
@@ -232,9 +245,13 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .lock { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   background: radial-gradient(520px 340px at 50% 18%, rgba(247,201,72,.28), transparent 70%), var(--comb); color: var(--comb-ink); }
-.lock-card { width: 100%; max-width: 360px; display: grid; justify-items: center; gap: 10px; text-align: center; }
-.lock-logo { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 0 0 2px rgba(247,201,72,.55), 0 10px 40px rgba(247,201,72,.25); }
-.lock h1 { margin: 6px 0 0; font-family: var(--f-disp); font-weight: 900; font-size: 30px; color: var(--honey); letter-spacing: .04em; }
+.lock-card { width: 100%; max-width: 410px; display: grid; justify-items: center; gap: 10px; text-align: center; }
+.lock-brand { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 88px; }
+.lock-logo { display: block; width: auto; height: 82px; object-fit: contain; filter: drop-shadow(0 0 14px rgba(242,169,59,.18)); }
+.lock-brand-en { font-family: "Cinzel", "Times New Roman", serif; font-weight: 700; font-size: 17px; letter-spacing: .28em;
+  line-height: 1; white-space: nowrap; margin-left: 4px;
+  background: linear-gradient(180deg, #fff3c4 0%, #f7c948 38%, #c9861a 62%, #ffe08a 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0,0,0,.8)); }
 .lock-sub { margin: 0; font-size: 14px; color: rgba(251,241,220,.78); }
 #lockForm { width: 100%; display: grid; gap: 12px; margin-top: 14px; }
 #pw { width: 100%; font-size: 18px; padding: 14px 16px; border-radius: 14px; border: 2px solid rgba(247,201,72,.45); background: rgba(255,255,255,.06); color: #fff; text-align: center; letter-spacing: .08em; }
@@ -252,8 +269,10 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 
 <div class="lock" id="lock">
   <div class="lock-card">
-    <img class="lock-logo" src="icon.png" alt="" onerror="this.style.visibility='hidden'">
-    <h1>競馬AI HIVE</h1>
+    <div class="lock-brand" aria-label="HORSE RACING">
+      <img class="lock-logo" src="hive_logo.png?v=2" alt="HIVE">
+      <span class="lock-brand-en">HORSE RACING</span>
+    </div>
     <p class="lock-sub">合言葉を入れると、今週の予想が見られます</p>
     <form id="lockForm" autocomplete="off">
       <label for="pw" class="vh">合言葉</label>
@@ -277,7 +296,14 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
       </button>
     </div>
-    <div class="days" id="days"></div>
+    <div class="day-nav">
+      <div class="day-nav-tools">
+        <button class="day-step" data-day-step="-1" aria-label="前の開催日">‹ 前</button>
+        <input class="day-picker" id="day-picker" type="date" aria-label="開催日を選択">
+        <button class="day-step" data-day-step="1" aria-label="次の開催日">次 ›</button>
+      </div>
+      <div class="days" id="days"></div>
+    </div>
   </div>
 </header>
 <main class="wrap" id="view"></main>
@@ -370,6 +396,14 @@ function tick() { document.querySelectorAll("[data-cd]").forEach(el => { el.text
 /* ---------------------------------------------------------------- 描画 */
 function renderDays() {
   $("#days").innerHTML = S.snap.days.map(d => `<button class="day ${d.date === S.date ? "on" : ""} ${d.date < todayStr() ? "past" : ""}" data-date="${d.date}">${esc(d.label)}</button>`).join("");
+  const dates = S.snap.days.map(d => d.date);
+  const index = dates.indexOf(S.date);
+  const picker = $("#day-picker");
+  picker.value = S.date || "";
+  picker.min = dates[0] || "";
+  picker.max = dates[dates.length - 1] || "";
+  document.querySelector('[data-day-step="-1"]').disabled = index <= 0;
+  document.querySelector('[data-day-step="1"]').disabled = index < 0 || index >= dates.length - 1;
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
   $("#stamp").innerHTML = S.demo ? "見本データ" : `更新 <b>${esc(u)}</b>`;
 }
@@ -573,6 +607,12 @@ document.addEventListener("click", e => {
   if (t.id === "refresh") { refresh(); return; }
   if (t.dataset.tab) { S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
+  if (t.dataset.dayStep) {
+    const dates = S.snap.days.map(d => d.date), index = dates.indexOf(S.date);
+    const next = dates[index + Number(t.dataset.dayStep)];
+    if (next) { S.date = next; renderDays(); render(); }
+    return;
+  }
   if (t.dataset.sig) { S.sig = t.dataset.sig; render(); return; }
   if (t.dataset.venue) { S.venue = t.dataset.venue; render(); return; }
   if (t.dataset.publicSort) {
@@ -583,6 +623,15 @@ document.addEventListener("click", e => {
     return;
   }
   if (t.dataset.race) { openRace(t.dataset.race, t.dataset.raceGroup || "race"); return; }
+});
+document.addEventListener("change", e => {
+  if (e.target.id !== "day-picker" || !e.target.value || !S.snap?.days.length) return;
+  const picked = Date.parse(e.target.value + "T00:00:00");
+  const nearest = S.snap.days.reduce((best, day) => {
+    const distance = Math.abs(Date.parse(day.date + "T00:00:00") - picked);
+    return distance < best.distance ? { date: day.date, distance } : best;
+  }, { date: S.snap.days[0].date, distance: Infinity }).date;
+  S.date = nearest; renderDays(); render();
 });
 setInterval(tick, 1000);
 setInterval(() => { if (!document.hidden && S.pw) refresh(); }, 3 * 60 * 1000);
