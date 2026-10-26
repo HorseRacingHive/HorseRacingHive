@@ -66,10 +66,9 @@ header.top::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -11px; height: 9px; pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='10'%3E%3Cpath d='M0 0H160V1C150 1 149 9 145 9S141 1 134 1H86C80 1 80 6 77 6S74 1 68 1H34C28 1 28 8 24 8S20 1 14 1H0Z' fill='%23f7c948'/%3E%3C/svg%3E") 0 0 / 160px 10px repeat-x;
 }
-.top-row { display: flex; align-items: center; gap: 10px; height: 54px; }
-.logo { width: 34px; height: 34px; border-radius: 9px; box-shadow: 0 0 0 1px rgba(247,201,72,.5); background: var(--honey); object-fit: cover; }
-.brand { font-family: var(--f-disp); font-weight: 900; font-size: 19px; color: var(--honey); letter-spacing: .04em; line-height: 1; }
-.brand small { display: block; font-size: 10px; font-weight: 700; color: rgba(251,241,220,.65); letter-spacing: .12em; margin-top: 3px; }
+.top-row { display: flex; align-items: center; gap: 8px; min-height: 76px; }
+.logo { width: 68px; height: 72px; flex: none; object-fit: contain; }
+.brand { font-family: var(--f-disp); font-weight: 900; font-size: 11px; color: var(--honey); letter-spacing: .16em; line-height: 1; white-space: nowrap; }
 .top-right { margin-left: auto; text-align: right; font-size: 11px; color: rgba(251,241,220,.72); line-height: 1.3; }
 .top-right b { color: var(--honey); font-weight: 700; }
 .refresh { margin-left: 6px; width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(247,201,72,.35); background: rgba(247,201,72,.08); color: var(--honey); display: grid; place-items: center; }
@@ -187,6 +186,15 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .sheet { position: fixed; inset: 0; z-index: 40; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
 .sheet-head { position: sticky; top: 0; z-index: 2; background: var(--comb); color: var(--comb-ink); padding-top: env(safe-area-inset-top, 0px); border-bottom: 3px solid var(--honey); }
 .sheet-head .wrap { display: flex; align-items: center; gap: 10px; min-height: 58px; }
+.detail-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--line); }
+.detail-nav button { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 5px 9px; color: var(--ink); font-size: 12px; font-weight: 700; }
+.detail-nav button:disabled { opacity: .4; }
+.detail-nav span { color: var(--muted); font-size: 11px; }
+.horse-sort { display: flex; overflow-x: auto; gap: 0; margin: 10px 0 4px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+.horse-sort::-webkit-scrollbar { display: none; }
+.horse-sort button { flex: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 6px; background: none; color: var(--muted); font-size: 11px; font-weight: 800; white-space: nowrap; }
+.horse-sort button.on { color: var(--accent); border-bottom-color: var(--accent); }
+.horse-sort button.on::after { content: "（" attr(data-direction) "）"; font-size: 10px; }
 .back { border: 0; background: rgba(247,201,72,.12); color: var(--honey); width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; flex: none; }
 .back svg { width: 20px; height: 20px; }
 .sheet-title { min-width: 0; }
@@ -262,8 +270,8 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 <header class="top">
   <div class="wrap">
     <div class="top-row">
-      <img class="logo" src="icon.png" alt="" onerror="this.style.visibility='hidden'">
-      <div class="brand">競馬AI HIVE<small>みんなの予想</small></div>
+      <img class="logo" src="hive_logo.png" alt="" onerror="this.style.visibility='hidden'">
+      <div class="brand">HORSE RACING</div>
       <div class="top-right" id="stamp"></div>
       <button class="refresh" id="refresh" aria-label="最新にする">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
@@ -291,7 +299,8 @@ const pct = (p, d = 1) => p == null ? "—" : (p * 100).toFixed(d) + "%";
 const evf = e => e == null ? "—" : e.toFixed(2);
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
-const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", venue: null };
+const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", venue: null,
+  detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: { key: "no", direction: "asc" } };
 
 /* ---------------------------------------------------------------- 合言葉で開く */
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -389,7 +398,7 @@ function viewHome(d) {
   const up = os.filter(x => x.fin == null && postDate(x.post) > Date.now()).sort((a, b) => postDate(a.post) - postDate(b.post));
   if (up.length) {
     const n = up[0];
-    h += `<button class="next" data-race="${esc(n.id)}"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで</small></div>
+    h += `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで</small></div>
       <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars">${starStr(n.st)}</span></div></button>`;
   }
   const done = os.filter(x => x.fin != null), hits = done.filter(x => x.fin === 1).length;
@@ -400,7 +409,7 @@ function viewHome(d) {
     <div><span>単勝回収率</span><b class="${d.perf?.roi == null ? "" : d.perf.roi >= 1 ? "plus" : "minus"}">${d.perf?.roi == null ? "—" : Math.round(d.perf.roi * 100) + "%"}</b></div></section>`;
   h += `<section><h2>おすすめ ★4〜5<span class="sub">${esc(d.label)}</span></h2>`;
   h += os.length ? `<div class="picks">${os.map(x => `
-    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : "done-miss") : ""}" data-race="${esc(x.id)}">
+    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : "done-miss") : ""}" data-race="${esc(x.id)}" data-race-group="osusume">
       <div class="where"><span class="stars">${starStr(x.st)}</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? finPill(x.fin) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
@@ -409,6 +418,14 @@ function viewHome(d) {
     </button>`).join("")}</div>`
     : `<div class="card empty">${d.date < todayStr() ? "この日の★4以上はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
   h += `</section><p class="note">期待値は「AIの勝率 × 単勝の払戻」の見込みです。1.0を超えるほど長い目で見て得な馬です。予想は発走まで変わることがあります。</p>`;
+  const results = (d.venues || []).flatMap(v => (v.races || []).filter(r => r.done).map(r => ({ ...r, venue: v.venue })));
+  h += `<section><h2>${esc(d.label)} の全レース結果</h2>`;
+  h += results.length ? `<div class="card list">${results.map(r => `<button class="row" data-race="${esc(r.id)}" data-race-group="results">
+    <div class="when num"><b>${r.no}R</b>${esc(r.venue)} ${esc(r.post || "")}</div>
+    <div class="main"><b>${esc(r.name || "")}</b><span class="why">${r.horses.filter(x => x.fin != null).sort((a, b) => a.fin - b.fin).slice(0, 3)
+      .map(x => `${x.fin}着 ${x.mark || "—"} ${x.no ?? ""} ${esc(x.name)}`).join("　")}</span></div>
+    <div class="right">結果</div></button>`).join("")}</div>` : `<div class="card empty">この日の確定結果はまだありません</div>`;
+  h += `</section>`;
   return h;
 }
 
@@ -420,7 +437,7 @@ function viewSig(d) {
     <p class="note" style="margin:0">${SIG_INFO[S.sig][1]}</p>`;
   const list = pick(S.sig);
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
-  return h + `<div class="card list">` + list.map(x => `<button class="row" data-race="${esc(x.id)}">
+  return h + `<div class="card list">` + list.map(x => `<button class="row" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
     <div class="main"><b>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
       ${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}
@@ -439,7 +456,7 @@ function viewRaces(d) {
     const line = r.done
       ? `結果 ${[1, 2, 3].map(p => (r.horses.find(h => h.fin === p) || {}).mark || "無").join("-")}　1着 ${esc((r.horses.find(h => h.fin === 1) || {}).name || "")}`
       : marks.map(h => `${h.mark}${h.no ?? ""}${esc(h.name)}`).join(" ");
-    return `<button class="race" data-race="${esc(r.id)}"><span class="rno ${r.done ? "past" : ""}">${r.no}R</span>
+    return `<button class="race" data-race="${esc(r.id)}" data-race-group="race"><span class="rno ${r.done ? "past" : ""}">${r.no}R</span>
       <div class="info"><b>${esc(r.name)}</b><small>${esc(r.course)} ${r.field ?? ""}頭${r.going ? " ・" + esc(r.going) : ""}</small><span class="marks">${line}</span></div>
       <div class="side"><div class="post num">${esc(r.post)}</div>${r.st ? `<span class="stars">${"★".repeat(r.st)}</span>` : ""}</div></button>`;
   }).join("") + `</div>`;
@@ -451,13 +468,13 @@ function viewPerf(d) {
     <div><span>結果が出た</span><b>${p.n ?? 0}</b></div><div><span>的中</span><b>${p.n ? p.hit : "—"}</b></div>
     <div><span>的中率</span><b>${p.n ? Math.round(p.hit / p.n * 100) + "%" : "—"}</b></div>
     <div><span>回収率</span><b class="${p.roi == null ? "" : p.roi >= 1 ? "plus" : "minus"}">${p.roi == null ? "—" : Math.round(p.roi * 100) + "%"}</b></div></div></section>`;
-  if (d.marks && d.marks.rows.length) h += `<section><h2>印の成績<span class="sub">${d.marks.races}レース</span></h2><div class="card tbl"><table>
+  if (d.marks && d.marks.rows.length) h += `<section><h2>印の成績<span class="sub">全${d.marks.races}レース</span></h2><div class="card tbl"><table>
     <tr><th>印</th><th class="r">頭数</th><th class="r">勝率</th><th class="r">3着内</th></tr>
     ${d.marks.rows.map(r => `<tr><td><span class="hex ${markCls(r.m)}" style="width:24px;height:21px;font-size:12px">${esc(r.m)}</span></td><td class="r">${r.n}</td><td class="r">${pct(r.win / r.n, 0)}</td><td class="r">${pct(r.top3 / r.n, 0)}</td></tr>`).join("")}
     </table></div></section>`;
   const g = S.snap.star_guide || {};
   const ks = Object.keys(g).sort((a, b) => b - a);
-  if (ks.length) h += `<section><h2>★の目安<span class="sub">過去の検証</span></h2><div class="card tbl"><table>
+  if (ks.length) h += `<section><h2>★ごとの過去成績<span class="sub">単勝・過去の検証</span></h2><div class="card tbl"><table>
     <tr><th>おすすめ度</th><th class="r">単勝回収率</th><th class="r">的中率</th></tr>
     ${ks.map(k => `<tr><td><span class="stars">${starStr(+k)}</span> <small class="note">${esc(g[k].label)}</small></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td></tr>`).join("")}
     </table></div><p class="note">過去の成績は将来の結果を約束するものではありません。連敗が続くこともあるので、1回の金額は少なめに。</p></section>`;
@@ -465,17 +482,64 @@ function viewPerf(d) {
 }
 
 /* ---------------------------------------------------------------- レース詳細 */
-function openRace(id) {
+function publicRaceSequence(group) {
+  const d = curDay(), venues = d?.venues || [];
+  if (group === "race") {
+    const venue = venues.find(item => item.venue === S.venue) || venues[0];
+    return venue ? venue.races.map(race => race.id) : [];
+  }
+  if (group === "osusume" || group === "upcoming") {
+    const list = d?.osusume || [];
+    return (group === "osusume" ? list : list.filter(x => x.fin == null && postDate(x.post) > Date.now())
+      .sort((a, b) => postDate(a.post) - postDate(b.post))).map(item => item.id);
+  }
+  if (group === "results") return venues.flatMap(v => v.races.filter(r => r.done).map(r => r.id));
+  if (group.startsWith("sig:")) {
+    const sig = group.slice(4);
+    const rows = allHorses(d).filter(h => sig === "紐" ? h.himo : h.sig === sig)
+      .sort((a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }));
+    return [...new Set(rows.map(row => row.id))];
+  }
+  return [];
+}
+function publicDetailNav(id) {
+  const index = S.detailNav.indexOf(id);
+  if (index < 0 || S.detailNav.length < 2) return "";
+  return `<div class="detail-nav"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前のレース</button>
+    <span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次のレース ›</button></div>`;
+}
+function openRace(id, group = "race", isStep = false) {
   const d = curDay(); let r, venue;
   for (const v of d.venues) { const x = v.races.find(rr => rr.id === id); if (x) { r = x; venue = v.venue; } }
   if (!r) return;
+  S.detailRaceId = id;
+  if (!isStep) {
+    S.detailNavGroup = group;
+    S.detailNav = publicRaceSequence(group);
+    if (!S.detailNav.includes(id)) S.detailNav = [id];
+    S.detailSort = { key: "no", direction: "asc" };
+  }
   const sh = $("#sheet"); sh.hidden = false; document.body.style.overflow = "hidden";
-  try { history.pushState({ sheet: 1 }, ""); } catch {}
+  if (!isStep) { try { history.pushState({ sheet: 1 }, ""); } catch {} }
+  const sortKeys = [["no", "馬番"], ["p", "勝率"], ["odds", "オッズ"], ["ev", "期待値"]];
+  if (r.done) sortKeys.push(["fin", "着順"]);
+  const { key, direction } = S.detailSort;
+  const sortedHorses = [...r.horses].sort((a, b) => {
+    const av = a[key], bv = b[key];
+    if (av == null || bv == null) return av == null ? (bv == null ? 0 : 1) : -1;
+    const delta = Number(av) - Number(bv);
+    return (direction === "asc" ? delta : -delta) || Number(a.no) - Number(b.no);
+  });
   const maxP = Math.max(...r.horses.map(x => x.p || 0), 0.01);
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="もどる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
+    ${publicDetailNav(id)}
     <div class="wrap"><div class="horses">${r.ai ? "" : `<div class="note">オッズが出る前なので、能力だけのAI勝率です。★・期待値は当日に出ます。</div>`}`;
-  for (const x of r.horses) {
+  h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
+    const active = key === sortKey;
+    return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
+  }).join("")}</div>`;
+  for (const x of sortedHorses) {
     const tags = [];
     if (x.st) tags.push(`<span class="stars">${starStr(x.st)}</span>`);
     if (x.sig === "狙い") tags.push(`<span class="pill aim">狙い</span>`);
@@ -485,7 +549,7 @@ function openRace(id) {
     h += `<div class="horse ${x.st >= 4 ? "buy" : ""} ${x.fin === 1 ? "won" : ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
       <div class="nm"><b>${esc(x.name)}</b></div>
-      <div class="od num">${x.fin != null ? `<span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}</div>
+      <div class="od num">${x.odds != null ? `<b>${Number(x.odds).toFixed(Number(x.odds) >= 100 ? 0 : 1)}</b><small>倍</small>` : ""}${x.fin != null ? `<span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}</div>
       <div class="bar"><span class="num" style="min-width:64px">勝率 ${pct(x.p)}</span><span class="meter"><i style="width:${Math.round((x.p || 0) / maxP * 100)}%"></i></span>
         ${x.ev != null ? `<span class="num ${x.ev >= 1.1 ? "ev-hi" : ""}">期待値 ${evf(x.ev)}</span>` : ""}</div>
       ${tags.length ? `<div class="bar">${tags.join(" ")}</div>` : ""}</div>`;
@@ -500,12 +564,25 @@ $("#lockForm").addEventListener("submit", e => { e.preventDefault(); unlock($("#
 document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || t.closest("form")) return;
   if (t.id === "back") { try { history.back(); } catch {} closeSheet(); return; }
+  if (t.dataset.detailStep) {
+    const index = S.detailNav.indexOf(S.detailRaceId);
+    const id = S.detailNav[index + Number(t.dataset.detailStep)];
+    if (id) openRace(id, S.detailNavGroup, true);
+    return;
+  }
   if (t.id === "refresh") { refresh(); return; }
   if (t.dataset.tab) { S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
   if (t.dataset.sig) { S.sig = t.dataset.sig; render(); return; }
   if (t.dataset.venue) { S.venue = t.dataset.venue; render(); return; }
-  if (t.dataset.race) { openRace(t.dataset.race); return; }
+  if (t.dataset.publicSort) {
+    const key = t.dataset.publicSort;
+    S.detailSort = { key, direction: S.detailSort.key === key ? (S.detailSort.direction === "asc" ? "desc" : "asc") : (key === "no" || key === "fin" ? "asc" : "desc") };
+    const currentId = S.detailRaceId;
+    if (currentId) openRace(currentId, S.detailNavGroup, true);
+    return;
+  }
+  if (t.dataset.race) { openRace(t.dataset.race, t.dataset.raceGroup || "race"); return; }
 });
 setInterval(tick, 1000);
 setInterval(() => { if (!document.hidden && S.pw) refresh(); }, 3 * 60 * 1000);
