@@ -60,8 +60,9 @@ button { font: inherit; color: inherit; }
 header.top {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; color: var(--comb-ink);
   background: radial-gradient(260px 90px at 60px 0, rgba(247,201,72,.25), transparent 70%), linear-gradient(180deg, #1f170b, var(--comb));
-  border-bottom: 3px solid var(--honey);
+  border-bottom: 3px solid var(--honey); transition: transform .18s ease;
 }
+header.top.scroll-hidden { transform: translateY(calc(-100% - 12px)); }
 header.top::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -11px; height: 9px; pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='10'%3E%3Cpath d='M0 0H160V1C150 1 149 9 145 9S141 1 134 1H86C80 1 80 6 77 6S74 1 68 1H34C28 1 28 8 24 8S20 1 14 1H0Z' fill='%23f7c948'/%3E%3C/svg%3E") 0 0 / 160px 10px repeat-x;
@@ -142,8 +143,11 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .summary span { display: block; font-size: 11px; color: var(--muted); font-weight: 600; }
 .summary b { font-family: var(--f-disp); font-size: 20px; font-weight: 900; }
 .summary b.plus { color: var(--good); } .summary b.minus { color: var(--bad); }
-.weather-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.weather-card { min-width: 0; min-height: 82px; padding: 9px 10px; }
+.day-nav-top { display: flex; align-items: flex-start; gap: 12px; }
+.day-nav { min-width: 0; flex: 1; display: grid; gap: 6px; padding-bottom: 8px; }
+.day-nav-tools { flex: none; }
+.weather-row { min-width: 0; flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.weather-card { min-width: 0; min-height: 72px; padding: 8px 10px; }
 .weather-card .weather-place { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
 .weather-card b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--f-disp); font-size: 16px; font-weight: 900; }
 .weather-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
@@ -153,6 +157,11 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
   .weather-card b { font-size: 14px; }
   .weather-card small { font-size: 9px; }
 }
+@media (max-width: 760px) {
+  .day-nav-top { align-items: stretch; flex-direction: column; gap: 0; }
+  .weather-row { flex: none; }
+}
+@media (prefers-reduced-motion: reduce) { header.top { transition: none; } }
 .next { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--comb); color: var(--comb-ink); border: 0; border-radius: var(--r); width: 100%; text-align: left; }
 .next .cd { font-family: var(--f-disp); font-weight: 900; font-size: 26px; color: var(--honey); line-height: 1; min-width: 72px; }
 .next .cd small { display: block; font-size: 10px; color: rgba(251,241,220,.6); font-weight: 700; margin-top: 4px; }
@@ -257,9 +266,9 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 .lock { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   background: radial-gradient(520px 340px at 50% 18%, rgba(247,201,72,.28), transparent 70%), var(--comb); color: var(--comb-ink); }
 .lock-card { width: 100%; max-width: 410px; display: grid; justify-items: center; gap: 10px; text-align: center; }
-.lock-brand { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 88px; }
-.lock-logo { display: block; width: auto; height: 82px; object-fit: contain; filter: drop-shadow(0 0 14px rgba(242,169,59,.18)); }
-.lock-brand-en { font-family: "Cinzel", "Times New Roman", serif; font-weight: 700; font-size: 17px; letter-spacing: .28em;
+.lock-brand { display: grid; justify-items: center; gap: 8px; }
+.lock-logo { display: block; width: auto; height: 112px; object-fit: contain; filter: drop-shadow(0 0 14px rgba(242,169,59,.18)); }
+.lock-brand-en { font-family: "Cinzel", "Times New Roman", serif; font-weight: 700; font-size: 17px; letter-spacing: .2em;
   line-height: 1; white-space: nowrap; margin-left: 4px;
   background: linear-gradient(180deg, #fff3c4 0%, #f7c948 38%, #c9861a 62%, #ffe08a 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0,0,0,.8)); }
@@ -280,9 +289,9 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 
 <div class="lock" id="lock">
   <div class="lock-card">
-    <div class="lock-brand" aria-label="HORSE RACING">
-      <img class="lock-logo" src="hive_logo.png?v=2" alt="HIVE">
-      <span class="lock-brand-en">HORSE RACING</span>
+    <div class="lock-brand" aria-label="HORSE RACING AI HIVE">
+      <img class="lock-logo" src="hive_logo.png?v=3" alt="HIVE">
+      <span class="lock-brand-en">HORSE RACING AI HIVE</span>
     </div>
     <p class="lock-sub">合言葉を入れると、今週の予想が見られます</p>
     <form id="lockForm" autocomplete="off">
@@ -307,15 +316,17 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
       </button>
     </div>
-    <div class="day-nav">
-      <div class="day-nav-tools">
-        <button class="day-step" data-day-step="-1" aria-label="前の開催日">‹ 前</button>
-        <input class="day-picker" id="day-picker" type="date" aria-label="開催日を選択">
-        <button class="day-step" data-day-step="1" aria-label="次の開催日">次 ›</button>
+    <div class="day-nav-top">
+      <div class="day-nav">
+        <div class="day-nav-tools">
+          <button class="day-step" data-day-step="-1" aria-label="前の開催日">‹ 前</button>
+          <input class="day-picker" id="day-picker" type="date" aria-label="開催日を選択">
+          <button class="day-step" data-day-step="1" aria-label="次の開催日">次 ›</button>
+        </div>
+        <div class="days" id="days"></div>
       </div>
-      <div class="days" id="days"></div>
+      <div class="weather-row" id="weather" aria-label="当日の天気と馬場"></div>
     </div>
-    <div class="weather-row" id="weather" aria-label="当日の天気と馬場"></div>
   </div>
 </header>
 <main class="wrap" id="view"></main>
@@ -333,6 +344,21 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 "use strict";
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let lastHeaderScrollY = window.scrollY;
+window.addEventListener("scroll", () => {
+  const header = $("header.top");
+  const y = Math.max(0, window.scrollY);
+  if (!header) return;
+  if (y > 32 && y > lastHeaderScrollY) {
+    header.classList.add("scroll-hidden");
+  } else if (y < lastHeaderScrollY || y <= 32) {
+    header.classList.remove("scroll-hidden");
+  }
+  lastHeaderScrollY = y;
+}, { passive: true });
+window.addEventListener("resize", () => {
+  lastHeaderScrollY = window.scrollY;
+});
 const pct = (p, d = 1) => p == null ? "—" : (p * 100).toFixed(d) + "%";
 const evf = e => e == null ? "—" : e.toFixed(2);
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
