@@ -585,12 +585,13 @@ function viewPerf(d) {
   const monthPicks = monthDays.flatMap(day => day.osusume || []);
   const monthFinished = monthPicks.filter(pick => pick.fin != null);
   const monthHits = monthFinished.filter(pick => pick.fin === 1).length;
+  const monthFinishedDays = monthDays.filter(day => (day.osusume || []).some(pick => pick.fin != null)).length;
   h += `<section><h2>今月のおすすめ成績<span class="sub">${esc(currentMonth)}</span></h2>
     <div class="card summary num">
-      <div><span>開催日</span><b>${monthDays.length}</b></div>
+      <div><span>結果確定日</span><b>${monthFinishedDays}</b></div>
       <div><span>結果確定</span><b>${monthFinished.length}頭</b></div>
       <div><span>1着</span><b class="${monthHits ? "plus" : ""}">${monthFinished.length ? `${monthHits}頭` : "—"}</b></div>
-      <div><span>1着率</span><b class="${monthFinished.length && monthHits / monthFinished.length >= 0.1 ? "plus" : ""}">${monthFinished.length ? pct(monthHits / monthFinished.length, 0) : "—"}</b></div>
+      <div><span>1着率</span><b class="${monthHits ? "plus" : ""}">${monthFinished.length ? pct(monthHits / monthFinished.length, 0) : "—"}</b></div>
     </div><p class="note">★4〜5のおすすめ馬のうち、結果が確定した分の集計です。</p></section>`;
   if (d.marks && d.marks.rows.length) h += `<section><h2>印の成績<span class="sub">全${d.marks.races}レース</span></h2><div class="card tbl"><table>
     <tr><th>印</th><th class="r">頭数</th><th class="r">勝率</th><th class="r">3着内</th></tr>
