@@ -67,26 +67,36 @@ header.top::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -11px; height: 9px; pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='10'%3E%3Cpath d='M0 0H160V1C150 1 149 9 145 9S141 1 134 1H86C80 1 80 6 77 6S74 1 68 1H34C28 1 28 8 24 8S20 1 14 1H0Z' fill='%23f7c948'/%3E%3C/svg%3E") 0 0 / 160px 10px repeat-x;
 }
-.top-row { display: flex; align-items: center; gap: 10px; height: 54px; }
+.top-row { display: flex; align-items: center; gap: 8px; height: 54px; }
 .logo { width: 36px; height: 36px; flex: none; object-fit: contain; }
 .brand { font-family: var(--f-disp); font-weight: 900; font-size: 13px; color: var(--honey); letter-spacing: .2em; line-height: 1; white-space: nowrap; }
-.top-meta { margin-left: auto; flex: none; display: grid; justify-items: end; gap: 2px; min-width: 0; }
-.weather-summary { display: flex; align-items: center; gap: 4px; color: var(--comb-ink); font-size: 11px; line-height: 1; white-space: nowrap; }
-.weather-summary span { display: inline-flex; align-items: center; gap: 1px; }
-.top-right { text-align: right; font-size: 9px; color: rgba(251,241,220,.62); line-height: 1; }
+.weather-row { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.weather-card { min-width: 0; padding: 4px 3px; border-color: rgba(247,201,72,.22); background: rgba(247,201,72,.06); box-shadow: none; color: var(--comb-ink); }
+.weather-card .weather-place { display: block; color: rgba(251,241,220,.65); font-size: 8px; font-weight: 700; line-height: 1.1; }
+.weather-card b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--honey); font-family: var(--f-disp); font-size: 10px; line-height: 1.2; }
+.weather-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(251,241,220,.72); font-size: 7px; line-height: 1.15; }
+.top-actions { flex: none; display: grid; justify-items: center; gap: 1px; }
+.top-right { text-align: center; font-size: 7px; color: rgba(251,241,220,.62); line-height: 1; white-space: nowrap; }
 .top-right b { color: var(--honey); font-weight: 700; }
-.refresh { margin-left: 6px; width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(247,201,72,.35); background: rgba(247,201,72,.08); color: var(--honey); display: grid; place-items: center; }
+.refresh { margin-left: 0; width: 32px; height: 32px; border-radius: 10px; border: 1px solid rgba(247,201,72,.35); background: rgba(247,201,72,.08); color: var(--honey); display: grid; place-items: center; }
 .refresh svg { width: 18px; height: 18px; }
 .refresh.spin svg { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 640px) {
   .wrap { padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
-  .top-row { height: 76px; gap: 3px; overflow: hidden; }
+  .top-row { height: 76px; gap: 4px; overflow: hidden; }
   .logo { width: auto; height: 70px; margin-left: 0; }
   .brand { font-size: 12px; letter-spacing: .2em; }
-  .weather-summary { gap: 3px; font-size: 10px; }
-  .top-right { font-size: 8px; }
-  .refresh { width: 32px; height: 32px; }
+  .weather-row { gap: 2px; }
+  .weather-card { padding: 3px 2px; }
+  .weather-card .weather-place { font-size: 7px; }
+  .weather-card b { font-size: 9px; }
+  .weather-card small { font-size: 6px; }
+}
+@media (max-width: 360px) {
+  .top-row { gap: 3px; }
+  .logo { height: 56px; }
+  .brand { font-size: 10px; letter-spacing: .1em; }
 }
 .day-nav { display: grid; gap: 6px; padding-bottom: 8px; }
 .day-nav-tools { display: flex; align-items: center; gap: 6px; }
@@ -150,20 +160,20 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .day-nav-top { display: flex; align-items: flex-start; gap: 12px; }
 .day-nav { min-width: 0; flex: 1; display: grid; gap: 6px; padding-bottom: 8px; }
 .day-nav-tools { flex: none; }
-.weather-row { min-width: 0; flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.weather-card { min-width: 0; min-height: 72px; padding: 8px 10px; }
-.weather-card .weather-place { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
-.weather-card b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--f-disp); font-size: 16px; font-weight: 900; }
-.weather-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
+.weather-row { min-width: 0; flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.weather-card { min-width: 0; padding: 4px 3px; border-color: rgba(247,201,72,.22); background: rgba(247,201,72,.06); box-shadow: none; color: var(--comb-ink); }
+.weather-card .weather-place { display: block; color: rgba(251,241,220,.65); font-size: 8px; font-weight: 700; line-height: 1.1; }
+.weather-card b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--honey); font-family: var(--f-disp); font-size: 10px; line-height: 1.2; }
+.weather-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(251,241,220,.72); font-size: 7px; line-height: 1.15; }
 @media (max-width: 420px) {
-  .weather-row { gap: 5px; }
-  .weather-card { padding: 8px 6px; }
-  .weather-card b { font-size: 14px; }
-  .weather-card small { font-size: 9px; }
+  .weather-row { gap: 2px; }
+  .weather-card { padding: 3px 2px; }
+  .weather-card .weather-place { font-size: 7px; }
+  .weather-card b { font-size: 9px; }
+  .weather-card small { font-size: 6px; }
 }
 @media (max-width: 760px) {
   .day-nav-top { align-items: stretch; flex-direction: column; gap: 0; }
-  .weather-row { flex: none; }
 }
 @media (prefers-reduced-motion: reduce) { header.top { transition: none; } }
 .next { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--comb); color: var(--comb-ink); border: 0; border-radius: var(--r); width: 100%; text-align: left; }
@@ -315,11 +325,10 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
     <div class="top-row">
       <img class="logo" src="hive_logo.png?v=2" alt="" onerror="this.style.visibility='hidden'">
       <div class="brand">HORSE RACING</div>
-      <div class="top-meta"><div class="weather-summary" id="weather-summary" aria-label="開催競馬場の天気"></div>
-        <div class="top-right" id="stamp"></div></div>
-      <button class="refresh" id="refresh" aria-label="最新にする">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
-      </button>
+      <div class="weather-row" id="weather" aria-label="当日の天気と馬場"></div>
+      <div class="top-actions"><button class="refresh" id="refresh" aria-label="最新にする">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+        </button><div class="top-right" id="stamp"></div></div>
     </div>
     <div class="day-nav-top">
       <div class="day-nav">
@@ -330,7 +339,6 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
         </div>
         <div class="days" id="days"></div>
       </div>
-      <div class="weather-row" id="weather" aria-label="当日の天気と馬場"></div>
     </div>
   </div>
 </header>
@@ -456,8 +464,6 @@ function renderWeather() {
   const day = curDay();
   const weatherIcon = { "晴": "☀️", "曇": "☁️", "雨": "☔", "小雨": "🌦️", "雪": "❄️", "小雪": "🌨️" };
   const venues = (day?.baba || []).slice().sort((a, b) => ["東京", "京都", "新潟"].indexOf(a.venue) - ["東京", "京都", "新潟"].indexOf(b.venue));
-  const shortName = { "東京": "東", "京都": "京", "新潟": "新" };
-  $("#weather-summary").innerHTML = venues.map(x => `<span title="${esc(x.venue)} ${esc(x.tenko || "天気未発表")}">${shortName[x.venue] || esc(x.venue)}${weatherIcon[x.tenko] || "·"}</span>`).join("");
   el.innerHTML = venues.length ? venues.map(x => `<div class="card weather-card">
     <span class="weather-place">${esc(x.venue)}</span>
     <b>${x.tenko ? `${weatherIcon[x.tenko] || ""} ${esc(x.tenko)}` : "天気未発表"}</b>
