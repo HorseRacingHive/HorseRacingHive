@@ -76,9 +76,9 @@ header.top::after {
 .refresh.spin svg { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 640px) {
-  .wrap { padding-left: max(4px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+  .wrap { padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
   .top-row { height: 76px; gap: 6px; overflow: hidden; }
-  .logo { width: auto; height: 70px; margin-left: -10px; }
+  .logo { width: auto; height: 70px; margin-left: 0; }
   .brand { font-size: 12px; letter-spacing: .2em; }
   .top-right { font-size: 10px; }
   .refresh { width: 32px; height: 32px; }
@@ -142,6 +142,17 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .summary span { display: block; font-size: 11px; color: var(--muted); font-weight: 600; }
 .summary b { font-family: var(--f-disp); font-size: 20px; font-weight: 900; }
 .summary b.plus { color: var(--good); } .summary b.minus { color: var(--bad); }
+.weather-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.weather-card { min-width: 0; min-height: 82px; padding: 9px 10px; }
+.weather-card .weather-place { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
+.weather-card b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--f-disp); font-size: 16px; font-weight: 900; }
+.weather-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
+@media (max-width: 420px) {
+  .weather-row { gap: 5px; }
+  .weather-card { padding: 8px 6px; }
+  .weather-card b { font-size: 14px; }
+  .weather-card small { font-size: 9px; }
+}
 .next { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--comb); color: var(--comb-ink); border: 0; border-radius: var(--r); width: 100%; text-align: left; }
 .next .cd { font-family: var(--f-disp); font-weight: 900; font-size: 26px; color: var(--honey); line-height: 1; min-width: 72px; }
 .next .cd small { display: block; font-size: 10px; color: rgba(251,241,220,.6); font-weight: 700; margin-top: 4px; }
@@ -304,6 +315,7 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
       </div>
       <div class="days" id="days"></div>
     </div>
+    <div class="weather-row" id="weather" aria-label="当日の天気と馬場"></div>
   </div>
 </header>
 <main class="wrap" id="view"></main>
@@ -404,8 +416,21 @@ function renderDays() {
   picker.max = dates[dates.length - 1] || "";
   document.querySelector('[data-day-step="-1"]').disabled = index <= 0;
   document.querySelector('[data-day-step="1"]').disabled = index < 0 || index >= dates.length - 1;
+  renderWeather();
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
   $("#stamp").innerHTML = S.demo ? "見本データ" : `更新 <b>${esc(u)}</b>`;
+}
+function renderWeather() {
+  const el = $("#weather");
+  const day = curDay();
+  const weatherIcon = { "晴": "☀️", "曇": "☁️", "雨": "☔", "小雨": "🌦️", "雪": "❄️", "小雪": "🌨️" };
+  const venues = day?.baba || [];
+  el.innerHTML = venues.length ? venues.map(x => `<div class="card weather-card">
+    <span class="weather-place">${esc(x.venue)}</span>
+    <b>${x.tenko ? `${weatherIcon[x.tenko] || ""} ${esc(x.tenko)}` : "天気未発表"}</b>
+    <small>芝 ${esc(x.shiba || "—")} / ダ ${esc(x.dirt || "—")}</small>
+    <small>${x.time ? `${esc(x.time)} 発表・予想に反映` : "馬場発表待ち"}</small>
+  </div>`).join("") : "";
 }
 function allHorses(day) {
   const out = [];
