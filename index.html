@@ -149,6 +149,20 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .pill.danger { background: var(--bad-soft); color: var(--bad); }
 .pill.ev { background: var(--soft); color: var(--accent); }
 .pill.himo { background: var(--himo-soft); color: var(--himo); }
+.seg button.sig-aim { color: var(--good); border-color: var(--good); }
+.seg button.sig-ev { color: var(--accent); border-color: var(--amber); }
+.seg button.sig-danger { color: var(--bad); border-color: var(--bad); }
+.seg button.sig-himo { color: var(--himo); border-color: var(--himo); }
+.seg button.on.sig-aim { background: var(--good-soft); }
+.seg button.on.sig-ev { background: var(--soft); }
+.seg button.on.sig-danger { background: var(--bad-soft); }
+.seg button.on.sig-himo { background: var(--himo-soft); }
+.sig-badge { display: inline-block; margin-right: 3px; padding: 1px 5px; border-radius: 999px; font-size: 10px; font-weight: 800; white-space: nowrap; }
+.sig-badge.aim { background: var(--good-soft); color: var(--good); }
+.sig-badge.ev { background: var(--soft); color: var(--accent); }
+.sig-badge.danger { background: var(--bad-soft); color: var(--bad); }
+.sig-badge.himo { background: var(--himo-soft); color: var(--himo); }
+.sig-badge.buy { background: var(--good-soft); color: var(--good); }
 
 /* ---------- 今日のまとめ */
 .summary { display: grid; grid-template-columns: repeat(4, 1fr); overflow: hidden; }
@@ -527,17 +541,17 @@ function viewHome(d) {
   return h;
 }
 
-const SIG_INFO = { "狙い": ["aim", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "期待値が高い馬"], "危険": ["danger", "人気ほど勝てていない人気馬"], "紐": ["himo", "3着内に来やすい穴馬(ワイド・3連系の相手)"] };
+const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "期待値が高い馬"], "危険": ["danger", "⚠️", "人気ほど勝てていない人気馬"], "紐": ["himo", "🪢", "3着内に来やすい穴馬(ワイド・3連系の相手)"] };
 function viewSig(d) {
   const all = allHorses(d);
   const pick = k => all.filter(x => k === "紐" ? x.himo : x.sig === k).sort((a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }));
-  let h = `<div class="seg">${Object.keys(SIG_INFO).map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""}">${k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
-    <p class="note" style="margin:0">${SIG_INFO[S.sig][1]}</p>`;
+  let h = `<div class="seg">${Object.keys(SIG_INFO).map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
+    <p class="note" style="margin:0">${SIG_INFO[S.sig][2]}</p>`;
   const list = pick(S.sig);
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
   return h + `<div class="card list">` + list.map(x => `<button class="row" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
-    <div class="main"><b>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
+    <div class="main"><b><span class="sig-badge ${SIG_INFO[S.sig][0]}">${SIG_INFO[S.sig][1]} ${esc(S.sig)}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
       ${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}
       <span class="why">${x.st ? `<span class="stars">${starStr(x.st)}</span>` : ""}</span></div>
     <div class="right">${S.sig === "危険" ? `<span class="pill danger">危険</span>` : `<span class="num">勝率 ${pct(x.p)}</span><br><b class="num" style="color:var(--accent)">${x.ev != null ? "期待値 " + evf(x.ev) : ""}</b>`}</div></button>`).join("") + `</div>`;
@@ -566,6 +580,18 @@ function viewPerf(d) {
     <div><span>結果が出た</span><b>${p.n ?? 0}</b></div><div><span>的中</span><b>${p.n ? p.hit : "—"}</b></div>
     <div><span>的中率</span><b>${p.n ? Math.round(p.hit / p.n * 100) + "%" : "—"}</b></div>
     <div><span>回収率</span><b class="${p.roi == null ? "" : p.roi >= 1 ? "plus" : "minus"}">${p.roi == null ? "—" : Math.round(p.roi * 100) + "%"}</b></div></div></section>`;
+  const currentMonth = (S.date || todayStr()).slice(0, 7);
+  const monthDays = S.snap.days.filter(day => day.date.startsWith(currentMonth));
+  const monthPicks = monthDays.flatMap(day => day.osusume || []);
+  const monthFinished = monthPicks.filter(pick => pick.fin != null);
+  const monthHits = monthFinished.filter(pick => pick.fin === 1).length;
+  h += `<section><h2>今月のおすすめ成績<span class="sub">${esc(currentMonth)}</span></h2>
+    <div class="card summary num">
+      <div><span>開催日</span><b>${monthDays.length}</b></div>
+      <div><span>結果確定</span><b>${monthFinished.length}頭</b></div>
+      <div><span>1着</span><b class="${monthHits ? "plus" : ""}">${monthFinished.length ? `${monthHits}頭` : "—"}</b></div>
+      <div><span>1着率</span><b class="${monthFinished.length && monthHits / monthFinished.length >= 0.1 ? "plus" : ""}">${monthFinished.length ? pct(monthHits / monthFinished.length, 0) : "—"}</b></div>
+    </div><p class="note">★4〜5のおすすめ馬のうち、結果が確定した分の集計です。</p></section>`;
   if (d.marks && d.marks.rows.length) h += `<section><h2>印の成績<span class="sub">全${d.marks.races}レース</span></h2><div class="card tbl"><table>
     <tr><th>印</th><th class="r">頭数</th><th class="r">勝率</th><th class="r">3着内</th></tr>
     ${d.marks.rows.map(r => `<tr><td><span class="hex ${markCls(r.m)}" style="width:24px;height:21px;font-size:12px">${esc(r.m)}</span></td><td class="r">${r.n}</td><td class="r">${pct(r.win / r.n, 0)}</td><td class="r">${pct(r.top3 / r.n, 0)}</td></tr>`).join("")}
@@ -640,10 +666,10 @@ function openRace(id, group = "race", isStep = false) {
   for (const x of sortedHorses) {
     const tags = [];
     if (x.st) tags.push(`<span class="stars">${starStr(x.st)}</span>`);
-    if (x.sig === "狙い") tags.push(`<span class="pill aim">狙い</span>`);
-    if (x.sig === "妙味") tags.push(`<span class="pill ev">妙味</span>`);
-    if (x.sig === "危険") tags.push(`<span class="pill danger">危険な人気馬</span>`);
-    if (x.himo) tags.push(`<span class="pill himo">紐</span>`);
+    if (x.sig === "狙い") tags.push(`<span class="sig-badge aim">🎯 狙い</span>`);
+    if (x.sig === "妙味") tags.push(`<span class="sig-badge ev">💎 妙味</span>`);
+    if (x.sig === "危険") tags.push(`<span class="sig-badge danger">⚠️ 危険な人気馬</span>`);
+    if (x.himo) tags.push(`<span class="sig-badge himo">🪢 紐</span>`);
     h += `<div class="horse ${x.st >= 4 ? "buy" : ""} ${x.fin === 1 ? "won" : ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
       <div class="nm"><b>${esc(x.name)}</b></div>
