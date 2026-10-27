@@ -284,6 +284,14 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 .tbl { overflow-x: auto; }
 .plus { color: var(--good); font-weight: 800; } .minus { color: var(--bad); font-weight: 800; }
 @media (prefers-reduced-motion: reduce) { .refresh.spin svg { animation: none; } }
+.refresh:active { transform: scale(.92); background: rgba(247,201,72,.25); }
+.refresh.spin { background: rgba(247,201,72,.2); }
+/* 更新ボタンを押したときの小さなお知らせ */
+.toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 8px); z-index: 50; max-width: calc(100% - 32px);
+  padding: 9px 16px; border-radius: 999px; background: var(--comb); color: var(--comb-ink); border: 1px solid rgba(247,201,72,.5); box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast b { color: var(--honey); }
 /* ---------- 追加の部品(携帯版と同じ) */
 .summary div { min-width: 0; padding-left: 4px; padding-right: 4px; }
 h2 .sub.big { font-size: 17px; font-weight: 900; color: var(--comb); background: linear-gradient(135deg, var(--honey), var(--amber)); padding: 2px 12px; border-radius: 999px; letter-spacing: .04em; }
@@ -300,6 +308,8 @@ main > * { min-width: 0; }
 .star-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 12px 0 6px; font-size: 13px; font-weight: 800; }
 .star-head small { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 600; }
 .announce { overflow: hidden; }
+.announce.scrollbox { max-height: 232px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.announce.scrollbox .ann:last-child { border-bottom: 0; }
 .ann { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; padding: 9px 12px; border-bottom: 1px solid var(--line); }
 .ann:last-child { border-bottom: 0; }
 .ann .at { font-size: 11px; color: var(--muted); font-weight: 700; text-align: center; line-height: 1.3; }
@@ -346,6 +356,80 @@ main > * { min-width: 0; }
 .lock-note b { color: var(--honey); }
 .pick .fig .e { font-size: 11px; color: var(--muted); }
 .pick .fig .o { color: var(--accent); }
+
+/* ================================================================ 色で直感的に分かるように(全ページ共通の色ルール)
+   緑=狙い・買い・プラス / 赤=危険・マイナス / 橙=過剰人気 / 空色=妙味(期待値) / 紫=紐 / 蜜色=おすすめ度・1着 */
+:root { --aim: #16a34a; --aim-soft: #dcfce7; --dang: #e11d48; --dang-soft: #ffe4e6; --over: #ea7a11; --over-soft: #ffedd5;
+  --evc: #0284c7; --evc-soft: #e0f2fe; --s5: #e11d48; --s4: #ea7a11; --s3: #d99a06; --s2: #8a7a5c; --silver: #9aa3ad; --bronze: #b5703a; }
+:root:not([data-theme="light"]) { --aim: #4ade80; --aim-soft: #12382a; --dang: #fb7185; --dang-soft: #43182a; --over: #fdba74; --over-soft: #3b2410;
+  --evc: #7dd3fc; --evc-soft: #0c2a3a; --s5: #fb7185; --s4: #fdba74; --s3: #f7c948; --s2: #b8a888; --silver: #cbd5e1; --bronze: #d9a06a; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --aim: #16a34a; --aim-soft: #dcfce7; --dang: #e11d48; --dang-soft: #ffe4e6; --over: #ea7a11; --over-soft: #ffedd5;
+  --evc: #0284c7; --evc-soft: #e0f2fe; --s5: #e11d48; --s4: #ea7a11; --s3: #d99a06; --s2: #8a7a5c; --silver: #9aa3ad; --bronze: #b5703a; } }
+/* 下のタブ: 選んだタブごとに色 */
+nav.tabs button.on[data-tab="home"] { color: var(--honey); }
+nav.tabs button.on[data-tab="sig"] { color: var(--aim); } nav.tabs button.on[data-tab="sig"] svg { filter: drop-shadow(0 0 6px rgba(74,222,128,.6)); }
+nav.tabs button.on[data-tab="race"] { color: var(--evc); } nav.tabs button.on[data-tab="race"] svg { filter: drop-shadow(0 0 6px rgba(125,211,252,.6)); }
+nav.tabs button.on[data-tab="perf"] { color: #c4b5fd; } nav.tabs button.on[data-tab="perf"] svg { filter: drop-shadow(0 0 6px rgba(196,181,253,.6)); }
+/* おすすめ度: ★の数で色を変える(★5=赤 ★4=橙 ★3=蜜 ★2=薄) */
+.stars.t5 { color: var(--s5); } .stars.t4 { color: var(--s4); } .stars.t3 { color: var(--s3); } .stars.t2 { color: var(--s2); }
+.pick { border-left: 5px solid var(--line); }
+.pick.s5 { border-left-color: var(--s5); border-color: var(--s5); background: linear-gradient(135deg, var(--dang-soft), var(--panel) 55%); }
+.pick.s4 { border-left-color: var(--s4); background: linear-gradient(135deg, var(--over-soft), var(--panel) 55%); }
+.pick.s3 { border-left-color: var(--s3); }
+.pick.s2 { border-left-color: var(--s2); }
+.pick.done-hit { border-color: var(--aim); border-left-color: var(--aim); background: linear-gradient(135deg, var(--aim-soft), var(--panel) 60%); box-shadow: 0 0 0 2px var(--aim-soft); }
+.pick.done-miss { opacity: .55; filter: saturate(.5); }
+.star-head.t5 { color: var(--s5); } .star-head.t4 { color: var(--s4); } .star-head.t3 { color: var(--s3); } .star-head.t2 { color: var(--s2); }
+/* 印・サイン: 狙い=緑 危険=赤 過剰=橙 妙味=空色 紐=紫 */
+.sig-badge, .pill.aim, .pill.danger, .pill.himo { font-size: 10.5px; padding: 2px 7px; border: 1px solid transparent; }
+.sig-badge.aim, .pill.aim, .sig-badge.buy { background: var(--aim-soft); color: var(--aim); border-color: var(--aim); }
+.sig-badge.danger, .pill.danger { background: var(--dang-soft); color: var(--dang); border-color: var(--dang); }
+.sig-badge.over { background: var(--over-soft); color: var(--over); border-color: var(--over); }
+.sig-badge.ev { background: var(--evc-soft); color: var(--evc); border-color: var(--evc); }
+.sig-badge.himo, .pill.himo { background: var(--himo-soft); color: var(--himo); border-color: var(--himo); }
+.seg button.sig-aim { color: var(--aim); border-color: var(--aim); } .seg button.on.sig-aim { background: var(--aim); color: #fff; }
+.seg button.sig-danger, .seg button.sig-over { color: var(--dang); border-color: var(--dang); } .seg button.on.sig-danger { background: var(--dang); color: #fff; }
+.seg button.sig-over { color: var(--over); border-color: var(--over); } .seg button.on.sig-over { background: var(--over); color: #fff; }
+.seg button.sig-ev { color: var(--evc); border-color: var(--evc); } .seg button.on.sig-ev { background: var(--evc); color: #fff; }
+.seg button.sig-himo { color: var(--himo); border-color: var(--himo); } .seg button.on.sig-himo { background: var(--himo); color: #fff; }
+.seg button.on .c { opacity: 1; }
+/* 狙い馬タブの行: 左に色の帯 */
+.row { border-left: 4px solid transparent; }
+.row.sg-aim { border-left-color: var(--aim); } .row.sg-danger { border-left-color: var(--dang); } .row.sg-over { border-left-color: var(--over); }
+.row.sg-ev { border-left-color: var(--evc); } .row.sg-himo { border-left-color: var(--himo); } .row.sg-cand { border-left-color: var(--evc); border-left-style: dashed; }
+/* 出馬表の各馬: 左の帯＋背景で種類を示す */
+.horse { border-left: 5px solid var(--line); }
+.horse.buy { border-left-color: var(--aim); border-color: var(--aim); box-shadow: none; background: linear-gradient(90deg, var(--aim-soft), var(--panel) 45%); }
+.horse.sg-danger { border-left-color: var(--dang); background: linear-gradient(90deg, var(--dang-soft), var(--panel) 45%); }
+.horse.sg-over { border-left-color: var(--over); }
+.horse.sg-ev:not(.buy) { border-left-color: var(--evc); }
+.horse.sg-himo:not(.buy) { border-left-color: var(--himo); }
+.horse.won { border-color: var(--honey); background: linear-gradient(90deg, rgba(247,201,72,.35), var(--panel) 55%); }
+/* 勝率バー: 高いほど濃く */
+.meter { height: 7px; background: var(--line); }
+.meter i { background: linear-gradient(90deg, #86efac, var(--aim) 60%, #15803d); }
+/* 期待値: 1.3以上=濃い緑 / 1.1以上=緑 / 0.9未満=薄い赤 */
+.ev-top { color: var(--aim); font-weight: 900; background: var(--aim-soft); padding: 0 6px; border-radius: 6px; }
+.ev-hi { color: var(--aim); font-weight: 800; }
+.ev-lo { color: var(--dang); opacity: .8; font-weight: 600; }
+/* 着順: 1着=金 2着=銀 3着=銅 */
+.fin { background: var(--line); color: var(--muted); }
+.fin.f1 { background: linear-gradient(135deg, var(--honey), var(--amber)); color: var(--comb); box-shadow: 0 0 0 2px rgba(247,201,72,.35); }
+.fin.f2 { background: var(--silver); color: #111; } .fin.f3 { background: var(--bronze); color: #fff; }
+.pill.hit { background: var(--aim); color: #fff; font-weight: 900; } .pill.miss { background: var(--line); color: var(--muted); }
+/* 買い条件・材料の数 */
+.fc.plus { background: var(--aim-soft); color: var(--aim); } .fc.minus { background: var(--dang-soft); color: var(--dang); }
+/* 成績: プラスは緑の面、マイナスは赤の面 */
+.summary div { position: relative; }
+.summary b.plus { color: var(--aim); } .summary b.minus { color: var(--dang); }
+.perf2 .cap { color: var(--aim); }
+.perf2 .cap.alt2 { color: var(--muted); }
+td.plus, .plus { color: var(--aim); } td.minus, .minus { color: var(--dang); }
+.tbl td.r.plus { background: var(--aim-soft); font-weight: 900; border-radius: 6px; } .tbl td.r.minus { background: var(--dang-soft); font-weight: 900; border-radius: 6px; }
+/* お知らせの種類 */
+.ann .kind.k-直前 { background: var(--evc-soft); color: var(--evc); } .ann .kind.k-最終 { background: var(--aim-soft); color: var(--aim); } .ann .kind.k-急遽 { background: var(--dang-soft); color: var(--dang); }
+/* 見出し: 節ごとのアイコンの色 */
+h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var(--dang); } h2.c-ev::before { background: var(--evc); } h2.c-perf::before { background: #a78bfa; } h2.c-ann::before { background: var(--evc); }
 </style>
 
 <div class="lock" id="lock">
@@ -383,12 +467,13 @@ main > * { min-width: 0; }
 <main class="wrap" id="view"></main>
 <nav class="tabs" id="tabs">
   <button data-tab="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8l1.2 2.5 2.8.4-2 2 .5 2.8-2.5-1.3-2.5 1.3.5-2.8-2-2 2.8-.4z" fill="currentColor"/></svg>おすすめ</button>
-  <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>狙い馬</button>
+  <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>狙い・危険</button>
   <button data-tab="race"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>全レース</button>
   <button data-tab="perf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>成績</button>
 </nav>
 </div>
 <div class="sheet" id="sheet" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (() => {
@@ -467,13 +552,12 @@ function raceAnnounce(list, raceId, upcoming) {
 }
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
-    return showEmpty ? `<section><h2>直前のお知らせ</h2><div class="card empty" style="font-size:12px">各レースの発走約30分前と約10分前に、オッズを取り直して見直した結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
+    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">各レースの発走約30分前と約10分前に、オッズを取り直して見直した結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
-  const head = list.slice(0, 4), rest = list.slice(4);
-  return `<section><h2>直前のお知らせ<span class="sub">${list.length}件・新しい順</span></h2><div class="card announce">${head.map(row).join("")}
-    ${rest.length ? `<details><summary class="note" style="padding:8px 12px;cursor:pointer">前のお知らせ ${rest.length}件</summary>${rest.map(row).join("")}</details>` : ""}</div></section>`;
+  // 最新が上。枠の高さは固定で、中をスクロールして古いものを見る
+  return `<section><h2 class="c-ann">直前のお知らせ<span class="sub">${list.length}件・新しい順${list.length > 3 ? "・下にスクロール" : ""}</span></h2><div class="card announce scrollbox">${list.map(row).join("")}</div></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
 const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", venue: null, resVenue: null,
@@ -511,12 +595,35 @@ async function unlock(pw, remember) {
   }
   btn.disabled = false; btn.textContent = "ひらく";
 }
-async function refresh() {
-  if (!S.pw) return;
-  $("#refresh").classList.add("spin");
-  try { S.snap = await open(S.pw); if (!viewDays().some(d => d.date === S.date)) pickDate(); renderDays(); render(); }
-  catch (e) { if (e.message === "bad") lock("合言葉が変わりました。新しい合言葉を入れてください。"); }
-  $("#refresh").classList.remove("spin");
+let toastTimer = null;
+function toast(html) {
+  const el = $("#toast"); if (!el) return;
+  el.innerHTML = html; el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+let refreshing = false;
+async function refresh(byUser) {
+  if (!S.pw || refreshing) return;
+  refreshing = true;
+  const btn = $("#refresh"), before = S.snap && S.snap.updated;
+  btn.classList.add("spin");
+  const started = Date.now();
+  let msg = null;
+  try {
+    S.snap = await open(S.pw);
+    if (!viewDays().some(d => d.date === S.date)) pickDate();
+    renderDays(); render();
+    const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
+    msg = S.snap.updated !== before ? `新しい予想に更新しました(<b>${esc(u)}</b>)` : `いま出ている予想が最新です(<b>${esc(u)}</b>時点)`;
+  } catch (e) {
+    if (e.message === "bad") { lock("合言葉が変わりました。新しい合言葉を入れてください。"); refreshing = false; return; }
+    msg = "読み込めませんでした。電波の良いところでもう一度お試しください";
+  }
+  // 一瞬で終わると押せたか分からないので、最低でも0.8秒はくるくる回す
+  await new Promise(r => setTimeout(r, Math.max(0, 800 - (Date.now() - started))));
+  btn.classList.remove("spin");
+  if (byUser) toast(msg);
+  refreshing = false;
 }
 function lock(msg) {
   S.pw = null; S.snap = null; store.del("hivep_pw");
@@ -596,26 +703,26 @@ function viewHome(d) {
   if (up.length) {
     const n = up[0];
     h += `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで</small></div>
-      <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars">${starStr(n.st)}</span></div></button>`;
+      <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars t${n.st}">${starStr(n.st)}</span></div></button>`;
   }
   h += announceBlock(d.announce, d.date === todayStr());
   h += recPerfBlock(d.rec_perf, "おすすめの買い目と結果");
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
     <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : "done-miss") : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">
-      <div class="where"><span class="stars">${starStr(x.st)}</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
+      <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? finPill(x.fin) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
       <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>
     </button>`;
-  h += `<section><h2>おすすめ ★2〜5<span class="sub">${os.length}頭</span></h2>`;
+  h += `<section><h2 class="c-aim">おすすめ ★2〜5<span class="sub">${os.length}頭</span></h2>`;
   if (os.length) {
     const g = S.snap.star_guide || {};
     for (const s of [5, 4, 3, 2]) {
       const xs = os.filter(x => x.st === s);
       if (!xs.length) continue;
-      h += `<h3 class="star-head"><span class="stars">${starStr(s)}</span>${STAR_LABEL[s]}・${xs.length}頭${g[s] ? `<small>過去の単勝回収率 ${pct(g[s].roi, 0)}・的中率 ${pct(g[s].hit, 0)}</small>` : ""}</h3>
+      h += `<h3 class="star-head"><span class="stars t${s}">${starStr(s)}</span>${STAR_LABEL[s]}・${xs.length}頭${g[s] ? `<small>過去の単勝回収率 ${pct(g[s].roi, 0)}・的中率 ${pct(g[s].hit, 0)}</small>` : ""}</h3>
         <div class="picks">${xs.map(card).join("")}</div>`;
     }
   } else {
@@ -652,12 +759,13 @@ function viewSig(d) {
     <p class="note" style="margin:0">${SIG_INFO[S.sig][2]}</p>`;
   const list = pick(S.sig);
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
-  return h + `<div class="card list">` + list.map(x => `<button class="row" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
+  const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
+  return h + `<div class="card list">` + list.map(x => `<button class="row ${rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
-    <div class="main"><b><span class="sig-badge ${SIG_INFO[S.sig][0] === "over" ? "danger" : SIG_INFO[S.sig][0]}">${SIG_INFO[S.sig][1]} ${esc(S.sig === "紐" ? "紐" : sigLabel(x))}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
+    <div class="main"><b><span class="sig-badge ${SIG_INFO[S.sig][0]}">${SIG_INFO[S.sig][1]} ${esc(S.sig === "紐" ? "紐" : sigLabel(x))}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
       ${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}
-      <span class="why">${x.st ? `<span class="stars">${starStr(x.st)}</span>` : ""}</span></div>
-    <div class="right"><span class="num">勝率 ${pct(x.p)}</span><br><b class="num" style="color:var(--accent)">${x.ev != null ? "期待値 " + evf(x.ev) : ""}</b></div></button>`).join("") + `</div>`;
+      <span class="why">${x.st ? `<span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span></div>
+    <div class="right"><span class="num">勝率 ${pct(x.p)}</span><br><b class="num ${x.ev == null ? "" : x.ev >= 1.3 ? "ev-top" : x.ev >= 1.1 ? "ev-hi" : x.ev < 0.9 ? "ev-lo" : ""}">${x.ev != null ? "期待値 " + evf(x.ev) : ""}</b></div></button>`).join("") + `</div>`;
 }
 
 function viewRaces(d) {
@@ -705,7 +813,7 @@ function viewPerf(d) {
   const rs = S.snap.rec_stats;
   if (ks.length) h += `<section><h2>★ごとの過去成績<span class="sub">単勝・2013〜2026年の検証</span></h2><div class="card tbl"><table>
     <tr><th>おすすめ度</th><th class="r">単回収</th><th class="r">的中</th><th class="r">最大連敗</th></tr>
-    ${ks.map(k => `<tr><td><span class="stars">${starStr(+k)}</span><br><small class="note">${esc(g[k].label)}</small></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td><td class="r">${g[k].streak != null ? `${g[k].streak}連敗` : "—"}</td></tr>`).join("")}
+    ${ks.map(k => `<tr><td><span class="stars t${+k}">${starStr(+k)}</span><br><small class="note">${esc(g[k].label)}</small></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td><td class="r">${g[k].streak != null ? `${g[k].streak}連敗` : "—"}</td></tr>`).join("")}
     </table></div><p class="note">${rs ? `おすすめ(★2〜5)全体: 回収率 ${pct(rs.roi, 0)}・的中率 ${pct(rs.hit, 1)}・最大${rs.streak}連敗。` : ""}過去の成績は将来の結果を約束するものではありません。最大連敗の分だけ資金に余裕を持たせ、1回の金額は少なめに。</p></section>`;
   return h;
 }
@@ -773,19 +881,20 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   }).join("")}</div>`;
   for (const x of sortedHorses) {
     const tags = [];
-    if (x.st) tags.push(`<span class="stars">${starStr(x.st)}</span>`);
+    if (x.st) tags.push(`<span class="stars t${x.st}">${starStr(x.st)}</span>`);
     if (x.sig === "狙い") tags.push(`<span class="sig-badge aim">🎯 狙い</span>`);
     if (x.sig === "妙味") tags.push(`<span class="sig-badge ev">💎 妙味</span>`);
     if (x.sig === "危険") tags.push(`<span class="sig-badge danger">⚠️ ${x.lv >= 2 ? "かなり危険な人気馬" : "危険な人気馬"}</span>`);
-    if (x.sig === "過剰") tags.push(`<span class="sig-badge danger">🔸 過剰人気(相手には残してOK)</span>`);
+    if (x.sig === "過剰") tags.push(`<span class="sig-badge over">🔸 過剰人気(相手には残してOK)</span>`);
     if (x.himo) tags.push(`<span class="sig-badge himo">🪢 紐</span>`);
     if (x.buy) tags.push(`<span class="sig-badge buy">💰 おすすめ</span>`);
-    h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${x.fin === 1 ? "won" : ""}" data-no="${x.no ?? ""}">
+    const sg = x.sig === "危険" ? "sg-danger" : x.sig === "狙い" ? "sg-aim" : x.sig === "過剰" ? "sg-over" : x.sig === "妙味" ? "sg-ev" : x.himo ? "sg-himo" : "";
+    h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${sg} ${x.fin === 1 ? "won" : ""}" data-no="${x.no ?? ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
       <div class="nm"><b>${esc(x.name)}</b></div>
       <div class="od num">${x.odds != null ? `<b>${Number(x.odds).toFixed(Number(x.odds) >= 100 ? 0 : 1)}</b><small>倍</small>` : ""}${x.fin != null ? `<span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}</div>
       <div class="bar"><span class="num" style="min-width:64px">勝率 ${pct(x.p)}</span><span class="meter"><i style="width:${Math.round((x.p || 0) / maxP * 100)}%"></i></span>
-        ${x.ev != null ? `<span class="num ${x.ev >= 1.1 ? "ev-hi" : x.ev < 0.9 ? "ev-lo" : ""}">期待値 ${evf(x.ev)}</span>` : ""}</div>
+        ${x.ev != null ? `<span class="num ${x.ev >= 1.3 ? "ev-top" : x.ev >= 1.1 ? "ev-hi" : x.ev < 0.9 ? "ev-lo" : ""}">期待値 ${evf(x.ev)}</span>` : ""}</div>
       ${tags.length ? `<div class="bar">${tags.join(" ")}</div>` : ""}${factorLine(x)}</div>`;
   }
   sh.innerHTML = h + `</div></div>`; sh.scrollTop = 0;
@@ -818,7 +927,7 @@ document.addEventListener("click", e => {
     if (id) openRace(id, S.detailNavGroup, true);
     return;
   }
-  if (t.id === "refresh") { refresh(); return; }
+  if (t.id === "refresh") { refresh(true); return; }
   if (t.dataset.tab) { S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
   if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
