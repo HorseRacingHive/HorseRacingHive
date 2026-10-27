@@ -732,7 +732,7 @@ function viewHome(d) {
   } else {
     h += `<div class="card empty">${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
   }
-  h += `</section><p class="note">おすすめ = ${esc(S.snap.rec_text || "★2〜5・期待値1.08〜1.7")}。期待値は「AIの勝率 × 単勝の払戻」の見込みです。1.0を超えるほど長い目で見て得な馬です。予想は発走まで変わることがあります。</p>`;
+  h += `</section><p class="note">おすすめ = ${esc(S.snap.rec_text || "★2〜5(独自のファクターで買い材料あり)・期待値1.08〜1.7・単勝100倍以下")}。期待値は「AIの勝率 × 単勝の払戻」の見込みです。1.0を超えるほど長い目で見て得な馬です。予想は発走まで変わることがあります。</p>`;
   h += `<section><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section>`;
   return h;
 }
@@ -811,7 +811,7 @@ function viewPerf(d) {
   const per = S.snap.period;
   if (per) {
     h += `<section><h2>今月・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${periodCard("今月", per.month)}${periodCard("今年", per.year)}
-      <p class="note">おすすめ(${esc(per.rec_text || S.snap.rec_text || "★2〜5")})のうち、結果が確定した分の集計です。今年の検証期間は確定オッズでの判定なので、実際より少し良く出ます。</p></section>`;
+      <p class="note">おすすめ(${esc(per.rec_text || S.snap.rec_text || "★2〜5(独自のファクターで買い材料あり)・期待値1.08〜1.7")})のうち、結果が確定した分の集計です。今年の検証期間は確定オッズでの判定なので、実際より少し良く出ます。</p></section>`;
   } else {   // 古い公開データ(今月・今年の集計がまだ無い)ときは、手元の90日分から今月だけ数える
     const currentMonth = (S.date || todayStr()).slice(0, 7);
     const monthPicks = S.snap.days.filter(day => day.date.startsWith(currentMonth)).flatMap(day => day.osusume || []);
