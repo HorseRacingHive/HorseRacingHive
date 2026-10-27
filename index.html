@@ -549,12 +549,12 @@ const ANN_KIND = { "直前": "30分前", "最終": "発走直前", "急遽": "�
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
-  if (!rows.length) return upcoming ? `<div class="card empty race-ann-empty">発走約30分前と約10分前にオッズを取り直して見直した結果(見送り・やっぱり買い・急遽の買い)が、ここに出ます</div>` : "";
+  if (!rows.length) return upcoming ? `<div class="card empty race-ann-empty">※発走約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div>` : "";
   return `<div class="card announce race-ann"><div class="cap">このレースの直前のお知らせ<span class="sub">${rows.length}件・新しい順</span></div>${rows.map(a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div><div class="tx">${esc(a.text || "")}</div></div>`).join("")}</div>`;
 }
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
-    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">各レースの発走約30分前と約10分前に、オッズを取り直して見直した結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
+    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">※発走約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
@@ -710,7 +710,6 @@ function viewHome(d) {
       <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars t${n.st}">${starStr(n.st)}</span></div></button>`;
   }
   h += announceBlock(d.announce, d.date === todayStr());
-  h += recPerfBlock(d.rec_perf, "おすすめの買い目と結果");
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
     <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : "done-miss") : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">
@@ -732,7 +731,7 @@ function viewHome(d) {
   } else {
     h += `<div class="card empty">${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
   }
-  h += `</section><p class="note">おすすめ = ${esc(S.snap.rec_text || "★2〜5(独自のファクターで買い材料あり)・期待値1.08〜1.7・単勝100倍以下")}。期待値は「AIの勝率 × 単勝の払戻」の見込みです。1.0を超えるほど長い目で見て得な馬です。予想は発走まで変わることがあります。</p>`;
+  h += `</section><p class="note">※おすすめ = ${esc(S.snap.rec_text || "★2〜5(独自のファクターで買い材料あり)・期待値1.08〜1.7・単勝100倍以下")}。期待値はAI勝率×単勝払戻の見込み。予想は発走まで変わります</p>`;
   h += `<section><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section>`;
   return h;
 }
@@ -761,7 +760,7 @@ function viewSig(d) {
   const byPost = (a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }) || (a.rno - b.rno);
   const pick = k => all.filter(x => k === "紐" ? x.himo : x.sig === k).sort(byPost);
   let h = `<div class="seg">${Object.keys(SIG_INFO).map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
-    <p class="note" style="margin:0">${SIG_INFO[S.sig][2]}</p>`;
+    <p class="note" style="margin:0">※${SIG_INFO[S.sig][2]}</p>`;
   const list = pick(S.sig);
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
   // 並べ替え: 発走順(標準)・勝率・期待値・＋ファクター・−ファクター(全レースの表と同じ。馬番はなし)
@@ -811,7 +810,7 @@ function viewPerf(d) {
   const per = S.snap.period;
   if (per) {
     h += `<section><h2>今月・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${periodCard("今月", per.month)}${periodCard("今年", per.year)}
-      <p class="note">おすすめ(${esc(per.rec_text || S.snap.rec_text || "★2〜5(独自のファクターで買い材料あり)・期待値1.08〜1.7")})のうち、結果が確定した分の集計です。今年の検証期間は確定オッズでの判定なので、実際より少し良く出ます。</p></section>`;
+      <p class="note">※おすすめ★2〜5のうち結果が確定した分の集計です</p></section>`;
   } else {   // 古い公開データ(今月・今年の集計がまだ無い)ときは、手元の90日分から今月だけ数える
     const currentMonth = (S.date || todayStr()).slice(0, 7);
     const monthPicks = S.snap.days.filter(day => day.date.startsWith(currentMonth)).flatMap(day => day.osusume || []);
@@ -832,7 +831,7 @@ function viewPerf(d) {
   if (ks.length) h += `<section><h2>★ごとの過去成績<span class="sub">単勝・2013〜2026年の検証</span></h2><div class="card tbl"><table>
     <tr><th>おすすめ度</th><th class="r">単回収</th><th class="r">的中</th><th class="r">最大連敗</th></tr>
     ${ks.map(k => `<tr><td><span class="stars t${+k}">${starStr(+k)}</span><br><small class="note">${esc(g[k].label)}</small></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td><td class="r">${g[k].streak != null ? `${g[k].streak}連敗` : "—"}</td></tr>`).join("")}
-    </table></div><p class="note">${rs ? `おすすめ(★2〜5)全体: 回収率 ${pct(rs.roi, 0)}・的中率 ${pct(rs.hit, 1)}・最大${rs.streak}連敗。` : ""}過去の成績は将来の結果を約束するものではありません。最大連敗の分だけ資金に余裕を持たせ、1回の金額は少なめに。</p></section>`;
+    </table></div><p class="note">${rs ? `※おすすめ(★2〜5)全体: 回収率 ${pct(rs.roi, 0)}・的中率 ${pct(rs.hit, 1)}・最大${rs.streak}連敗。` : ""}※過去の成績は将来を約束しません。最大連敗分の余裕を持ち、1回の金額は少なめに</p></section>`;
   return h;
 }
 
@@ -892,7 +891,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}<div class="horses">${r.ai ? "" : `<div class="note">オッズが出る前なので、能力だけのAI勝率です。★・期待値は当日に出ます。</div>`}`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}<div class="horses">${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
