@@ -255,6 +255,12 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .horses { display: grid; gap: 8px; padding-top: 16px; }
 .horse { display: grid; grid-template-columns: auto auto 1fr auto; gap: 4px 10px; align-items: center; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 .horse.buy { border-color: var(--amber); box-shadow: inset 4px 0 0 var(--amber); }
+.race-ann { margin: 10px 0 2px; } .race-ann .cap { display: flex; align-items: center; gap: 8px; padding: 8px 12px 4px; font-size: 12px; font-weight: 800; color: var(--accent); }
+.race-ann .cap .sub { margin-left: auto; font-weight: 500; color: var(--muted); }
+.race-ann-empty { margin: 10px 0 2px; font-size: 12px; }
+.horse.focus { border-color: var(--honey); box-shadow: 0 0 0 3px rgba(247,201,72,.35), inset 4px 0 0 var(--honey); animation: focusGlow 1.1s ease-out 3; }
+@keyframes focusGlow { 0% { box-shadow: 0 0 0 0 rgba(247,201,72,.9), inset 4px 0 0 var(--honey); } 100% { box-shadow: 0 0 0 10px rgba(247,201,72,0), inset 4px 0 0 var(--honey); } }
+.horse .nm .you { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--honey); color: var(--comb); font-size: 10.5px; font-weight: 900; vertical-align: middle; }
 .horse.won { background: linear-gradient(135deg, var(--good-soft), var(--panel) 70%); }
 .horse .nm { min-width: 0; }
 .horse .nm b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -443,7 +449,7 @@ function recPerfBlock(rp, title) {
 }
 function periodCard(label, p) {
   if (!p) return "";
-  return `<div class="card perf2" style="margin-bottom:8px"><div class="cap">${label} ${esc(p.label || "")}${p.valid_until ? `(${esc(p.valid_until)}までは検証データ)` : ""}</div>
+  return `<div class="card perf2" style="margin-bottom:8px"><div class="cap">${label} ${esc(p.label || "")}</div>
     <div class="summary num">
       <div><span>点数</span><b>${p.n ?? 0}</b></div>
       <div><span>的中</span><b>${p.n ? p.hit : "—"}</b></div>
@@ -452,6 +458,13 @@ function periodCard(label, p) {
     <div class="alt"><span>${p.days ?? 0}日・${p.races ?? 0}レース</span><span>最大連敗 <b>${p.streak ?? 0}</b></span></div></div>`;
 }
 const ANN_KIND = { "直前": "30分前", "最終": "発走直前", "急遽": "🚨急遽" };
+
+// そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
+function raceAnnounce(list, raceId, upcoming) {
+  const rows = (list || []).filter(a => String(a.id) === String(raceId));
+  if (!rows.length) return upcoming ? `<div class="card empty race-ann-empty">発走約30分前と約10分前にオッズを取り直して見直した結果(見送り・やっぱり買い・急遽の買い)が、ここに出ます</div>` : "";
+  return `<div class="card announce race-ann"><div class="cap">このレースの直前のお知らせ<span class="sub">${rows.length}件・新しい順</span></div>${rows.map(a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div><div class="tx">${esc(a.text || "")}</div></div>`).join("")}</div>`;
+}
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
     return showEmpty ? `<section><h2>直前のお知らせ</h2><div class="card empty" style="font-size:12px">各レースの発走約30分前と約10分前に、オッズを取り直して見直した結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
@@ -589,7 +602,7 @@ function viewHome(d) {
   h += recPerfBlock(d.rec_perf, "おすすめの買い目と結果");
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
-    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : "done-miss") : ""}" data-race="${esc(x.id)}" data-race-group="osusume">
+    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : "done-miss") : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">
       <div class="where"><span class="stars">${starStr(x.st)}</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? finPill(x.fin) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
@@ -724,10 +737,11 @@ function publicDetailNav(id) {
   return `<div class="detail-nav"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前のレース</button>
     <span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次のレース ›</button></div>`;
 }
-function openRace(id, group = "race", isStep = false) {
+function openRace(id, group = "race", isStep = false, focusNo = null) {
   const d = curDay(); let r, venue;
   for (const v of d.venues) { const x = v.races.find(rr => rr.id === id); if (x) { r = x; venue = v.venue; } }
   if (!r) return;
+  if (!isStep || S.focus?.id !== id) S.focus = focusNo != null && focusNo !== "" ? { id, no: focusNo } : null;   // おすすめから開いた馬
   S.detailRaceId = id;
   if (!isStep) {
     S.detailNavGroup = group;
@@ -752,7 +766,7 @@ function openRace(id, group = "race", isStep = false) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap"><div class="horses">${r.ai ? "" : `<div class="note">オッズが出る前なので、能力だけのAI勝率です。★・期待値は当日に出ます。</div>`}`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}<div class="horses">${r.ai ? "" : `<div class="note">オッズが出る前なので、能力だけのAI勝率です。★・期待値は当日に出ます。</div>`}`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
@@ -766,7 +780,7 @@ function openRace(id, group = "race", isStep = false) {
     if (x.sig === "過剰") tags.push(`<span class="sig-badge danger">🔸 過剰人気(相手には残してOK)</span>`);
     if (x.himo) tags.push(`<span class="sig-badge himo">🪢 紐</span>`);
     if (x.buy) tags.push(`<span class="sig-badge buy">💰 おすすめ</span>`);
-    h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${x.fin === 1 ? "won" : ""}">
+    h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${x.fin === 1 ? "won" : ""}" data-no="${x.no ?? ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
       <div class="nm"><b>${esc(x.name)}</b></div>
       <div class="od num">${x.odds != null ? `<b>${Number(x.odds).toFixed(Number(x.odds) >= 100 ? 0 : 1)}</b><small>倍</small>` : ""}${x.fin != null ? `<span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}</div>
@@ -775,7 +789,21 @@ function openRace(id, group = "race", isStep = false) {
       ${tags.length ? `<div class="bar">${tags.join(" ")}</div>` : ""}${factorLine(x)}</div>`;
   }
   sh.innerHTML = h + `</div></div>`; sh.scrollTop = 0;
+  if (S.focus && S.focus.id === id) focusHorse(sh, S.focus.no, !isStep);
 }
+
+// おすすめから開いたときは、その馬を目立たせて、その位置まで送る
+function focusHorse(sh, no, scroll) {
+  if (no == null) return;
+  const el = [...sh.querySelectorAll(".horse")].find(e => String(e.dataset.no) === String(no));
+  if (!el) return;
+  el.classList.add("focus");
+  const nm = el.querySelector(".nm b"); if (nm && !nm.querySelector(".you")) nm.insertAdjacentHTML("beforeend", `<span class="you">おすすめ</span>`);
+  if (scroll) { const head = sh.querySelector(".sheet-head"), nav = sh.querySelector(".horse-sort");
+    sh.scrollTop = 0;
+    sh.scrollTop = Math.max(0, el.getBoundingClientRect().top - sh.getBoundingClientRect().top - (head ? head.offsetHeight : 0) - (nav ? nav.offsetHeight : 0) - 12); }
+}
+
 function closeSheet() { const sh = $("#sheet"); if (sh.hidden) return; sh.hidden = true; sh.innerHTML = ""; document.body.style.overflow = ""; }
 window.addEventListener("popstate", closeSheet);
 
@@ -810,7 +838,7 @@ document.addEventListener("click", e => {
     const nb = $("#sheet .horse-sort"); if (nb) nb.scrollLeft = left; $("#sheet").scrollTop = top;
     return;
   }
-  if (t.dataset.race) { openRace(t.dataset.race, t.dataset.raceGroup || "race"); return; }
+  if (t.dataset.race) { openRace(t.dataset.race, t.dataset.raceGroup || "race", false, t.dataset.hno ?? null); return; }
 });
 document.addEventListener("change", e => {
   const days = S.snap ? viewDays() : [];
