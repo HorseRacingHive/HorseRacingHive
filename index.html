@@ -372,6 +372,9 @@ main > * { min-width: 0; }
 /* 下のタブ: 選んだタブごとに色 */
 nav.tabs button.on[data-tab="home"] { color: var(--honey); }
 nav.tabs button.on[data-tab="sig"] { color: var(--aim); } nav.tabs button.on[data-tab="sig"] svg { filter: drop-shadow(0 0 6px rgba(74,222,128,.6)); }
+nav.tabs button.on[data-tab="sig"][data-mode="all"] { color: var(--honey); } nav.tabs button.on[data-tab="sig"][data-mode="all"] svg { filter: drop-shadow(0 0 6px rgba(247,201,72,.6)); }
+nav.tabs button.on[data-tab="sig"][data-mode="danger"] { color: var(--dang); } nav.tabs button.on[data-tab="sig"][data-mode="danger"] svg { filter: drop-shadow(0 0 6px rgba(251,113,133,.65)); }
+.seg button.sig-all { color: var(--honey); border-color: var(--honey); } .seg button.on.sig-all { background: var(--honey); color: #2b1d00; }
 nav.tabs button.on[data-tab="race"] { color: var(--evc); } nav.tabs button.on[data-tab="race"] svg { filter: drop-shadow(0 0 6px rgba(125,211,252,.6)); }
 nav.tabs button.on[data-tab="perf"] { color: #c4b5fd; } nav.tabs button.on[data-tab="perf"] svg { filter: drop-shadow(0 0 6px rgba(196,181,253,.6)); }
 /* おすすめ度: ★の数で色を変える(★5=赤 ★4=橙 ★3=蜜 ★2=薄) */
@@ -801,7 +804,7 @@ function announceBlock(list, showEmpty) {
   return h + `</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
-const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null,
+const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null,
   detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: { key: "no", direction: "asc" } };
 
 /* ---------------------------------------------------------------- 合言葉で開く */
@@ -925,6 +928,8 @@ function allHorses(day) {
 }
 function render() {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
+  const sigBtn = document.querySelector('#tabs button[data-tab="sig"]');
+  if (sigBtn) { sigBtn.dataset.mode = S.sigMode || "all"; const lab = sigBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "sig" ? { all: "すべて", buy: "狙い", danger: "危険" }[S.sigMode || "all"] : "狙い・危険"; }
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   if (!d) { v.innerHTML = h + `<div class="card empty">まだ予想がありません。出馬表が出たら表示されます。</div>`; return; }
@@ -1008,12 +1013,20 @@ function resultsList(d) {
 
 const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "期待値が高い馬"],
   "紐": ["himo", "🪢", "3着内に来やすい穴馬(ワイド・3連系の相手)"], "過剰": ["over", "🔸", "人気のわりに勝率が低く、単勝では割引が必要な馬。3着内率は平均並みなので、相手には残してOK"], "危険": ["danger", "⚠️", "人気ほど勝てていない人気馬(3着も危ない)"] };   // 買い材料 → 消し材料の順(ボタンの並び)
+SIG_INFO["すべて"] = ["all", "", "狙い・妙味・紐・過剰・危険のすべて"];
+// 下の「狙い・危険」タブを押すたびに すべて → 買い側(狙い・妙味・紐) → 消し側(過剰・危険) → すべて… と切り替わる(携帯用と同じ)
+const SIG_MODES = { all: ["すべて", "狙い", "妙味", "紐", "過剰", "危険"], buy: ["狙い", "妙味", "紐"], danger: ["過剰", "危険"] };
+const SIG_CYCLE = ["all", "buy", "danger"];
+const sigKindOf = x => x.sig && SIG_INFO[x.sig] ? x.sig : (x.himo ? "紐" : "");
+const sigPick = (all, k) => all.filter(x => k === "すべて" ? !!sigKindOf(x) || x.himo : k === "紐" ? x.himo : x.sig === k);
 const sigLabel = x => x.sig === "過剰" ? "過剰人気" : x.sig === "危険" && x.lv >= 2 ? "かなり危険" : x.sig;
 function viewSig(d) {
   const all = allHorses(d);
   const byPost = (a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }) || (a.rno - b.rno);
-  const pick = k => all.filter(x => k === "紐" ? x.himo : x.sig === k).sort(byPost);
-  let h = `<div class="seg">${Object.keys(SIG_INFO).map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
+  const pick = k => sigPick(all, k).sort(byPost);
+  const kinds = SIG_MODES[S.sigMode || "all"];
+  if (!kinds.includes(S.sig)) S.sig = kinds[0];
+  let h = `<div class="seg">${kinds.map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1] ? SIG_INFO[k][1] + " " : ""}${k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
     <p class="note" style="margin:0">※${SIG_INFO[S.sig][2]}</p>`;
   const list = pick(S.sig);
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
@@ -1031,12 +1044,13 @@ function viewSig(d) {
       return ((Number(av) - Number(bv)) * (sd === "asc" ? 1 : -1)) || byPost(a, b); });
   }
   const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
-  return h + `<div class="card list">` + list.map(x => `<button class="row ${rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
+  const rowSgOf = k => ({ "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[k] || "");
+  return h + `<div class="card list">` + list.map(x => { const k = S.sig === "すべて" ? (sigKindOf(x) || "紐") : S.sig; return `<button class="row ${S.sig === "すべて" ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
-    <div class="main"><b><span class="sig-badge ${SIG_INFO[S.sig][0]}">${SIG_INFO[S.sig][1]} ${esc(S.sig === "紐" ? "紐" : sigLabel(x))}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
+    <div class="main"><b><span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
       ${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}
       <span class="why">${x.st ? `<span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
-    <div class="right"><span class="num">勝率 ${pct(x.p)}</span><br><b class="num ${x.ev == null ? "" : x.ev >= 1.3 ? "ev-top" : x.ev >= 1.1 ? "ev-hi" : x.ev < 0.9 ? "ev-lo" : ""}">${x.ev != null ? "期待値 " + evf(x.ev) : ""}</b></div></button>`).join("") + `</div>`;
+    <div class="right"><span class="num">勝率 ${pct(x.p)}</span><br><b class="num ${x.ev == null ? "" : x.ev >= 1.3 ? "ev-top" : x.ev >= 1.1 ? "ev-hi" : x.ev < 0.9 ? "ev-lo" : ""}">${x.ev != null ? "期待値 " + evf(x.ev) : ""}</b></div></button>`; }).join("") + `</div>`;
 }
 
 function viewRaces(d) {
@@ -1139,7 +1153,7 @@ function publicRaceSequence(group) {
   if (group === "results") return resultRaces(d).filter(r => !S.resVenue || r.venue === S.resVenue).map(r => r.id);
   if (group.startsWith("sig:")) {
     const sig = group.slice(4);
-    const rows = allHorses(d).filter(h => sig === "紐" ? h.himo : h.sig === sig)
+    const rows = sigPick(allHorses(d), sig)
       .sort((a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }));
     return [...new Set(rows.map(row => row.id))];
   }
@@ -1254,7 +1268,15 @@ document.addEventListener("click", e => {
     if (a0) store.set("hivep_ann_seen", `${S.date}|${a0.time}|${a0.race || ""}|${a0.kind}`);
     const y = window.scrollY; S.annOpen = !S.annOpen; render(); window.scrollTo(0, y); return;
   }
-  if (t.dataset.tab) { S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.tab) {
+    if (t.dataset.tab === "sig") {   // 狙い・危険タブ: 1回目 すべて / 2回目 狙い側 / 3回目 危険側 / …とループ
+      const m = S.tab === "sig" ? SIG_CYCLE[(SIG_CYCLE.indexOf(S.sigMode || "all") + 1) % SIG_CYCLE.length] : "all";
+      S.sigMode = m;
+      const all = curDay() ? allHorses(curDay()) : [];
+      S.sig = SIG_MODES[m].find(k => sigPick(all, k).length) || SIG_MODES[m][0];   // 件数がある最初の項目
+    }
+    S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return;
+  }
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
   if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
     const days = viewDays(), i = days.findIndex(d => d.date === S.date), j = i + Number(t.dataset.dayStep);
