@@ -822,7 +822,7 @@ function viewPerf(d) {
       roi: fin.length && hits.every(x => x.pay != null) ? ret / fin.length : null, days: new Set(S.snap.days.filter(day => day.date.startsWith(currentMonth) && (day.osusume || []).some(x => x.fin != null)).map(day => day.date)).size,
       races: new Set(fin.map(x => x.id)).size, streak: 0 })}</section>`;
   }
-  if (d.marks && d.marks.rows.length) h += `<section><h2>印の成績<span class="sub">全${d.marks.races}レース</span></h2><div class="card tbl"><table>
+  if (d.marks && d.marks.rows.length) h += `<section><h2>印の成績 (本日の全レース)<span class="sub">${d.marks.races}レース</span></h2><div class="card tbl"><table>
     <tr><th>印</th><th class="r">頭数</th><th class="r">勝率</th><th class="r">3着内</th></tr>
     ${d.marks.rows.map(r => `<tr><td><span class="hex ${markCls(r.m)}" style="width:24px;height:21px;font-size:12px">${esc(r.m)}</span></td><td class="r">${r.n}</td><td class="r">${pct(r.win / r.n, 0)}</td><td class="r">${pct(r.top3 / r.n, 0)}</td></tr>`).join("")}
     </table></div></section>`;
