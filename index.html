@@ -572,6 +572,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 #ann-toast .tt-go { color: var(--honey); font-weight: 800; font-size: 13px; }
 @keyframes secFlash { 0% { box-shadow: 0 0 0 0 rgba(247,201,72,0); } 30% { box-shadow: 0 0 0 4px rgba(247,201,72,.6); } 100% { box-shadow: 0 0 0 0 rgba(247,201,72,0); } }
 #os-sec.flash { animation: secFlash 1.4s ease-out 1; border-radius: 14px; }
+.ann-note { margin: 4px 2px 0; font-size: 10.5px; color: var(--muted); line-height: 1.4; }
 </style>
 
 <div class="lock" id="lock">
@@ -767,7 +768,7 @@ function raceAnnounce(list, raceId, upcoming) {
 }
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
-    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
+    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
@@ -797,7 +798,7 @@ function announceBlock(list, showEmpty) {
     h += `<div class="at-full">${a.id ? `<button class="ah-race" data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>` : ""}<div class="ah-text">${esc(a.text || "")}</div></div>`;
     if (rest.length) h += `<div class="announce scrollbox ah-list">${rest.map(row).join("")}</div>`;
   }
-  return h + `</div></section>`;
+  return h + `</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
 const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null,
@@ -960,7 +961,7 @@ function viewHome(d) {
     <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
     <button type="button" data-ov="buys"><span>買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "単勝"}</small></button>
     <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
-    <div><span>回収率</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b><small>${done && act.profit != null ? yenPM(act.profit) : "単勝"}</small></div>
+    <button type="button" data-ov="perf" aria-label="成績を見る"><span>回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b><small>${done && act.profit != null ? yenPM(act.profit) : "単勝"}</small></button>
   </section>`;
   h += announceBlock(d.announce, d.date === todayStr());
   // おすすめ(★2〜5)を★ごとに
@@ -1235,6 +1236,7 @@ document.addEventListener("click", e => {
   }
   if (t.id === "refresh") { refresh(true); return; }
   if (t.dataset.ov) {
+    if (t.dataset.ov === "perf") { S.tab = "perf"; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
     if (t.dataset.ov === "race") { S.tab = "race"; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
     if (t.dataset.ov === "buys") {
       const sec = $("#os-sec"); if (!sec) return;
