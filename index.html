@@ -107,6 +107,11 @@ header.top::after {
 }
 /* 開催日(携帯版と同じ: カレンダー＋近くの開催日を1段で) */
 .day-picker { position: sticky; left: 0; z-index: 1; flex: none; width: 132px; min-height: 34px; padding: 0 8px; border: 1px solid rgba(247,201,72,.35); border-radius: 999px; background: #2a2010; color: var(--honey); font: inherit; font-size: 13px; color-scheme: dark; box-shadow: 6px 0 8px -4px rgba(0,0,0,.6); }
+.day-nav { flex: 1; display: flex; align-items: stretch; gap: 0; background: #1b140a; border-radius: 999px; }
+.day-nav .day-picker { position: static; flex: 1; width: auto; text-align: center; border-radius: 0; box-shadow: none; border-left: 0; border-right: 0; background: #2a2010; font-size: 15px; font-weight: 700; }
+.day-nav .day-arrow { flex: none; width: 52px; min-height: 36px; border: 1px solid rgba(247,201,72,.35); background: rgba(247,201,72,.12); color: var(--honey); font-size: 18px; font-weight: 900; line-height: 1; }
+.day-nav .day-arrow:first-child { border-radius: 999px 0 0 999px; } .day-nav .day-arrow:last-child { border-radius: 0 999px 999px 0; }
+.day-nav .day-arrow:disabled { opacity: .3; }
 .days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
 .days::-webkit-scrollbar { display: none; }
 .day { flex: none; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(247,201,72,.3); color: rgba(251,241,220,.8); background: transparent; font-size: 13px; font-weight: 600; }
@@ -275,7 +280,10 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { .refresh.spin svg { animation: none; } }
 /* ---------- 追加の部品(携帯版と同じ) */
 .summary div { min-width: 0; padding-left: 4px; padding-right: 4px; }
-h2 .sub.big { font-size: 14px; font-weight: 800; color: var(--accent); }
+h2 .sub.big { font-size: 17px; font-weight: 900; color: var(--comb); background: linear-gradient(135deg, var(--honey), var(--amber)); padding: 2px 12px; border-radius: 999px; letter-spacing: .04em; }
+.perf2 .cap small { font-weight: 500; color: var(--muted); margin-left: 4px; }
+.perf2 .cap.alt2 { border-top: 1px dashed var(--line); margin-top: 2px; padding-top: 8px; color: var(--muted); }
+.summary.alt2 { background: var(--soft); } .summary.alt2 b { font-size: 17px; opacity: .9; }
 .summary b.money { font-size: clamp(11.5px, 3.5vw, 16px); letter-spacing: -.03em; overflow-wrap: anywhere; line-height: 1.6; display: block; }
 .perf2 { overflow: hidden; }
 .perf2 .cap { padding: 7px 12px 0; font-size: 11px; font-weight: 700; color: var(--accent); }
@@ -413,16 +421,22 @@ function factorLine(x) {
 function recPerfBlock(rp, title) {
   if (!rp) return "";
   const a = rp.actual || {}, all = rp.all || {}, sk = rp.skipped || {};
-  const cap = rp.source === "discord" ? "直前(約30分前)・発走直前(約5〜10分前)の見送りを反映" : "最新オッズでの判定(この日は見送りの記録がありません)";
+  const hasSkip = rp.source === "discord";
+  const cap = hasSkip ? "見送りを反映した実際の成績<small>(直前・発走直前に見送った馬を除く)</small>" : "最新オッズでの判定<small>(この日は見送りの記録がありません)</small>";
   let h = `<section><h2>${title}<span class="sub big">単勝</span></h2><div class="card perf2"><div class="cap">${cap}</div>
     <div class="summary num">
       <div><span>収支</span><b class="money ${a.n ? (a.profit >= 0 ? "plus" : "minus") : ""}">${a.n ? yenPM(a.profit) : "—"}</b></div>
       <div><span>的中</span><b>${a.n ? `${a.hit}/${a.n}` : "—"}</b></div>
       <div><span>的中率</span><b>${a.n ? pct(a.hit_rate, 0) : "—"}</b></div>
       <div><span>回収率</span><b class="${roiCls(a.roi)}">${a.roi == null ? "—" : pct(a.roi, 0)}</b></div></div>`;
-  if (rp.source === "discord" && all.n) {
-    h += `<div class="alt"><span>見送らなかった場合</span><span>的中 <b>${all.hit}/${all.n}</b></span><span>的中率 <b>${pct(all.hit_rate, 0)}</b></span>`
-      + `<span>回収率 <b class="${roiCls(all.roi)}">${pct(all.roi, 0)}</b></span>${sk.n ? `<span>見送った${sk.n}頭のうち1着 ${sk.hit}頭</span>` : ""}</div>`;
+  if (hasSkip && all.n) {
+    h += `<div class="cap alt2">見送らなかった場合<small>(おすすめ全部を買っていたら)</small></div>
+    <div class="summary num alt2">
+      <div><span>収支</span><b class="money ${all.n ? (all.profit >= 0 ? "plus" : "minus") : ""}">${all.n ? yenPM(all.profit) : "—"}</b></div>
+      <div><span>的中</span><b>${all.n ? `${all.hit}/${all.n}` : "—"}</b></div>
+      <div><span>的中率</span><b>${all.n ? pct(all.hit_rate, 0) : "—"}</b></div>
+      <div><span>回収率</span><b class="${roiCls(all.roi)}">${all.roi == null ? "—" : pct(all.roi, 0)}</b></div></div>`;
+    if (sk.n) h += `<div class="alt">見送った${sk.n}頭のうち1着 <b>${sk.hit}頭</b>${sk.hit ? `(見送ったことで ${yenPM(-sk.profit)} の差)` : ""}</div>`;
   }
   if (rp.pending) h += `<div class="alt">結果待ち ${rp.pending}頭</div>`;
   return h + `<div class="alt">1頭1,000円の単勝で計算</div></div></section>`;
@@ -524,9 +538,9 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
   const i = Math.max(0, days.findIndex(d => d.date === S.date));
   const near = days.slice(Math.max(0, i - 6), i + 4);
   const min = days[0]?.date || S.date, max = days[days.length - 1]?.date || S.date;
-  $("#days").innerHTML = `<input class="day-picker" type="date" aria-label="開催日を選択" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}">`
-    + near.map(d => `<button class="day ${d.date === S.date ? "on" : ""} ${d.date < todayStr() ? "past" : ""}" data-date="${d.date}">${esc(d.label)}</button>`).join("");
-  const on = $("#days .on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
+  $("#days").innerHTML = `<div class="day-nav"><button class="day-arrow" data-day-step="-1" aria-label="前の開催日" ${i <= 0 ? "disabled" : ""}>‹</button>`
+    + `<input class="day-picker" type="date" aria-label="開催日を選択" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}">`
+    + `<button class="day-arrow" data-day-step="1" aria-label="次の開催日" ${i >= days.length - 1 ? "disabled" : ""}>›</button></div>`;
   renderWeather();
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
   $("#stamp").textContent = S.demo ? "見本データ" : (u ? `更新 ${u}` : "");
@@ -779,6 +793,11 @@ document.addEventListener("click", e => {
   if (t.id === "refresh") { refresh(); return; }
   if (t.dataset.tab) { S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
+  if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
+    const days = viewDays(), i = days.findIndex(d => d.date === S.date), j = i + Number(t.dataset.dayStep);
+    if (days[j]) { S.date = days[j].date; renderDays(); render(); }
+    return;
+  }
   if (t.dataset.sig) { S.sig = t.dataset.sig; render(); return; }
   if (t.dataset.resVenue) { S.resVenue = t.dataset.resVenue; render(); return; }
   if (t.dataset.venue) { S.venue = t.dataset.venue; render(); return; }
@@ -786,7 +805,9 @@ document.addEventListener("click", e => {
     const key = t.dataset.publicSort;
     S.detailSort = { key, direction: S.detailSort.key === key ? (S.detailSort.direction === "asc" ? "desc" : "asc") : (key === "no" || key === "fin" ? "asc" : "desc") };   // ＋/−ファクターは多い順から
     const currentId = S.detailRaceId;
+    const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, top = $("#sheet").scrollTop;   // 並べ替えで画面の位置を動かさない
     if (currentId) openRace(currentId, S.detailNavGroup, true);
+    const nb = $("#sheet .horse-sort"); if (nb) nb.scrollLeft = left; $("#sheet").scrollTop = top;
     return;
   }
   if (t.dataset.race) { openRace(t.dataset.race, t.dataset.raceGroup || "race"); return; }
