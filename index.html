@@ -498,6 +498,80 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .money-a .seg button { min-height: 30px; padding: 3px 12px; font-size: 12px; }
 .pick .pay-line { display: block; color: var(--good); font-weight: 800; font-size: 12.5px; animation: riseIn .7s ease-out .5s both; }
 @media (prefers-reduced-motion: reduce) { .money-a .fill, .pick .pay-line { animation: none; } }
+/* ---- 2026-10-28 携帯用と同じ: 帯・お知らせ(2段・ランプ)・新しいお知らせの知らせ */
+/* ホーム: 4つの箱を1行の帯に・最新のお知らせを大きな札に */
+.ov-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ov-strip > div { min-width: 0; padding: 5px 6px 6px; text-align: center; border-left: 1px solid var(--line); }
+.ov-strip > div:first-child { border-left: 0; }
+.ov-strip span { display: block; font-size: 9.5px; color: var(--muted); font-weight: 700; line-height: 1.2; }
+.ov-strip b { display: block; font-family: var(--f-disp); font-size: 13.5px; font-weight: 900; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-strip b.plus { color: var(--good); } .ov-strip b.minus { color: var(--bad); }
+.ov-strip small { display: block; font-size: 9.5px; color: var(--muted); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-strip .skip { color: var(--over); }
+.ann-hero { padding: 12px 14px; border: 2px solid var(--evc); box-shadow: 0 0 0 3px var(--evc-soft); display: grid; gap: 8px; }
+.ann-hero.hot { border-color: var(--dang); box-shadow: 0 0 0 3px var(--dang-soft); }
+.ann-hero.fin { border-color: var(--aim); box-shadow: 0 0 0 3px var(--aim-soft); }
+.ann-hero.chg { border-color: var(--honey); box-shadow: 0 0 0 3px var(--soft); }
+.ann-hero .ah-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ann-hero .kind { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 900; background: var(--soft); color: var(--accent); }
+.ann-hero .kind.k-直前 { background: var(--evc-soft); color: var(--evc); } .ann-hero .kind.k-最終 { background: var(--aim-soft); color: var(--aim); } .ann-hero .kind.k-急遽 { background: var(--dang); color: #fff; }
+.ann-hero .ah-time { font-size: 11.5px; color: var(--muted); font-weight: 700; }
+.ann-hero .ah-race { margin-left: auto; border: 0; padding: 0; background: none; color: var(--accent); font: 900 15px var(--f-disp); }
+.ann-hero .ah-text { font-size: 14.5px; font-weight: 700; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ann-hero .ah-more { justify-self: start; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; background: var(--panel); color: var(--muted); font-size: 12px; font-weight: 700; }
+.ann-hero .ah-list { margin: 0 -14px -12px; border-top: 1px solid var(--line); max-height: 260px; }
+.ov-strip > button { min-width: 0; padding: 5px 6px 6px; text-align: center; border: 0; border-left: 1px solid var(--line); background: none; color: var(--ink); font: inherit; }
+.ov-strip > button:first-child { border-left: 0; }
+.ov-strip > button:active { background: var(--soft); }
+.ov-strip > button:disabled { opacity: 1; }
+.ov-strip > button span { color: var(--accent); }
+.ov-strip > button:disabled span { color: var(--muted); }
+@keyframes secFlash { 0% { box-shadow: 0 0 0 0 rgba(247,201,72,.0); } 30% { box-shadow: 0 0 0 4px rgba(247,201,72,.6); } 100% { box-shadow: 0 0 0 0 rgba(247,201,72,0); } }
+#os-sec.flash { animation: secFlash 1.4s ease-out 1; border-radius: 14px; }
+.nm .you.hit { background: var(--good); color: #fff; }
+/* お知らせ 案A: 1行のティッカー(急遽・取消/乗り替わりは赤枠2行、発走10分前を切ったら2行) */
+.ann-tick { padding: 0; overflow: hidden; border-left: 4px solid var(--evc); }
+.ann-tick.k-最終 { border-left-color: var(--aim); }
+.ann-tick.urgent { border: 2px solid var(--dang); border-left-width: 5px; box-shadow: 0 0 0 3px var(--dang-soft); }
+.ann-tick .at-row { display: grid; gap: 4px; width: 100%; padding: 8px 12px 9px; border: 0; background: none; color: var(--ink); text-align: left; font: inherit; }
+.ann-tick .at-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ann-tick .at-race { color: var(--accent); font-size: 13px; white-space: nowrap; }
+.ann-tick .at-head .at-meta { margin-left: auto; }
+.ann-tick .kind { padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 900; white-space: nowrap; background: var(--soft); color: var(--accent); }
+.ann-tick .kind.k-直前 { background: var(--evc-soft); color: var(--evc); } .ann-tick .kind.k-最終 { background: var(--aim-soft); color: var(--aim); }
+.ann-tick .kind.k-急遽, .ann-tick .kind.k-変更 { background: var(--dang); color: #fff; }
+.ann-tick .at-tx { min-width: 0; font-size: 13.5px; font-weight: 700; line-height: 1.45; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.ann-tick .at-tx.l1 { -webkit-line-clamp: 1; } .ann-tick .at-tx.l2 { -webkit-line-clamp: 2; }
+.ann-tick .at-tx b { color: var(--accent); }
+.ann-tick .at-meta { font-size: 10.5px; color: var(--muted); text-align: right; line-height: 1.35; white-space: nowrap; }
+.ann-tick .at-full { padding: 0 12px 10px; display: grid; gap: 4px; }
+.ann-tick.open .at-tx { display: none; }   /* 開いたときは下の全文だけ */
+.ann-tick .at-full .ah-race { justify-self: start; border: 0; padding: 0; background: none; color: var(--accent); font: 900 14px var(--f-disp); }
+.ann-tick .at-full .ah-text { font-size: 13.5px; font-weight: 700; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ann-tick .ah-list { border-top: 1px solid var(--line); max-height: 260px; }
+/* お知らせのランプ */
+@keyframes lampBlink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .25; transform: scale(.8); } }
+.ann-tick .lamp { flex: none; width: 11px; height: 11px; border-radius: 50%; background: #3a2d18; box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
+.ann-tick .lamp.on.red { background: #ff4d6d; box-shadow: 0 0 6px 2px rgba(255,77,109,.75), 0 0 14px 4px rgba(255,77,109,.35); }
+.ann-tick .lamp.on.green { background: #4ade80; box-shadow: 0 0 6px 2px rgba(74,222,128,.7), 0 0 14px 4px rgba(74,222,128,.3); }
+.ann-tick .lamp.on.blue { background: #7dd3fc; box-shadow: 0 0 6px 2px rgba(125,211,252,.7), 0 0 14px 4px rgba(125,211,252,.3); }
+.ann-tick .lamp.on.honey { background: #f7c948; box-shadow: 0 0 6px 2px rgba(247,201,72,.7), 0 0 14px 4px rgba(247,201,72,.3); }
+.ann-tick .lamp.blink { animation: lampBlink 1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .ann-tick .lamp.blink { animation: none; } }
+/* 新しいお知らせの知らせ(画面の上に出る) */
+@keyframes toastIn { from { transform: translate(-50%, -20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+#ann-toast { position: fixed; z-index: 80; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 10px);
+  width: min(92vw, 420px); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 10px 14px;
+  border-radius: 14px; border: 2px solid var(--honey); background: #241a0d; color: #fbf1dc; box-shadow: 0 10px 28px rgba(0,0,0,.5); text-align: left; font: inherit; }
+#ann-toast.show { animation: toastIn .35s ease-out both; }
+#ann-toast.urgent { border-color: #ff4d6d; box-shadow: 0 0 0 3px rgba(255,77,109,.3), 0 10px 28px rgba(0,0,0,.5); }
+#ann-toast .tt-bell { font-size: 20px; }
+#ann-toast .tt-main { min-width: 0; font-size: 13px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#ann-toast .tt-main b { display: block; color: var(--honey); font-size: 12px; }
+#ann-toast.urgent .tt-main b { color: #ff8a9b; }
+#ann-toast .tt-go { color: var(--honey); font-weight: 800; font-size: 13px; }
+@keyframes secFlash { 0% { box-shadow: 0 0 0 0 rgba(247,201,72,0); } 30% { box-shadow: 0 0 0 4px rgba(247,201,72,.6); } 100% { box-shadow: 0 0 0 0 rgba(247,201,72,0); } }
+#os-sec.flash { animation: secFlash 1.4s ease-out 1; border-radius: 14px; }
 </style>
 
 <div class="lock" id="lock">
@@ -697,8 +771,33 @@ function announceBlock(list, showEmpty) {
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
-  // 最新が上。枠の高さは固定で、中をスクロールして古いものを見る
-  return `<section><h2 class="c-ann">直前のお知らせ<span class="sub">${list.length}件・新しい順${list.length > 3 ? "・下にスクロール" : ""}</span></h2><div class="card announce scrollbox">${list.map(row).join("")}</div></section>`;
+  // 最新の1件を2段で(上: ランプ・種類・レース・時刻・件数 / 下: 中身)。急遽・取消は赤枠で2行、発走10分前を切ったら2行。押すと全部開く
+  const a = list[0], rest = list.slice(1);
+  const urgent = a.kind === "急遽" || a.kind === "変更";
+  const pd = postDate(a.post), mins = pd ? (pd - Date.now()) / 60000 : null;
+  const lines = urgent || (mins != null && mins <= 10 && mins > -5) ? 2 : 1;
+  let flat = String(a.text || "").replace(/\s*\n\s*/g, " ／ ");
+  const cut = flat.search(/[｜|]/);
+  if (cut >= 0 && cut < 40) flat = flat.slice(cut + 1).trim();
+  if (a.race) flat = flat.replace(new RegExp("^" + a.race.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*(?:[0-9:]+発走)?\\s*(?:／\\s*)?"), "");
+  flat = flat.replace(/^[｜|／\s]+/, "");
+  const open = !!S.annOpen;
+  const annKey = `${S.date}|${a.time}|${a.race || ""}|${a.kind}`;
+  const seen = store.get("hivep_ann_seen") === annKey;
+  const lampColor = urgent ? "red" : a.kind === "最終" ? "green" : a.kind === "直前" ? "blue" : "honey";
+  const ageMin = (() => { const m = String(a.time || "").match(/(\d+):(\d+)/); if (!m || S.date !== todayStr()) return 999;
+    const now = new Date(Date.now() + 9 * 3600e3); return now.getUTCHours() * 60 + now.getUTCMinutes() - (+m[1] * 60 + +m[2]); })();
+  const lampCls = !seen ? `on ${lampColor} blink` : ageMin <= 30 ? `on ${lampColor}` : "off";
+  let h = `<section class="ann-top"><div class="card ann-tick k-${esc(a.kind)} ${urgent ? "urgent" : ""} ${open ? "open" : ""}">
+    <button class="at-row" data-ann-toggle type="button" aria-expanded="${open}">
+      <span class="at-head"><span class="lamp ${lampCls}"></span><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span>${a.race ? `<b class="at-race">${esc(a.race)}${a.post ? ` ${esc(a.post)}発走` : ""}</b>` : ""}
+        <span class="at-meta num">${esc(a.time || "")}${rest.length ? ` ・ ${open ? "閉じる ▲" : `他${rest.length}件 ▼`}` : ""}</span></span>
+      <span class="at-tx l${lines}">${esc(flat)}</span></button>`;
+  if (open) {
+    h += `<div class="at-full">${a.id ? `<button class="ah-race" data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>` : ""}<div class="ah-text">${esc(a.text || "")}</div></div>`;
+    if (rest.length) h += `<div class="announce scrollbox ah-list">${rest.map(row).join("")}</div>`;
+  }
+  return h + `</div></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
 const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null,
@@ -849,6 +948,20 @@ function viewHome(d) {
     h += `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで</small></div>
       <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars t${n.st}">${starStr(n.st)}</span></div></button>`;
   }
+  // 開催・買い目・結果・回収率の帯(押すと: 開催→全レース / 買い目→おすすめ / 結果→的中した馬)
+  const rp = d.rec_perf, act = rp?.actual || {}, fromLog = rp?.source === "discord";
+  const nRaces = (d.venues || []).reduce((n, v) => n + (v.races || []).length, 0);
+  const buyN = fromLog ? (rp.buy_total ?? ((act.n || 0) + (rp.pending || 0))) : os.length;
+  const skipN = fromLog ? (rp.skip_total ?? rp.skipped?.n ?? 0) : 0;
+  const done = (act.n || 0) > 0 || (d.perf?.n || 0) > 0;
+  const hitN = act.n ? act.hit : (d.perf?.hit ?? 0), roiN = act.n ? act.roi : d.perf?.roi;
+  const hitList = os.filter(x => x.fin === 1).length;
+  h += `<section class="ov-strip num" aria-label="この日の状況">
+    <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
+    <button type="button" data-ov="buys"><span>買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "単勝"}</small></button>
+    <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
+    <div><span>回収率</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b><small>${done && act.profit != null ? yenPM(act.profit) : "単勝"}</small></div>
+  </section>`;
   h += announceBlock(d.announce, d.date === todayStr());
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
@@ -859,7 +972,7 @@ function viewHome(d) {
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
       <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>
     </button>`;
-  h += `<section><h2 class="c-aim">おすすめ ★2〜5<span class="sub">${os.length}頭</span></h2>`;
+  h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5<span class="sub">${os.length}頭</span></h2>`;
   if (os.length) {
     const g = S.snap.star_guide || {};
     for (const s of [5, 4, 3, 2]) {
@@ -1021,6 +1134,7 @@ function publicRaceSequence(group) {
     return (group === "osusume" ? list : list.filter(x => x.fin == null && postDate(x.post) > Date.now())
       .sort((a, b) => postDate(a.post) - postDate(b.post))).map(item => item.id);
   }
+  if (group === "hits") return (d?.osusume || []).filter(x => x.fin === 1).sort((a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true })).map(x => x.id);
   if (group === "results") return resultRaces(d).filter(r => !S.resVenue || r.venue === S.resVenue).map(r => r.id);
   if (group.startsWith("sig:")) {
     const sig = group.slice(4);
@@ -1040,7 +1154,8 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   const d = curDay(); let r, venue;
   for (const v of d.venues) { const x = v.races.find(rr => rr.id === id); if (x) { r = x; venue = v.venue; } }
   if (!r) return;
-  if (!isStep || S.focus?.id !== id) S.focus = focusNo != null && focusNo !== "" ? { id, no: focusNo } : null;   // おすすめから開いた馬
+  if (!isStep || S.focus?.id !== id) S.focus = focusNo != null && focusNo !== "" ? { id, no: focusNo, label: S.nextFocusLabel || null } : null;   // おすすめから開いた馬
+  S.nextFocusLabel = null;
   S.detailRaceId = id;
   if (!isStep) {
     S.detailNavGroup = group;
@@ -1097,7 +1212,8 @@ function focusHorse(sh, no, scroll) {
   const el = [...sh.querySelectorAll(".horse")].find(e => String(e.dataset.no) === String(no));
   if (!el) return;
   el.classList.add("focus");
-  const nm = el.querySelector(".nm b"); if (nm && !nm.querySelector(".you")) nm.insertAdjacentHTML("beforeend", `<span class="you">おすすめ</span>`);
+  const lab = S.focus?.label || "おすすめ";
+  const nm = el.querySelector(".nm b"); if (nm && !nm.querySelector(".you")) nm.insertAdjacentHTML("beforeend", `<span class="you ${lab === "🎯 的中" ? "hit" : ""}">${lab}</span>`);
   if (scroll) { const head = sh.querySelector(".sheet-head"), nav = sh.querySelector(".horse-sort");
     sh.scrollTop = 0;
     sh.scrollTop = Math.max(0, el.getBoundingClientRect().top - sh.getBoundingClientRect().top - (head ? head.offsetHeight : 0) - (nav ? nav.offsetHeight : 0) - 12); }
@@ -1118,6 +1234,24 @@ document.addEventListener("click", e => {
     return;
   }
   if (t.id === "refresh") { refresh(true); return; }
+  if (t.dataset.ov) {
+    if (t.dataset.ov === "race") { S.tab = "race"; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
+    if (t.dataset.ov === "buys") {
+      const sec = $("#os-sec"); if (!sec) return;
+      window.scrollTo({ top: sec.getBoundingClientRect().top + window.scrollY - 70, behavior: "smooth" });
+      sec.classList.remove("flash"); void sec.offsetWidth; sec.classList.add("flash"); return;
+    }
+    if (t.dataset.ov === "hits") {
+      const hits = (curDay()?.osusume || []).filter(x => x.fin === 1).sort((a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }));
+      if (!hits.length) return;
+      S.nextFocusLabel = "🎯 的中"; openRace(hits[0].id, "hits", false, hits[0].hno ?? null); return;
+    }
+  }
+  if (t.hasAttribute("data-ann-toggle")) {
+    const a0 = curDay()?.announce?.[0];
+    if (a0) store.set("hivep_ann_seen", `${S.date}|${a0.time}|${a0.race || ""}|${a0.kind}`);
+    const y = window.scrollY; S.annOpen = !S.annOpen; render(); window.scrollTo(0, y); return;
+  }
   if (t.dataset.tab) { S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
   if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
