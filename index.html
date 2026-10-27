@@ -81,6 +81,7 @@ header.top::after {
 .weather-card b { color: #f7c948; font-family: var(--f-disp); font-size: 12.5px; }
 .weather-card small { flex-basis: 100%; color: rgba(251,241,220,.9); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .weather-card small i { font-style: normal; color: rgba(251,241,220,.55); margin-left: 4px; }
+.weather-card .weather-time { font-style: normal; color: rgba(251,241,220,.6); font-size: 10.5px; margin-left: auto; white-space: nowrap; }   /* 時刻は天気の右の空きに */
 .top-actions { flex: none; display: grid; justify-items: center; gap: 1px; }
 .top-right { text-align: center; font-size: 7px; color: rgba(251,241,220,.62); line-height: 1; white-space: nowrap; }
 .top-right b { color: var(--honey); font-weight: 700; }
@@ -322,6 +323,7 @@ main > * { min-width: 0; }
 .fc { padding: 0 6px; border-radius: 5px; font-size: 10.5px; font-weight: 700; }
 .fc.plus { background: var(--good-soft); color: var(--good); }
 .fc.minus { background: var(--bad-soft); color: var(--bad); }
+.row .fcount { display: flex; flex-wrap: wrap; gap: 4px !important; margin-top: 3px; }   /* 狙い・危険の一覧のファクターの数 */
 .race-warn { margin: 6px 2px 0; font-size: 11px; color: var(--muted); line-height: 1.5; }
 .result-row { grid-template-columns: 46px minmax(0, 1fr) auto; gap: 6px; padding: 9px 10px; }
 .result-places { display: grid; gap: 3px; margin-top: 2px; }
@@ -560,7 +562,7 @@ function announceBlock(list, showEmpty) {
   return `<section><h2 class="c-ann">直前のお知らせ<span class="sub">${list.length}件・新しい順${list.length > 3 ? "・下にスクロール" : ""}</span></h2><div class="card announce scrollbox">${list.map(row).join("")}</div></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
-const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", venue: null, resVenue: null,
+const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", sigSort: "post", venue: null, resVenue: null,
   detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: { key: "no", direction: "asc" } };
 
 /* ---------------------------------------------------------------- 合言葉で開く */
@@ -673,8 +675,8 @@ function renderWeather() {
   el.style.gridTemplateColumns = `repeat(${Math.max(1, venues.length)}, minmax(0, 1fr))`;
   el.innerHTML = venues.length ? venues.map(x => `<div class="card weather-card">
     <span class="weather-place">${esc(x.venue)}</span>
-    <b>${x.tenko ? `${weatherIcon[x.tenko] || ""}${esc(x.tenko)}` : "未発表"}</b>
-    <small>芝${esc(x.shiba || "—")}／ダ${esc(x.dirt || "—")}<i>${x.time ? esc(x.time) : "発表待ち"}</i></small>
+    <b>${x.tenko ? `${weatherIcon[x.tenko] || ""}${esc(x.tenko)}` : "未発表"}</b><i class="weather-time">${x.time ? esc(x.time) : "発表待ち"}</i>
+    <small>芝${esc(x.shiba || "—")}／ダ${esc(x.dirt || "—")}</small>
   </div>`).join("") : "";
 }
 function allHorses(day) {
@@ -688,7 +690,9 @@ function render() {
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   if (!d) { v.innerHTML = h + `<div class="card empty">まだ予想がありません。出馬表が出たら表示されます。</div>`; return; }
   h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf }[S.tab] || viewHome)(d);
+  const scrolls = [...v.querySelectorAll(".seg, .horse-sort")].map(e => e.scrollLeft);   // 横スクロールの位置を描き直しても保つ(右端のボタンが左に戻らないように)
   v.innerHTML = h; tick();
+  [...v.querySelectorAll(".seg, .horse-sort")].forEach((e, i) => { if (scrolls[i]) e.scrollLeft = scrolls[i]; });
 }
 function finPill(f) {
   if (f == null) return "";
@@ -754,17 +758,26 @@ const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価よ�
 const sigLabel = x => x.sig === "過剰" ? "過剰人気" : x.sig === "危険" && x.lv >= 2 ? "かなり危険" : x.sig;
 function viewSig(d) {
   const all = allHorses(d);
-  const pick = k => all.filter(x => k === "紐" ? x.himo : x.sig === k).sort((a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }));
+  const byPost = (a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }) || (a.rno - b.rno);
+  const pick = k => all.filter(x => k === "紐" ? x.himo : x.sig === k).sort(byPost);
   let h = `<div class="seg">${Object.keys(SIG_INFO).map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
     <p class="note" style="margin:0">${SIG_INFO[S.sig][2]}</p>`;
   const list = pick(S.sig);
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
+  // 並べ替え: 発走順(標準)・勝率・期待値・＋ファクター・−ファクター(全レースの表と同じ。馬番はなし)
+  const sortKeys = [["p", "勝率"], ["ev", "期待値"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
+  h += `<div class="horse-sort" aria-label="並べ替え"><button data-sig-sort="post" class="${S.sigSort === "post" ? "on" : ""}" data-direction="早い順">発走順</button>${
+    sortKeys.map(([k, label]) => `<button data-sig-sort="${k}" class="${S.sigSort === k ? "on" : ""}" data-direction="高い順">${label}順</button>`).join("")}</div>`;
+  if (S.sigSort !== "post") {
+    const val = x => S.sigSort === "fplus" || S.sigSort === "fminus" ? (x.kp == null ? null : factorSum(x, S.sigSort)) : x[S.sigSort];
+    list.sort((a, b) => { const av = val(a), bv = val(b); if (av == null || bv == null) return av == null ? (bv == null ? byPost(a, b) : 1) : -1; return (Number(bv) - Number(av)) || byPost(a, b); });
+  }
   const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
   return h + `<div class="card list">` + list.map(x => `<button class="row ${rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
     <div class="main"><b><span class="sig-badge ${SIG_INFO[S.sig][0]}">${SIG_INFO[S.sig][1]} ${esc(S.sig === "紐" ? "紐" : sigLabel(x))}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
       ${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin}着</span>` : ""}
-      <span class="why">${x.st ? `<span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span></div>
+      <span class="why">${x.st ? `<span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
     <div class="right"><span class="num">勝率 ${pct(x.p)}</span><br><b class="num ${x.ev == null ? "" : x.ev >= 1.3 ? "ev-top" : x.ev >= 1.1 ? "ev-hi" : x.ev < 0.9 ? "ev-lo" : ""}">${x.ev != null ? "期待値 " + evf(x.ev) : ""}</b></div></button>`).join("") + `</div>`;
 }
 
@@ -935,7 +948,19 @@ document.addEventListener("click", e => {
     if (days[j]) { S.date = days[j].date; renderDays(); render(); }
     return;
   }
-  if (t.dataset.sig) { S.sig = t.dataset.sig; render(); return; }
+  if (t.dataset.sig) {   // 種類を切り替えても横スクロールと画面の位置を動かさない(「紐」など右端のボタンが左に戻らないように)
+    const bar = t.closest(".seg"), left = bar ? bar.scrollLeft : 0, y = window.scrollY;
+    S.sig = t.dataset.sig; render();
+    const nb = document.querySelector(".seg button[data-sig]")?.parentElement; if (nb) nb.scrollLeft = left;
+    document.querySelector(".seg button[data-sig].on")?.scrollIntoView({ inline: "nearest", block: "nearest" });   // 押したボタンが見えるように
+    window.scrollTo(0, y); return;
+  }
+  if (t.dataset.sigSort) {   // 狙い・危険の並べ替え(勝率・期待値・＋ファクター・−ファクター)
+    const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, y = window.scrollY;
+    S.sigSort = S.sigSort === t.dataset.sigSort ? "post" : t.dataset.sigSort; render();
+    const nb = document.querySelector(".horse-sort button[data-sig-sort]")?.parentElement; if (nb) nb.scrollLeft = left;
+    window.scrollTo(0, y); return;
+  }
   if (t.dataset.resVenue) { S.resVenue = t.dataset.resVenue; render(); return; }
   if (t.dataset.venue) { S.venue = t.dataset.venue; render(); return; }
   if (t.dataset.publicSort) {
