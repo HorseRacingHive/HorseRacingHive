@@ -931,7 +931,7 @@ function viewRaces(d) {
   if (!vs.some(v => v.venue === S.venue)) S.venue = vs[0].venue;
   const v = vs.find(x => x.venue === S.venue);
   return `<div><div class="seg">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${x.venue === S.venue ? "on" : ""}">${esc(x.venue)}</button>`).join("")}</div>
-  <p class="race-warn">全レースの予想を載せていますが、全レース参加してたら勝てないので注意してください。あくまで予想の参考程度に。</p></div>
+  <p class="race-warn">※全レースの予想を載せていますが、全レースを買うと回収率はマイナスになります。買うのは「おすすめ」の馬にしぼり、ここは参考としてご覧ください。</p></div>
   <div class="card races">` + v.races.map(r => {
     const marks = ["◎", "○", "▲"].map(m => r.horses.find(h => h.mark === m)).filter(Boolean);
     const line = r.done
