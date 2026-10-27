@@ -683,7 +683,7 @@ function periodCard(label, p) {
       <div><span>回収率</span><b class="${roiCls(p.roi)}">${p.roi == null ? "—" : pct(p.roi, 0)}</b></div></div>
     <div class="alt"><span>${p.days ?? 0}日・${p.races ?? 0}レース</span><span>最大連敗 <b>${p.streak ?? 0}</b></span></div></div>`;
 }
-const ANN_KIND = { "直前": "30分前", "最終": "締切直前", "急遽": "🚨急遽" };
+const ANN_KIND = { "直前": "30分前", "最終": "締切直前", "急遽": "🚨急遽", "変更": "📢取消・乗替" };
 
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
 function raceAnnounce(list, raceId, upcoming) {
