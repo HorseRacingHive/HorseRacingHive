@@ -479,6 +479,25 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 :root[data-theme="dark"] .style-tag.st-nige { background: #43182a; color: #fb7185; } :root[data-theme="dark"] .style-tag.st-senko { background: #3b2410; color: #fdba74; }
 :root[data-theme="dark"] .style-tag.st-sashi { background: #0c2a3a; color: #7dd3fc; } :root[data-theme="dark"] .style-tag.st-oikomi { background: #2a2148; color: #c4b5fd; }
 @media (prefers-reduced-motion: reduce) { .pill.hit, .hit-badge, .money, .g-fg, .spark-line .line, .pick.done-hit::before, .fin.f1 { animation: none; stroke-dashoffset: 0; } }
+/* ---------- 収支(案A): 投資と払戻を並べる */
+@keyframes barGrow { from { width: 0; } }
+.money-a { display: grid; gap: 10px; margin-bottom: 8px; padding: 12px 14px; }
+.money-a .hero { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.money-a .hero .lab { font-size: 12.5px; color: var(--muted); font-weight: 700; }
+.money-a .hero .big { font-family: var(--f-disp); font-weight: 900; font-size: 32px; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.money-a .hero .big.plus { color: var(--good); } .money-a .hero .big.minus { color: var(--bad); }
+.money-a .bars { display: grid; gap: 8px; }
+.money-a .bar-row { display: grid; grid-template-columns: 3.4em 1fr 6.8em; gap: 8px; align-items: center; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.money-a .track { height: 15px; border-radius: 8px; background: var(--line); overflow: hidden; }
+.money-a .fill { height: 100%; border-radius: 8px; animation: barGrow 1s cubic-bezier(.3, .8, .3, 1) both; }
+.money-a .fill.inv { background: var(--muted); }
+.money-a .fill.ret { background: linear-gradient(90deg, var(--honey), var(--good)); animation-delay: .15s; }
+.money-a .bar-row .v { text-align: right; font-weight: 700; }
+.money-a .meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.money-a .meta b { color: var(--ink); } .money-a .meta b.plus { color: var(--good); } .money-a .meta b.minus { color: var(--bad); }
+.money-a .seg button { min-height: 30px; padding: 3px 12px; font-size: 12px; }
+.pick .pay-line { display: block; color: var(--good); font-weight: 800; font-size: 12.5px; animation: riseIn .7s ease-out .5s both; }
+@media (prefers-reduced-motion: reduce) { .money-a .fill, .pick .pay-line { animation: none; } }
 </style>
 
 <div class="lock" id="lock">
@@ -548,6 +567,36 @@ const pct = (p, d = 1) => p == null ? "—" : (p * 100).toFixed(d) + "%";
 const evf = e => e == null ? "—" : e.toFixed(2);
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
 const yenPM = n => n == null ? "—" : (n >= 0 ? "+" : "−") + Math.abs(Math.round(n)).toLocaleString("ja-JP") + "円";
+// 収支(案A): 投資と払戻を並べ、収支の数字はカウントアップ。periods = { key: { lab, invest, payout, n, hit } }
+function moneyA(periods, cur, attr) {
+  const keys = Object.keys(periods).filter(k => periods[k]);
+  if (!keys.length) return "";
+  if (!keys.includes(cur)) cur = keys[0];
+  const a = periods[cur], has = a && a.n > 0 && a.invest > 0;
+  const prof = has ? (a.payout || 0) - a.invest : null, max = has ? Math.max(a.invest, a.payout || 0, 1) : 1;
+  const names = { day: "今日", month: "今月", year: "今年" };
+  return `<div class="card money-a">
+    <div class="seg">${keys.map(k => `<button type="button" ${attr}="${k}" class="${k === cur ? "on" : ""}">${periods[k].tab || names[k] || k}</button>`).join("")}</div>
+    <div class="hero"><span class="lab">${esc(a.lab)}の収支</span><span class="big ${has ? (prof >= 0 ? "plus" : "minus") : ""}" ${has ? `data-count="${prof}"` : ""}>${has ? yenPM(prof) : "—"}</span></div>
+    ${has ? `<div class="bars">
+      <div class="bar-row"><span>投資</span><div class="track"><div class="fill inv" style="width:${(a.invest / max * 100).toFixed(1)}%"></div></div><span class="v">${Math.round(a.invest).toLocaleString("ja-JP")}円</span></div>
+      <div class="bar-row"><span>払戻</span><div class="track"><div class="fill ret" style="width:${((a.payout || 0) / max * 100).toFixed(1)}%"></div></div><span class="v">${Math.round(a.payout || 0).toLocaleString("ja-JP")}円</span></div></div>
+    <div class="meta"><span>回収率 <b class="${prof >= 0 ? "plus" : "minus"}">${Math.round((a.payout || 0) / a.invest * 100)}%</b></span><span>的中 <b>${a.hit}/${a.n}</b></span><span>1点1,000円</span></div>`
+    : `<div class="note">${a.loading ? "集計しています…" : "まだ結果が出ていません"}</div>`}</div>`;
+}
+// data-count の数字を0から数え上げる(同じ数字は2回目からはそのまま表示)
+const countSeen = new Set();
+function runCountUps(root) {
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  root.querySelectorAll("[data-count]").forEach(el => {
+    const v = Number(el.dataset.count), key = el.closest("[class]")?.className + ":" + v;
+    if (reduce || countSeen.has(key) || !isFinite(v)) { el.textContent = yenPM(v); return; }
+    countSeen.add(key);
+    const t0 = performance.now();
+    const step = t => { const k = Math.min(1, (t - t0) / 900); el.textContent = yenPM(v * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
 /* ---------------------------------------------------------------- 視覚効果の部品(ゲージ・折れ線・脚質/馬場の絵文字) */
 const STYLE_ICON = { "逃げ": "🐎", "先行": "🏃", "差し": "⚡", "追込": "🌪️" };
 const STYLE_CLS = { "逃げ": "nige", "先行": "senko", "差し": "sashi", "追込": "oikomi" };
@@ -783,6 +832,7 @@ function render() {
   const scrolls = [...v.querySelectorAll(".seg, .horse-sort")].map(e => e.scrollLeft);   // 横スクロールの位置を描き直しても保つ(右端のボタンが左に戻らないように)
   v.innerHTML = h; tick();
   [...v.querySelectorAll(".seg, .horse-sort")].forEach((e, i) => { if (scrolls[i]) e.scrollLeft = scrolls[i]; });
+  runCountUps(v);
 }
 function finPill(f) {
   if (f == null) return "";
@@ -909,7 +959,14 @@ function perfDashboard(d, rp) {
   const per = S.snap.period || {};
   const today = rp?.actual;
   const pts = publicCurve();
-  let h = `<section><h2>ひと目でわかる成績<span class="sub">おすすめ・単勝1,000円ずつ</span></h2><div class="dash">`;
+  const pm = x => {   // 投資・払戻が無い古いデータは、点数×1,000円と収支から出す
+    if (!x || !x.n) return null;
+    const invest = x.invest ?? x.n * 1000, payout = x.payout ?? (x.profit != null ? invest + x.profit : null);
+    return payout == null ? null : { invest, payout, n: x.n, hit: x.hit };
+  };
+  const periods = { day: { lab: d.label, tab: "この日", ...(pm(today) || {}) }, month: { lab: "今月", ...(pm(per.month) || {}) },
+    year: { lab: `今年${per.year?.label ? `(${per.year.label})` : ""}`, ...(pm(per.year) || {}) } };
+  let h = `<section><h2>ひと目でわかる成績<span class="sub">おすすめ・単勝1,000円ずつ</span></h2>${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
   h += gaugeSvg(today?.n ? today.roi : null, `${esc(d.label)}`, today?.n ? `${today.hit}/${today.n}的中${today.profit != null ? " ・ " + yenPM(today.profit) : ""}` : "まだ結果なし");
   h += gaugeSvg(per.month?.n ? per.month.roi : null, "今月", per.month?.n ? `${per.month.hit}/${per.month.n}的中 ・ ${yenPM(per.month.profit)}` : "まだ結果なし");
   h += `</div><div class="dash">`;
@@ -1075,6 +1132,7 @@ document.addEventListener("click", e => {
     document.querySelector(".seg button[data-sig].on")?.scrollIntoView({ inline: "nearest", block: "nearest" });   // 押したボタンが見えるように
     window.scrollTo(0, y); return;
   }
+  if (t.dataset.moneyPer) { const y = window.scrollY; S.moneyPer = t.dataset.moneyPer; render(); window.scrollTo(0, y); return; }
   if (t.dataset.sigSort) {   // 狙い・危険の並べ替え(勝率・期待値・＋ファクター・−ファクター)
     const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, y = window.scrollY;
     const k = t.dataset.sigSort;   // 同じボタンをもう一度押すと昇順⇄降順(先頭には戻らない)
