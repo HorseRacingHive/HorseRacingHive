@@ -562,7 +562,7 @@ function announceBlock(list, showEmpty) {
   return `<section><h2 class="c-ann">直前のお知らせ<span class="sub">${list.length}件・新しい順${list.length > 3 ? "・下にスクロール" : ""}</span></h2><div class="card announce scrollbox">${list.map(row).join("")}</div></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
-const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", sigSort: "post", venue: null, resVenue: null,
+const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "狙い", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null,
   detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: { key: "no", direction: "asc" } };
 
 /* ---------------------------------------------------------------- 合言葉で開く */
@@ -766,11 +766,16 @@ function viewSig(d) {
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
   // 並べ替え: 発走順(標準)・勝率・期待値・＋ファクター・−ファクター(全レースの表と同じ。馬番はなし)
   const sortKeys = [["p", "勝率"], ["ev", "期待値"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
-  h += `<div class="horse-sort" aria-label="並べ替え"><button data-sig-sort="post" class="${S.sigSort === "post" ? "on" : ""}" data-direction="早い順">発走順</button>${
-    sortKeys.map(([k, label]) => `<button data-sig-sort="${k}" class="${S.sigSort === k ? "on" : ""}" data-direction="高い順">${label}順</button>`).join("")}</div>`;
-  if (S.sigSort !== "post") {
-    const val = x => S.sigSort === "fplus" || S.sigSort === "fminus" ? (x.kp == null ? null : factorSum(x, S.sigSort)) : x[S.sigSort];
-    list.sort((a, b) => { const av = val(a), bv = val(b); if (av == null || bv == null) return av == null ? (bv == null ? byPost(a, b) : 1) : -1; return (Number(bv) - Number(av)) || byPost(a, b); });
+  if (list.some(x => x.fin != null)) sortKeys.push(["fin", "着順"]);   // 結果が出ていれば着順でも並べ替え
+  const { key: sk, dir: sd } = S.sigSort;
+  const dirLabel = k => k === "post" ? (sd === "asc" ? "早い順" : "遅い順") : k === "fin" ? (sd === "asc" ? "1着から" : "下から") : (sd === "desc" ? "高い順" : "低い順");
+  h += `<div class="horse-sort" aria-label="並べ替え(もう一度押すと昇順・降順が入れ替わります)"><button data-sig-sort="post" class="${sk === "post" ? "on" : ""}" data-direction="${dirLabel("post")}">発走順</button>${
+    sortKeys.map(([k, label]) => `<button data-sig-sort="${k}" class="${sk === k ? "on" : ""}" data-direction="${dirLabel(k)}">${label.endsWith("順") ? label : label + "順"}</button>`).join("")}</div>`;
+  if (sk === "post") { if (sd === "desc") list.reverse(); }
+  else {
+    const val = x => sk === "fplus" || sk === "fminus" ? (x.kp == null ? null : factorSum(x, sk)) : x[sk];
+    list.sort((a, b) => { const av = val(a), bv = val(b); if (av == null || bv == null) return av == null ? (bv == null ? byPost(a, b) : 1) : -1;   // 値が無い馬は最後
+      return ((Number(av) - Number(bv)) * (sd === "asc" ? 1 : -1)) || byPost(a, b); });
   }
   const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
   return h + `<div class="card list">` + list.map(x => `<button class="row ${rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
@@ -957,7 +962,9 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.sigSort) {   // 狙い・危険の並べ替え(勝率・期待値・＋ファクター・−ファクター)
     const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, y = window.scrollY;
-    S.sigSort = S.sigSort === t.dataset.sigSort ? "post" : t.dataset.sigSort; render();
+    const k = t.dataset.sigSort;   // 同じボタンをもう一度押すと昇順⇄降順(先頭には戻らない)
+    S.sigSort = S.sigSort.key === k ? { key: k, dir: S.sigSort.dir === "desc" ? "asc" : "desc" } : { key: k, dir: k === "post" || k === "fin" ? "asc" : "desc" };
+    render();
     const nb = document.querySelector(".horse-sort button[data-sig-sort]")?.parentElement; if (nb) nb.scrollLeft = left;
     window.scrollTo(0, y); return;
   }
