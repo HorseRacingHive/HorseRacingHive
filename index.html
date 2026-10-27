@@ -247,6 +247,7 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .horse-sort::-webkit-scrollbar { display: none; }
 .horse-sort button { flex: none; min-height: 42px; border: 0; border-bottom: 2px solid transparent; padding: 10px 9px; background: none; color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
 .horse-sort button.on { color: var(--accent); border-bottom-color: var(--accent); }
+.horse-sort button.sm { padding-left: 4px; padding-right: 4px; font-size: 11px; }   /* 着順は細く */
 .horse-sort button.on::after { content: "（" attr(data-direction) "）"; font-size: 10px; }
 .back { border: 0; background: rgba(247,201,72,.12); color: var(--honey); width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; flex: none; }
 .back svg { width: 20px; height: 20px; }
@@ -877,9 +878,8 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   }
   const sh = $("#sheet"); sh.hidden = false; document.body.style.overflow = "hidden";
   if (!isStep) { try { history.pushState({ sheet: 1 }, ""); } catch {} }
-  const sortKeys = [["no", "馬番"], ["p", "勝率"], ["odds", "オッズ"], ["ev", "期待値"]];
+  const sortKeys = [["no", "馬番"], ["p", "勝率"], ["ev", "期待値"], ["odds", "オッズ"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (r.done) sortKeys.push(["fin", "着順"]);
-  sortKeys.push(["fplus", "＋ファクター"], ["fminus", "−ファクター"]);
   const { key, direction } = S.detailSort;
   const val = (x, k) => k === "fplus" || k === "fminus" ? (x.kp == null ? null : factorSum(x, k)) : x[k];
   const sortedHorses = [...r.horses].sort((a, b) => {
@@ -895,7 +895,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}<div class="horses">${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
-    return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
+    return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
   }).join("")}</div>`;
   for (const x of sortedHorses) {
     const tags = [];
