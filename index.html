@@ -74,12 +74,13 @@ header.top::after {
   background: linear-gradient(180deg, #fff3c4 0%, #f7c948 38%, #c9861a 62%, #ffe08a 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0,0,0,.8)); }
 /* 天気・馬場(ヘッダーの黒の上に置くので、ライト・ダークどちらでも同じ配色) */
-.weather-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding-bottom: 8px; }
+.weather-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding-bottom: 6px; }
 .weather-row:empty { display: none; }
-.card.weather-card { min-width: 0; padding: 5px 8px; border: 1px solid rgba(247,201,72,.3); border-radius: 10px; background: rgba(247,201,72,.09); box-shadow: none; color: #fbf1dc; }
-.weather-card .weather-place { display: block; color: rgba(251,241,220,.78); font-size: 11px; font-weight: 700; line-height: 1.2; }
-.weather-card b { display: block; color: #f7c948; font-family: var(--f-disp); font-size: 14px; line-height: 1.3; }
-.weather-card small { display: block; color: rgba(251,241,220,.9); font-size: 11px; line-height: 1.35; }
+.card.weather-card { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 5px; padding: 3px 7px; border: 1px solid rgba(247,201,72,.3); border-radius: 8px; background: rgba(247,201,72,.09); box-shadow: none; color: #fbf1dc; line-height: 1.25; }
+.weather-card .weather-place { color: rgba(251,241,220,.78); font-size: 11px; font-weight: 700; }
+.weather-card b { color: #f7c948; font-family: var(--f-disp); font-size: 12.5px; }
+.weather-card small { flex-basis: 100%; color: rgba(251,241,220,.9); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.weather-card small i { font-style: normal; color: rgba(251,241,220,.55); margin-left: 4px; }
 .top-actions { flex: none; display: grid; justify-items: center; gap: 1px; }
 .top-right { text-align: center; font-size: 7px; color: rgba(251,241,220,.62); line-height: 1; white-space: nowrap; }
 .top-right b { color: var(--honey); font-weight: 700; }
@@ -105,7 +106,7 @@ header.top::after {
   .weather-card b { font-size: 12px; }
 }
 /* 開催日(携帯版と同じ: カレンダー＋近くの開催日を1段で) */
-.day-picker { flex: none; width: 132px; min-height: 34px; padding: 0 8px; border: 1px solid rgba(247,201,72,.35); border-radius: 999px; background: rgba(247,201,72,.08); color: var(--honey); font: inherit; font-size: 13px; color-scheme: dark; }
+.day-picker { position: sticky; left: 0; z-index: 1; flex: none; width: 132px; min-height: 34px; padding: 0 8px; border: 1px solid rgba(247,201,72,.35); border-radius: 999px; background: #2a2010; color: var(--honey); font: inherit; font-size: 13px; color-scheme: dark; box-shadow: 6px 0 8px -4px rgba(0,0,0,.6); }
 .days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
 .days::-webkit-scrollbar { display: none; }
 .day { flex: none; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(247,201,72,.3); color: rgba(251,241,220,.8); background: transparent; font-size: 13px; font-weight: 600; }
@@ -518,13 +519,14 @@ function tick() { document.querySelectorAll("[data-cd]").forEach(el => { el.text
 
 /* ---------------------------------------------------------------- 描画 */
 function viewDays() { return S.snap.days.filter(d => d.date <= todayStr()); }   // 未来の予想には行けない
-function renderDays() {   // カレンダー＋開催日を「当日(いちばん新しい日)が先頭、右へ行くほど古い日」の順に1段で。開いたときに当日がすぐ見える
-  const days = viewDays().slice().reverse();   // 新しい日 → 古い日
-  const min = days[days.length - 1]?.date || S.date, max = days[0]?.date || S.date;
+function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー＋選んだ日の前後の開催日を1段で。選んだ日が見える位置まで横に送る。未来の開催日は出さない
+  const days = viewDays();
+  const i = Math.max(0, days.findIndex(d => d.date === S.date));
+  const near = days.slice(Math.max(0, i - 6), i + 4);
+  const min = days[0]?.date || S.date, max = days[days.length - 1]?.date || S.date;
   $("#days").innerHTML = `<input class="day-picker" type="date" aria-label="開催日を選択" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}">`
-    + days.map(d => `<button class="day ${d.date === S.date ? "on" : ""} ${d.date < todayStr() ? "past" : ""}" data-date="${d.date}">${esc(d.label)}</button>`).join("");
-  const on = $("#days .on"); if (on && on.previousElementSibling?.classList.contains("day")) on.scrollIntoView({ inline: "center", block: "nearest" });
-  else $("#days").scrollLeft = 0;
+    + near.map(d => `<button class="day ${d.date === S.date ? "on" : ""} ${d.date < todayStr() ? "past" : ""}" data-date="${d.date}">${esc(d.label)}</button>`).join("");
+  const on = $("#days .on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
   renderWeather();
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
   $("#stamp").textContent = S.demo ? "見本データ" : (u ? `更新 ${u}` : "");
@@ -537,9 +539,8 @@ function renderWeather() {
   el.style.gridTemplateColumns = `repeat(${Math.max(1, venues.length)}, minmax(0, 1fr))`;
   el.innerHTML = venues.length ? venues.map(x => `<div class="card weather-card">
     <span class="weather-place">${esc(x.venue)}</span>
-    <b>${x.tenko ? `${weatherIcon[x.tenko] || ""} ${esc(x.tenko)}` : "天気未発表"}</b>
-    <small>芝 ${esc(x.shiba || "—")} / ダ ${esc(x.dirt || "—")}</small>
-    <small>${x.time ? `${esc(x.time)} 発表` : "馬場発表待ち"}</small>
+    <b>${x.tenko ? `${weatherIcon[x.tenko] || ""}${esc(x.tenko)}` : "未発表"}</b>
+    <small>芝${esc(x.shiba || "—")}／ダ${esc(x.dirt || "—")}<i>${x.time ? esc(x.time) : "発表待ち"}</i></small>
   </div>`).join("") : "";
 }
 function allHorses(day) {
