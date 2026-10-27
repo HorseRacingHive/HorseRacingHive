@@ -516,7 +516,7 @@ function recPerfBlock(rp, title) {
   if (!rp) return "";
   const a = rp.actual || {}, all = rp.all || {}, sk = rp.skipped || {};
   const hasSkip = rp.source === "discord";
-  const cap = hasSkip ? "見送りを反映した実際の成績<small>(直前・発走直前に見送った馬を除く)</small>" : "最新オッズでの判定<small>(この日は見送りの記録がありません)</small>";
+  const cap = hasSkip ? "見送りを反映した実際の成績<small>(直前・締切直前に見送った馬を除く)</small>" : "最新オッズでの判定<small>(この日は見送りの記録がありません)</small>";
   let h = `<section><h2>${title}<span class="sub big">単勝</span></h2><div class="card perf2"><div class="cap">${cap}</div>
     <div class="summary num">
       <div><span>収支</span><b class="money ${a.n ? (a.profit >= 0 ? "plus" : "minus") : ""}">${a.n ? yenPM(a.profit) : "—"}</b></div>
@@ -545,17 +545,17 @@ function periodCard(label, p) {
       <div><span>回収率</span><b class="${roiCls(p.roi)}">${p.roi == null ? "—" : pct(p.roi, 0)}</b></div></div>
     <div class="alt"><span>${p.days ?? 0}日・${p.races ?? 0}レース</span><span>最大連敗 <b>${p.streak ?? 0}</b></span></div></div>`;
 }
-const ANN_KIND = { "直前": "30分前", "最終": "発走直前", "急遽": "🚨急遽" };
+const ANN_KIND = { "直前": "30分前", "最終": "締切直前", "急遽": "🚨急遽" };
 
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
-  if (!rows.length) return upcoming ? `<div class="card empty race-ann-empty">※発走約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div>` : "";
+  if (!rows.length) return upcoming ? `<div class="card empty race-ann-empty">※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div>` : "";
   return `<div class="card announce race-ann"><div class="cap">このレースの直前のお知らせ<span class="sub">${rows.length}件・新しい順</span></div>${rows.map(a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div><div class="tx">${esc(a.text || "")}</div></div>`).join("")}</div>`;
 }
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
-    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">※発走約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
+    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div></section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
@@ -732,7 +732,7 @@ function viewHome(d) {
   } else {
     h += `<div class="card empty">${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
   }
-  h += `</section><p class="note">※おすすめ = ${esc(S.snap.rec_text || "★2〜5(独自のファクターで買い材料あり)・期待値1.08〜1.7・単勝100倍以下")}。期待値はAI勝率×単勝払戻の見込み。予想は発走まで変わります</p>`;
+  h += `</section><p class="note">※オッズは生きてるので予想は締切まで変わります</p>`;
   h += `<section><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section>`;
   return h;
 }
