@@ -878,7 +878,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   }
   const sh = $("#sheet"); sh.hidden = false; document.body.style.overflow = "hidden";
   if (!isStep) { try { history.pushState({ sheet: 1 }, ""); } catch {} }
-  const sortKeys = [["no", "馬番"], ["p", "勝率"], ["ev", "期待値"], ["odds", "オッズ"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
+  const sortKeys = [["no", "馬番"], ["p", "勝率"], ["ev", "期待値"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (r.done) sortKeys.push(["fin", "着順"]);
   const { key, direction } = S.detailSort;
   const val = (x, k) => k === "fplus" || k === "fminus" ? (x.kp == null ? null : factorSum(x, k)) : x[k];
