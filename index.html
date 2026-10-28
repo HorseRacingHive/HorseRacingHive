@@ -599,6 +599,48 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .pick.pz3 { border-left-color: var(--bronze); background: linear-gradient(90deg, rgba(217,160,106,.13), var(--panel) 62%); }
 .pick.pz1::after { content: "👑"; position: absolute; top: -11px; left: 28px; font-size: 15px; pointer-events: none; }
 .pick.pz1 .pill.hit { background: linear-gradient(135deg, var(--honey), var(--amber)); color: var(--comb); }
+
+/* ===== おすすめが1着の札を派手に ===== */
+@property --hang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.pick.pz1 { border: 2px solid transparent; border-left-width: 5px;
+  background: linear-gradient(100deg, rgba(247,201,72,.30), rgba(232,150,43,.10) 45%, transparent 75%) padding-box,
+              linear-gradient(var(--panel), var(--panel)) padding-box,
+              conic-gradient(from var(--hang), #fff6c4, var(--honey), var(--amber), #fff6c4 25%, var(--honey) 50%, #b8741a 62%, #fff6c4 75%, var(--honey)) border-box;
+  box-shadow: 0 0 0 3px rgba(247,201,72,.22), 0 6px 26px rgba(247,201,72,.38); animation: hitSpin 4s linear infinite, hitBreath 2.4s ease-in-out infinite; }
+@keyframes hitSpin { to { --hang: 360deg; } }
+@keyframes hitBreath { 50% { box-shadow: 0 0 0 4px rgba(247,201,72,.35), 0 8px 34px rgba(247,201,72,.6); } }
+.pick.pz1::after { content: "👑"; position: absolute; top: -19px; left: -8px; font-size: 24px; z-index: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); animation: crownBob 1.8s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes crownBob { 0%, 100% { transform: rotate(-12deg) translateY(0); } 50% { transform: rotate(8deg) translateY(-3px); } }
+.pick .hit-fx { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 0; }
+.pick.pz1 > :not(.hit-fx) { position: relative; z-index: 1; }
+.hit-fx .shine { position: absolute; top: -20%; bottom: -20%; width: 38%; left: -50%; transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,246,196,.42), transparent); animation: hitShine 3.2s ease-in-out .4s infinite; }
+@keyframes hitShine { 0% { left: -50%; } 45%, 100% { left: 130%; } }
+.hit-fx i { position: absolute; top: -12px; left: var(--x); width: 7px; height: 11px; border-radius: 2px; background: var(--c); opacity: 0;
+  animation: confetti 1.9s cubic-bezier(.25, .6, .4, 1) var(--d) 2 both; }
+@keyframes confetti { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(150px) translateX(var(--sx)) rotate(var(--r)); } }
+.hit-fx b { position: absolute; font-size: 13px; color: #fff6c4; text-shadow: 0 0 8px var(--honey); animation: twinkle 1.6s ease-in-out var(--d) infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0); } 50% { opacity: 1; transform: scale(1.15) rotate(45deg); } }
+.pick.pz1 .pill.hit { background: linear-gradient(110deg, var(--amber), var(--honey) 40%, #fff6c4 50%, var(--honey) 60%, var(--amber)); background-size: 250% 100%;
+  color: var(--comb); font-weight: 900; box-shadow: 0 0 12px rgba(247,201,72,.65); animation: pillShine 2.2s linear infinite, hitPop .6s cubic-bezier(.2, 1.5, .4, 1) both; }
+@keyframes pillShine { to { background-position: -250% 0; } }
+.pick.pz1 .fz-hex { box-shadow: none; filter: drop-shadow(0 0 6px rgba(247,201,72,.9)); animation: hitPop .5s cubic-bezier(.2, 1.5, .4, 1) both, hexGlow 1.6s ease-in-out .5s infinite; }
+@keyframes hexGlow { 50% { filter: drop-shadow(0 0 14px rgba(255,220,90,1)); transform: scale(1.08); } }
+.pick.pz1 .ph b { color: var(--honey); text-shadow: 0 0 12px rgba(247,201,72,.45); }
+.pick.pz1 .pay-line { color: var(--honey); font-size: 15px; font-weight: 900; text-shadow: 0 0 10px rgba(247,201,72,.55); }
+@media (prefers-reduced-motion: reduce) { .pick.pz1, .pick.pz1::after, .hit-fx *, .pick.pz1 .pill.hit, .pick.pz1 .fz-hex { animation: none !important; } .hit-fx i { display: none; } }
+
+/* 明るい画面では文字を濃い金に */
+@media (prefers-color-scheme: light) {
+:root:not([data-theme="dark"]) .pick.pz1 .ph b { color: #9a5b0c; text-shadow: none; } :root:not([data-theme="dark"]) .pick.pz1 .fz small { color: #9a5b0c; }
+:root:not([data-theme="dark"]) .pick.pz1 { background: linear-gradient(100deg, rgba(247,201,72,.55), rgba(247,201,72,.18) 50%, transparent 80%) padding-box, linear-gradient(var(--panel), var(--panel)) padding-box,
+    conic-gradient(from var(--hang), #fff6c4, var(--honey), var(--amber), #fff6c4 25%, var(--honey) 50%, #b8741a 62%, #fff6c4 75%, var(--honey)) border-box; }
+:root:not([data-theme="dark"]) .hit-fx b { color: #e8962b; text-shadow: 0 0 6px rgba(247,201,72,.8); }
+}
+:root[data-theme="light"] .pick.pz1 .ph b { color: #9a5b0c; text-shadow: none; } :root[data-theme="light"] .pick.pz1 .fz small { color: #9a5b0c; }
+:root[data-theme="light"] .pick.pz1 { background: linear-gradient(100deg, rgba(247,201,72,.55), rgba(247,201,72,.18) 50%, transparent 80%) padding-box, linear-gradient(var(--panel), var(--panel)) padding-box,
+    conic-gradient(from var(--hang), #fff6c4, var(--honey), var(--amber), #fff6c4 25%, var(--honey) 50%, #b8741a 62%, #fff6c4 75%, var(--honey)) border-box; }
+:root[data-theme="light"] .hit-fx b { color: #e8962b; text-shadow: 0 0 6px rgba(247,201,72,.8); }
 </style>
 
 <div class="lock" id="lock">
@@ -965,6 +1007,11 @@ function render() {
   [...v.querySelectorAll(".seg, .horse-sort")].forEach((e, i) => { if (scrolls[i]) e.scrollLeft = scrolls[i]; });
   runCountUps(v);
 }
+// おすすめが1着の札: 紙ふぶき・光の帯・きらめき
+const HIT_COLORS = ["#f7c948", "#fff6c4", "#e8962b", "#fb7185", "#4ade80", "#7dd3fc"];
+const hitFx = () => `<span class="hit-fx" aria-hidden="true"><span class="shine"></span>${Array.from({ length: 14 }, (_, i) =>
+  `<i style="--x:${(i * 7.3 + 3) % 100}%;--c:${HIT_COLORS[i % 6]};--d:${(i % 5) * .18}s;--r:${(i % 2 ? 1 : -1) * (200 + i * 37)}deg;--sx:${(i % 3 - 1) * 18}px"></i>`).join("")}${
+  [[12, 30], [58, 14], [86, 62], [40, 78]].map(([l, t], i) => `<b style="left:${l}%;top:${t}%;--d:${i * .4}s">✦</b>`).join("")}</span>`;
 function finPill(f) {
   if (f == null) return "";
   return f === 1 ? `<span class="pill hit">🎯 的中！ 1着</span>` : `<span class="pill miss">${f}着</span>`;
@@ -997,9 +1044,9 @@ function viewHome(d) {
   h += announceBlock(d.announce, d.date === todayStr());
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
-    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">
+    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">${x.fin === 1 ? hitFx() : ""}
       <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
-        <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎯 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
+        <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
       <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>${x.fin != null ? fzBlock(x.fin) : ""}
