@@ -1323,7 +1323,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     S.detailNavGroup = group;
     S.detailNav = publicRaceSequence(group);
     if (!S.detailNav.includes(id)) S.detailNav = [id];
-    S.detailSort = { key: "no", direction: "asc" };
+    S.detailSort = group === "results" ? { key: "fin", direction: "asc" } : { key: "no", direction: "asc" };   // 「結果」から開いた時は最初から着順の順
   }
   const sh = $("#sheet"); sh.hidden = false; document.body.style.overflow = "hidden";
   if (!isStep) { try { history.pushState({ sheet: 1 }, ""); } catch {} }
