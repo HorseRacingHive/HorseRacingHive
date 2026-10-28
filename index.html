@@ -1064,7 +1064,7 @@ function lineSvg(points, opt = {}) {
 }
 const fmtMD = s => { const m = String(s).match(/(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[2]}/${+m[3]}` : s; };
 const fmtYM = s => { const m = String(s).match(/(\d{4})-(\d{2})/); return m ? `${m[1]}/${+m[2]}` : s; };
-const STAR_LABEL = { 5: "かなりおすすめ", 4: "おすすめ", 3: "まずまず", 2: "少額で" };
+const STAR_LABEL = { 5: "勝負", 4: "注目", 3: "狙い", 2: "買い" };
 const roiCls = r => r == null ? "" : r >= 1 ? "plus" : "minus";
 const factorSum = (x, key) => key === "fplus" ? (x.kp ?? 0) + (x.mp ?? 0) : (x.km ?? 0) + (x.mm ?? 0);
 // ファクターは名前を出さず、数だけ
@@ -1473,7 +1473,7 @@ function viewHome(d) {
     for (const s of [5, 4, 3, 2]) {
       const xs = os.filter(x => x.st === s);
       if (!xs.length) continue;
-      h += `<h3 class="star-head"><span class="stars t${s}">${starStr(s)}</span>${STAR_LABEL[s]}・${xs.length}頭${g[s] ? `<small>過去の単勝回収率 ${pct(g[s].roi, 0)}・的中率 ${pct(g[s].hit, 0)}</small>` : ""}</h3>
+      h += `<h3 class="star-head"><span class="stars t${s}">${starStr(s)}</span> ${xs.length}頭${g[s] ? `<small>過去の単勝回収率 ${pct(g[s].roi, 0)}・的中率 ${pct(g[s].hit, 0)}</small>` : ""}</h3>
         <div class="picks">${xs.map(card).join("")}</div>`;
     }
   } else {
@@ -1697,7 +1697,7 @@ function viewPerf(d) {
   const rs = S.snap.rec_stats;
   if (ks.length) h += `<section><h2>★ごとの過去成績<span class="sub">単勝・2013〜2026年の検証</span></h2><div class="card tbl"><table>
     <tr><th>おすすめ度</th><th class="r">単回収</th><th class="r">的中</th><th class="r">最大連敗</th></tr>
-    ${ks.map(k => `<tr><td><span class="stars t${+k}">${starStr(+k)}</span><br><small class="note">${esc(g[k].label)}</small></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td><td class="r">${g[k].streak != null ? `${g[k].streak}連敗` : "—"}</td></tr>`).join("")}
+    ${ks.map(k => `<tr><td><span class="stars t${+k}">${starStr(+k)}</span></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td><td class="r">${g[k].streak != null ? `${g[k].streak}連敗` : "—"}</td></tr>`).join("")}
     </table></div><p class="note">${rs ? `※おすすめ(★2〜5)全体: 回収率 ${pct(rs.roi, 0)}・的中率 ${pct(rs.hit, 1)}・最大${rs.streak}連敗。` : ""}※過去の成績は将来を約束しません。最大連敗分の余裕を持ち、1回の金額は少なめに</p></section>`;
   return h;
 }
@@ -1991,7 +1991,7 @@ const Demo = (() => {
     days: [{ date: t, label: lbl(t), venues, osusume: os,
       baba: [{ venue: "東京", tenko: "晴", shiba: "良", dirt: "稍重", time: "9:50" }, { venue: "京都", tenko: "曇", shiba: "良", dirt: "良", time: "9:50" },
         { venue: "新潟", tenko: "小雨", shiba: "稍重", dirt: "重", time: "9:50" }], perf: { n: done.length, hit: done.filter(x => x.fin === 1).length, roi: done.length ? 1.18 : null } }],
-    star_guide: { 5: { label: "かなりおすすめ", roi: 1.29, hit: .229 }, 4: { label: "おすすめ", roi: 1.41, hit: .079 }, 3: { label: "まずまず", roi: 1.19, hit: .047 }, 2: { label: "少額で", roi: 1.10, hit: .048 } } };
+    star_guide: { 5: { label: "勝負", roi: 1.29, hit: .229 }, 4: { label: "注目", roi: 1.41, hit: .079 }, 3: { label: "狙い", roi: 1.19, hit: .047 }, 2: { label: "買い", roi: 1.10, hit: .048 } } };
   return { snap };
 })();
 
