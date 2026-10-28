@@ -548,6 +548,18 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .ann-tick .at-tx b { color: var(--accent); }
 .ann-tick .at-meta { font-size: 10.5px; color: var(--muted); text-align: right; line-height: 1.35; white-space: nowrap; }
 .ann-tick .at-full { padding: 0 12px 10px; display: grid; gap: 4px; }
+/* 一気に来たお知らせ(未読2件以上): 見切れないように全部広げる。押すか5分たつと1行に戻る */
+.ann-tick.burst .at-tx { display: none; }
+.ann-tick.burst .at-head .at-meta { color: var(--accent); }
+.ann-tick .at-burst { border-top: 1px solid var(--line); }
+.ann-tick .ab-row { display: grid; gap: 4px; padding: 9px 12px 10px; border-bottom: 1px solid var(--line); }
+.ann-tick .ab-row:last-child { border-bottom: 0; }
+.ann-tick .ab-row.k-急遽, .ann-tick .ab-row.k-変更 { background: var(--dang-soft); }
+.ann-tick .ab-row.k-最終 { background: var(--aim-soft); }
+.ann-tick .ab-head { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.ann-tick .ab-head .at-meta { margin-left: auto; }
+.ann-tick .ab-row .ah-text { font-size: 13.5px; font-weight: 700; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ann-tick .ab-row .ah-race { justify-self: start; border: 0; padding: 0; background: none; color: var(--accent); font: 900 13.5px var(--f-disp); }
 .ann-tick.open .at-tx { display: none; }   /* 開いたときは下の全文だけ */
 .ann-tick .at-full .ah-race { justify-self: start; border: 0; padding: 0; background: none; color: var(--accent); font: 900 14px var(--f-disp); }
 .ann-tick .at-full .ah-text { font-size: 13.5px; font-weight: 700; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -826,6 +838,26 @@ function periodCard(label, p) {
       <div><span>回収率</span><b class="${roiCls(p.roi)}">${p.roi == null ? "—" : pct(p.roi, 0)}</b></div></div>
     <div class="alt"><span>${p.days ?? 0}日・${p.races ?? 0}レース</span><span>最大連敗 <b>${p.streak ?? 0}</b></span></div></div>`;
 }
+// 一気に来たお知らせ(まだ見ていないものが2件以上)は、見切れないように全部広げて出す。
+// 押して見るか、広げてから5分たつと、いつもの1行に戻る(広げ始めた時刻はこの端末に覚える)
+let annBurstTimer = null;
+function annBurst(list, annKey, seen) {
+  if (seen || S.annOpen || S.date !== todayStr()) return [];
+  const seenKey = store.get("hivep_ann_seen") || "";
+  const idx = list.findIndex(a => `${S.date}|${a.time}|${a.race || ""}|${a.kind}` === seenKey);
+  const now = new Date(Date.now() + 9 * 3600e3), nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const age = a => { const m = String(a.time || "").match(/(\d+):(\d+)/); return m ? nowMin - (+m[1] * 60 + +m[2]) : 999; };
+  const fresh = (idx >= 0 ? list.slice(0, idx) : list).filter(a => age(a) <= 20);   // 既読より新しくて、20分以内のもの
+  if (fresh.length < 2) return [];
+  let st = null;
+  try { st = JSON.parse(store.get("hivep_ann_burst") || "null"); } catch { st = null; }
+  if (!st || st.key !== annKey) { st = { key: annKey, at: Date.now() }; store.set("hivep_ann_burst", JSON.stringify(st)); }
+  const left = 5 * 60000 - (Date.now() - st.at);
+  if (left <= 0) return [];
+  clearTimeout(annBurstTimer);
+  annBurstTimer = setTimeout(() => { const y = window.scrollY; render(); window.scrollTo(0, y); }, left + 500);
+  return fresh;
+}
 const ANN_KIND = { "直前": "30分前", "最終": "締切直前", "急遽": "🚨急遽", "変更": "📢取消・乗替" };
 
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
@@ -857,6 +889,16 @@ function announceBlock(list, showEmpty) {
   const ageMin = (() => { const m = String(a.time || "").match(/(\d+):(\d+)/); if (!m || S.date !== todayStr()) return 999;
     const now = new Date(Date.now() + 9 * 3600e3); return now.getUTCHours() * 60 + now.getUTCMinutes() - (+m[1] * 60 + +m[2]); })();
   const lampCls = !seen ? `on ${lampColor} blink` : ageMin <= 30 ? `on ${lampColor}` : "off";
+  const burst = annBurst(list, annKey, seen);
+  if (burst.length) {
+    const anyUrgent = burst.some(x => x.kind === "急遽" || x.kind === "変更");
+    return `<section class="ann-top"><div class="card ann-tick burst k-${esc(a.kind)} ${anyUrgent ? "urgent" : ""}">
+    <button class="at-row" data-ann-toggle type="button" aria-expanded="true">
+      <span class="at-head"><span class="lamp on ${lampColor} blink" aria-label="新しいお知らせ"></span><b class="at-race">新しいお知らせ ${burst.length}件</b>
+        <span class="at-meta num">押すと1行に戻る</span></span></button>
+    <div class="at-burst">${burst.map(x => `<div class="ab-row k-${esc(x.kind)}"><div class="ab-head"><span class="kind k-${esc(x.kind)}">${esc(ANN_KIND[x.kind] || x.kind)}</span>${x.race ? `<b class="at-race">${esc(x.race)}${x.post ? ` ${esc(x.post)}発走` : ""}</b>` : ""}<span class="at-meta num">${esc(x.time || "")}</span></div>
+      <div class="ah-text">${esc(x.text || "")}</div>${x.id ? `<button class="ah-race" data-race="${esc(x.id)}" data-race-group="announce">出馬表を見る ›</button>` : ""}</div>`).join("")}</div></div></section>`;
+  }
   let h = `<section class="ann-top"><div class="card ann-tick k-${esc(a.kind)} ${urgent ? "urgent" : ""} ${open ? "open" : ""}">
     <button class="at-row" data-ann-toggle type="button" aria-expanded="${open}">
       <span class="at-head"><span class="lamp ${lampCls}"></span><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span>${a.race ? `<b class="at-race">${esc(a.race)}${a.post ? ` ${esc(a.post)}発走` : ""}</b>` : ""}
@@ -1342,7 +1384,7 @@ document.addEventListener("click", e => {
   if (t.hasAttribute("data-ann-toggle")) {
     const a0 = curDay()?.announce?.[0];
     if (a0) store.set("hivep_ann_seen", `${S.date}|${a0.time}|${a0.race || ""}|${a0.kind}`);
-    const y = window.scrollY; S.annOpen = !S.annOpen; render(); window.scrollTo(0, y); return;
+    const y = window.scrollY; S.annOpen = t.closest(".ann-tick.burst") ? false : !S.annOpen; render(); window.scrollTo(0, y); return;   // 広げて出していた時は1行に戻す
   }
   if (t.dataset.tab) {
     if (t.dataset.tab === "sig") {   // 狙い・危険タブ: 1回目 すべて / 2回目 狙い側 / 3回目 危険側 / …とループ
