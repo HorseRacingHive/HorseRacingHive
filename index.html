@@ -159,10 +159,8 @@ header.top::after {
 /* もっと掲示板ふうに: 黒い金属の枠・ネジ・名札・横線(走査線)・会場ごとの仕切り(2026-10-29) */
 .day-nav { gap: 2px; }
 .day-nav .day-arrow { width: 24px; font-size: 22px; }
-.day-nav .dn-mid { margin-top: 6px; padding: 9px 8px 6px; border: 3px solid #2c2c2c; border-radius: 6px; background-color: #050505;
+.day-nav .dn-mid { margin-top: 2px; padding: 6px 8px 6px; border: 3px solid #2c2c2c; border-radius: 6px; background-color: #050505;
   box-shadow: inset 0 0 14px #000, 0 0 0 1px #000, 0 2px 0 #000, inset 0 1px 0 rgba(255,255,255,.04); }
-.day-nav .dn-mid::before { content: "HIVE BOARD"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); padding: 0 8px; border-radius: 2px;
-  background: #2c2c2c; color: #a8a8a8; font-size: 8px; font-weight: 700; letter-spacing: .3em; line-height: 13px; white-space: nowrap; }
 .day-nav .dn-mid::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 3px;
   background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px),
     radial-gradient(circle at 5px 5px, #5a5a5a 2px, transparent 2.5px), radial-gradient(circle at calc(100% - 5px) 5px, #5a5a5a 2px, transparent 2.5px),
@@ -1333,7 +1331,7 @@ function ledBabaHtml(venues) {
   const cls = { "良": "g1", "稍重": "g2", "重": "g3", "不良": "g4" };
   const short = { "稍重": "稍" };
   const resMode = S.tab === "race" && S.raceMode === "result";
-  const sel = (resMode ? S.resVenue : S.venue) || curDay()?.venues?.[0]?.venue;
+  const sel = S.tab !== "race" ? null : (resMode ? S.resVenue : S.venue) || curDay()?.venues?.[0]?.venue;   // 下線は会場で切り替える「レース・結果」タブのときだけ
   const g = (k, raw) => { const x = babaGoing(raw); return `<span class="lb-k">${k}</span><span class="${cls[x] || "g0"}">${short[x] || x || "－"}</span>`; };
   return venues.map(v => `<button type="button" class="lb-v${v.venue === sel ? " on" : ""}" ${resMode ? "data-res-venue" : "data-venue"}="${esc(v.venue)}" title="${esc(v.venue)} 芝${esc(babaGoing(v.shiba) || "未発表")}・ダ${esc(babaGoing(v.dirt) || "未発表")}"><span class="lb-n">${esc(v.venue)}</span>${g("芝", v.shiba)}${g("ダ", v.dirt)}</button>`).join("");
 }
@@ -1873,7 +1871,11 @@ document.addEventListener("click", e => {
     window.scrollTo(0, y); return;
   }
   if (t.dataset.resVenue) { S.resVenue = t.dataset.resVenue; render(); return; }
-  if (t.dataset.venue) { S.venue = t.dataset.venue; render(); return; }
+  if (t.dataset.venue) {
+    S.venue = t.dataset.venue;
+    if (t.closest("#days") && S.tab !== "race") { S.resVenue = S.venue; S.tab = "race"; store.set("hivep_tab", S.tab); window.scrollTo(0, 0); }   // 電光板の会場を押したら、その会場のレース一覧へ
+    render(); return;
+  }
   if (t.dataset.publicSort) {
     const key = t.dataset.publicSort;
     S.detailSort = { key, direction: S.detailSort.key === key ? (S.detailSort.direction === "asc" ? "desc" : "asc") : (key === "no" || key === "fin" ? "asc" : "desc") };   // ＋/−ファクターは多い順から
