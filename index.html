@@ -754,6 +754,62 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .result-place.rp-hit.rp-1 { background: rgb(var(--mk)); color: #fff; font-weight: 900; box-shadow: 0 2px 6px rgba(var(--mk), .35); }
 .result-place.rp-hit.rp-1 .result-mark { background: #fff; color: rgb(var(--mk)); }
 .result-place.rp-hit.rp-1.mk-ren { color: #2b1d0e; }
+/* ===== レース一覧: タイムラインのカード(2026-10-29) ===== */
+.rt-prog { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 8px 0 12px; }
+.rt-prog-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rt-prog-top b { font-family: var(--f-disp); font-size: 15px; color: var(--ink); }
+.rt-prog-top span { color: var(--muted); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+.rt-prog-top span em { font-style: normal; color: #db2777; }
+.rt-bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 7px; }
+.rt-bar i { display: block; height: 100%; background: linear-gradient(90deg, #d4a73a, #f7c948); border-radius: 99px; animation: barGrow .8s ease-out; }
+.rt-list { position: relative; display: grid; gap: 10px; padding-left: 22px; }
+.rt-row { position: relative; }
+.rt-row::before { content: ""; position: absolute; left: -15px; top: -10px; bottom: -10px; width: 3px; border-radius: 2px; background: var(--line); }
+.rt-row:first-child::before { top: 50%; }
+.rt-row:last-child::before { bottom: 50%; }
+.rt-row.done::before { background: #d4a73a; }
+.rt-row::after { content: ""; position: absolute; left: -20px; top: 50%; width: 13px; height: 13px; margin-top: -6.5px; border-radius: 50%; background: var(--panel); border: 3px solid var(--line); box-sizing: border-box; }
+.rt-row.done::after { background: #f7c948; border-color: #d4a73a; }
+.rt-row.rt-next::after { background: #ec4899; border-color: #fbcfe8; animation: rtPulse 1.6s ease-out infinite; }
+.rt-card { display: grid; grid-template-columns: 52px minmax(0, 1fr); width: 100%; text-align: left; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; box-shadow: var(--shadow); color: var(--ink); font: inherit; }
+.rt-side { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #fff; padding: 10px 2px; }
+.rt-side.turf { background: linear-gradient(180deg, #43a35f, #2b7a44); }
+.rt-side.dirt { background: linear-gradient(180deg, #a9744a, #7a4f2e); }
+.rt-side.jump { background: linear-gradient(180deg, #7186a1, #4f6178); }
+.rt-side b { font-family: var(--f-disp); font-size: 21px; line-height: 1; font-weight: 900; }
+.rt-side small { font-size: 11px; font-weight: 800; opacity: .95; }
+.rt-body { padding: 9px 12px 10px; min-width: 0; display: grid; gap: 6px; align-content: center; }
+.rt-l1 { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); font-weight: 700; min-width: 0; white-space: nowrap; }
+.rt-cls { padding: 1px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 800; background: var(--soft); color: var(--accent); border: 1px solid rgba(212,167,58,.35); flex: none; }
+.rt-cls.new { background: #fce7f3; color: #be185d; border-color: #f9a8d4; }
+.rt-cls.g { background: linear-gradient(90deg, #f7c948, #e8962b); color: #3a2604; border-color: transparent; }
+.rt-name { color: var(--ink); font-weight: 800; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.rt-gd { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 10.5px; color: #fff; font-weight: 800; flex: none; }
+.rt-gd.g1 { background: #3f8f4e; } .rt-gd.g2 { background: #d4a92e; color: #2a1d04; } .rt-gd.g3 { background: #c06a2a; } .rt-gd.g4 { background: #3f5fb0; }
+.rt-post { margin-left: auto; font-family: var(--f-disp); font-size: 15px; color: var(--ink); font-weight: 900; flex: none; padding-left: 6px; }
+.rt-win { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.rt-win .waku { min-width: 25px; height: 25px; font-size: 12.5px; }
+.rt-win b { font-size: 16px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.rt-trophy { width: 19px; height: 19px; flex: none; color: var(--muted); opacity: .35; }
+.rt-trophy.gold { color: #e8b23a; opacity: 1; filter: drop-shadow(0 0 4px rgba(247,201,72,.75)); }
+.rt-mk { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; font-weight: 900; color: #fff; flex: none; line-height: 1; }
+.rt-mk.sm { width: 16px; height: 16px; font-size: 9px; }
+.rt-mk.m-hon { background: rgb(214,40,40); } .rt-mk.m-tai { background: rgb(30,100,200); } .rt-mk.m-tan { background: rgb(20,140,70); }
+.rt-mk.m-ren { background: rgb(212,165,0); } .rt-mk.m-chu { background: rgb(235,115,20); } .rt-mk.m-ana { background: rgb(214,70,140); }
+.rt-mk.m-hosi { background: rgb(120,120,120); }
+.rt-mk.m-none { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+.rt-sub { font-size: 12px; color: var(--muted); display: flex; gap: 14px; align-items: center; padding-left: 26px; font-weight: 700; }
+.rt-sub span { display: inline-flex; align-items: center; gap: 3px; }
+.rt-num { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 50%; font-size: 10.5px; font-weight: 800; border: 1px solid rgba(0,0,0,.2); padding: 0 2px; }
+.rt-pre { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 800; color: var(--accent); flex-wrap: wrap; }
+.rt-pre .go { color: var(--muted); font-weight: 700; }
+.rt-os { padding: 2px 9px; border-radius: 99px; background: linear-gradient(90deg, #f7c948, #e8b23a); color: #3a2604; font-size: 12px; font-weight: 900; }
+.rt-cd { color: #db2777; font-weight: 900; font-size: 13px; }
+.rt-row.rt-next .rt-card { border: 2px solid #ec4899; animation: rtGlow 2s ease-in-out infinite; }
+.rt-row.done.hit .rt-card { border-color: #e8b23a; box-shadow: 0 0 0 1px #e8b23a, var(--shadow); }
+@keyframes rtPulse { 0% { box-shadow: 0 0 0 0 rgba(236,72,153,.6); } 100% { box-shadow: 0 0 0 9px rgba(236,72,153,0); } }
+@keyframes rtGlow { 0%, 100% { box-shadow: 0 0 0 2px rgba(236,72,153,.15), 0 0 10px rgba(236,72,153,.25); } 50% { box-shadow: 0 0 0 4px rgba(236,72,153,.25), 0 0 22px rgba(236,72,153,.5); } }
+@media (prefers-reduced-motion: reduce) { .rt-row.rt-next::after, .rt-row.rt-next .rt-card, .rt-bar i { animation: none; } }
 </style>
 
 <div class="lock" id="lock">
@@ -1325,6 +1381,45 @@ function viewSig(d) {
     <div class="right"><span class="num">勝率 ${pct(x.p)}</span><br><b class="num ${x.ev == null ? "" : x.ev >= 1.3 ? "ev-top" : x.ev >= 1.1 ? "ev-hi" : x.ev < 0.9 ? "ev-lo" : ""}">${x.ev != null ? "期待値 " + evf(x.ev) : ""}</b></div></button>`; }).join("") + `</div>`;
 }
 
+// ===== レース一覧: タイムラインのカード(2026-10-29)。r = {id,no,course,cls,name,field,going,post,done,top:[{pos,no,fr,name,mark}],osN,hit}
+const RT_MK = { "◎": "m-hon", "○": "m-tai", "▲": "m-tan", "△": "m-ren", "注": "m-chu", "穴": "m-ana", "☆": "m-hosi" };
+const rtMk = (m, sm) => `<span class="rt-mk ${RT_MK[m] || "m-none"}${sm ? " sm" : ""}">${esc(m || "無")}</span>`;
+const RT_GD = { "良": ["良", "g1"], "稍重": ["稍", "g2"], "重": ["重", "g3"], "不良": ["不", "g4"] };
+const RT_TROPHY = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zm0 4H6v1a2 2 0 0 0 1.2 1.8A5 5 0 0 1 7 8.5V7zm10 0v1.5c0 .4 0 .9-.2 1.3A2 2 0 0 0 18 8V7h-1z"/><rect x="7" y="20" width="10" height="2" rx="1"/></svg>`;
+function rtCard(r, isNext, isToday) {
+  const s = String(r.course || ""), surf = s[0] === "芝" ? "turf" : s[0] === "障" ? "jump" : "dirt";
+  const surfJa = { turf: "芝", dirt: "ダート", jump: "障害" }[surf], dist = s.replace(/^[芝ダ障]/, "");
+  const cls = String(r.cls || "").replace("以上", "上").replace(/クラス$/, ""), graded = /G|重賞|L|OP|オープン/.test(cls);
+  const showName = r.name && r.name !== r.cls && !/(新馬|未勝利|[123]勝|クラス|オープン)$/.test(r.name);   // 特別戦・重賞の名前だけ出す
+  const gd = RT_GD[r.going];
+  const l1 = `<div class="rt-l1">${cls ? `<span class="rt-cls${/新馬/.test(cls) ? " new" : graded ? " g" : ""}">${esc(cls)}</span>` : ""}${showName ? `<span class="rt-name">${esc(r.name)}</span>` : ""}
+    <span>${esc(dist)}</span><span>${r.field ?? ""}頭</span>${gd ? `<span class="rt-gd ${gd[1]}" title="馬場 ${esc(r.going)}">${gd[0]}</span>` : ""}<span class="rt-post num">${esc(r.post || "")}</span></div>`;
+  let l2;
+  if (r.done && r.top.length) {
+    const w = r.top[0], rest = r.top.slice(1);
+    l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${w.fr || 0}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
+      ${rest.length ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${x.fr || 0}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}</div>` : ""}`;
+  } else {
+    const pd = postDate(r.post), started = pd && pd <= Date.now();
+    const os = r.osN ? `<span class="rt-os">★おすすめ ${r.osN}頭が出走</span>` : "";
+    l2 = isNext
+      ? `<div class="rt-pre"><span class="rt-cd">発走まであと <span data-cd="${esc(r.post)}" data-fallback="まもなく"></span></span>${os}</div><div class="rt-pre"><span class="go">予想を見る ›</span></div>`
+      : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
+  }
+  return `<div class="rt-row${r.done ? " done" : ""}${r.hit ? " hit" : ""}${isNext ? " rt-next" : ""}"><button class="rt-card" data-race="${esc(r.id)}" data-race-group="race">
+    <div class="rt-side ${surf}"><b>${r.no}R</b><small>${surfJa}</small></div><div class="rt-body">${l1}${l2}</div></button></div>`;
+}
+function raceTimeline(list, order, isToday) {
+  const asc = [...list].sort((a, b) => a.no - b.no);
+  const doneN = asc.filter(r => r.done).length, now = Date.now();
+  const next = isToday ? asc.find(r => !r.done && postDate(r.post) && postDate(r.post) > now) : null;
+  const pct = asc.length ? Math.round(doneN / asc.length * 100) : 0;
+  const tail = next ? `次は<em>${next.no}R ${esc(next.post)}</em>` : doneN === asc.length && asc.length ? "全レース終了" : isToday ? "結果待ち" : "";
+  let h = `<div class="rt-prog"><div class="rt-prog-top"><b>${doneN}/${asc.length}R 終了</b><span>${tail}</span></div><div class="rt-bar"><i style="width:${pct}%"></i></div></div>`;
+  const rows = order === "desc" ? asc.slice().reverse() : asc;
+  return h + `<div class="rt-list">${rows.map(r => rtCard(r, next && r.id === next.id, isToday)).join("")}</div>`;
+}
+
 function viewRaces(d) {
   if (S.raceMode === "result") return `<section id="res-sec"><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section><p class="note">もう一度「結果」タブを押すと、レースの一覧に戻ります</p>`;
   const vs = d.venues;
@@ -1333,15 +1428,15 @@ function viewRaces(d) {
   const v = vs.find(x => x.venue === S.venue);
   return `<div><div class="seg">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${x.venue === S.venue ? "on" : ""}">${esc(x.venue)}</button>`).join("")}</div>
   <p class="race-warn">※全レースの予想を載せていますが、全レースを買うと回収率はマイナスになります。買うのは「おすすめ」の馬にしぼり、ここは参考としてご覧ください。</p></div>
-  <div class="card races">` + v.races.map(r => {
-    const marks = ["◎", "○", "▲"].map(m => r.horses.find(h => h.mark === m)).filter(Boolean);
-    const line = r.done
-      ? `結果 ${[1, 2, 3].map(p => (r.horses.find(h => h.fin === p) || {}).mark || "無").join("-")}　1着 ${esc((r.horses.find(h => h.fin === 1) || {}).name || "")}`
-      : marks.map(h => `${h.mark}${h.no ?? ""}${esc(h.name)}`).join(" ");
-    return `<button class="race" data-race="${esc(r.id)}" data-race-group="race"><span class="rno ${r.done ? "past" : ""}">${r.no}R</span>
-      <div class="info"><b>${esc(r.name)}</b><small>${esc(r.course)} ${r.field ?? ""}頭${r.going ? " ・" + esc(r.going) : ""}</small><span class="marks">${line}</span></div>
-      <div class="side"><div class="post num">${esc(r.post)}</div>${r.st ? `<span class="stars">${"★".repeat(r.st)}</span>` : ""}</div></button>`;
-  }).join("") + `</div><p class="note">もう一度「レース」タブを押すと、この日の全レース結果(1着〜3着)に切り替わります</p></div>`;
+  ` + (() => {
+    const os = d.osusume || [];
+    const list = v.races.map(r => {
+      const top = [1, 2, 3].map(p => r.horses.find(h => h.fin === p)).filter(Boolean).map(h => ({ pos: h.fin, no: h.no, fr: h.fr, name: h.name, mark: h.mark }));
+      return { id: r.id, no: r.no, course: r.course, cls: r.cls || "", name: r.name || "", field: r.field, going: r.going, post: r.post,
+        done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, hit: os.some(o => o.id === r.id && o.fin === 1) };
+    });
+    return raceTimeline(list, "asc", d.date === todayStr());
+  })() + `<p class="note">もう一度「レース」タブを押すと、この日の全レース結果(1着〜3着)に切り替わります</p></div>`;
 }
 
 // 手元の公開データ(90日分)から、おすすめの日ごとの累積収支(単勝1,000円)を作る
