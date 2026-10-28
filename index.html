@@ -76,14 +76,16 @@ header.top::after {
 /* 天気・馬場(ヘッダーの黒の上に置くので、ライト・ダークどちらでも同じ配色) */
 .weather-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding-bottom: 6px; }
 .weather-row:empty { display: none; }
-.baba-strip { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px 10px; border: 1px solid rgba(247,201,72,.3); border-radius: 10px; background: rgba(247,201,72,.09); }   /* 2026-10-28 馬場の帯 H1: 丸に1文字 */
-.baba-strip .bv { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.baba-strip .bv b { color: #f7c948; font-size: 12.5px; margin-right: 1px; white-space: nowrap; }
-.baba-strip .bc { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; line-height: 1; flex: none; }
-.baba-strip .bc.g1 { background: #3f8f4e; color: #fff; } .baba-strip .bc.g2 { background: #d4a92e; color: #2a1d04; }
-.baba-strip .bc.g3 { background: #c06a2a; color: #fff; } .baba-strip .bc.g4 { background: #3f5fb0; color: #fff; }
-.baba-strip .bc.g0 { background: rgba(251,241,220,.12); color: rgba(251,241,220,.6); }
-.baba-note { grid-column: 1 / -1; color: rgba(251,241,220,.55); font-size: 10.5px; margin: 2px 2px 0; }
+/* 馬場の帯(2026-10-29・携帯用と同じ): 会場名＋芝｜ダの馬場状態を1段で(細C案)。金縁・角丸の枠はそのまま */
+.baba-strip { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(var(--bn, 3), minmax(0, 1fr)); gap: 2px; padding: 2px 6px; border: 1px solid rgba(247,201,72,.3); border-radius: 8px; background: rgba(247,201,72,.09); }
+.baba-strip .bv { all: unset; box-sizing: border-box; min-width: 0; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.baba-strip .bv-name { font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif; font-size: 13px; line-height: 1.2; color: #8f7f55; white-space: nowrap; }
+.baba-strip .bv.on .bv-name { color: #f0c75e; }
+.baba-strip .bv-going { display: flex; align-items: center; gap: 2px; white-space: nowrap; line-height: 1.2; }
+.baba-strip .bk { font-size: 9.5px; color: #8a7a52; }
+.baba-strip .bg { font-size: 11.5px; font-weight: 600; margin-left: -1px; }
+.baba-strip .bg.g1 { color: #4fd197; } .baba-strip .bg.g2 { color: #e8b83a; } .baba-strip .bg.g3 { color: #f08a3a; } .baba-strip .bg.g4 { color: #f2584a; } .baba-strip .bg.g0 { color: #6b6048; }
+.baba-strip .bsep { width: 1px; height: 8px; background: #5e4d25; margin: 0 1px; flex: none; }
 .card.weather-card { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 5px; padding: 3px 7px; border: 1px solid rgba(247,201,72,.3); border-radius: 8px; background: rgba(247,201,72,.09); box-shadow: none; color: #fbf1dc; line-height: 1.25; }
 .weather-card .weather-place { color: rgba(251,241,220,.78); font-size: 11px; font-weight: 700; }
 .weather-card b { color: #f7c948; font-family: var(--f-disp); font-size: 12.5px; }
@@ -306,6 +308,15 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
 /* ---------- 追加の部品(携帯版と同じ) */
 .summary div { min-width: 0; padding-left: 4px; padding-right: 4px; }
 h2 .sub.big { font-size: 17px; font-weight: 900; color: var(--comb); background: linear-gradient(135deg, var(--honey), var(--amber)); padding: 2px 12px; border-radius: 999px; letter-spacing: .04em; }
+/* おすすめの頭数を大きく＋内訳(残り/確定)(D案・2026-10-29、携帯用と同じ) */
+h2 .sub.os-count { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.os-count .osc-n { display: flex; align-items: baseline; gap: 2px; font-size: 13px; }
+.os-count .osc-n b { font-size: 28px; font-weight: 800; line-height: 1; color: #b97c12; font-variant-numeric: tabular-nums; }
+.os-count .osc-split { display: grid; font-size: 11px; line-height: 1.35; border-left: 1px solid #5e4d25; padding-left: 8px; white-space: nowrap; }
+.os-count .osc-split b { font-size: 13px; color: var(--ink, #fbf1dc); font-variant-numeric: tabular-nums; }
+.os-count .osc-split b.left { color: var(--good, #4fd197); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .os-count .osc-n b { color: #f0c75e; } }
+:root[data-theme="dark"] .os-count .osc-n b { color: #f0c75e; }
 .perf2 .cap small { font-weight: 500; color: var(--muted); margin-left: 4px; }
 .perf2 .cap.alt2 { border-top: 1px dashed var(--line); margin-top: 2px; padding-top: 8px; color: var(--muted); }
 .summary.alt2 { background: var(--soft); } .summary.alt2 b { font-size: 17px; opacity: .9; }
@@ -814,11 +825,6 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 @media (prefers-reduced-motion: reduce) { .rt-row.rt-next::after, .rt-row.rt-next .rt-card, .rt-bar i { animation: none; } }
 
 /* 馬場の帯を細長く・凡例は小さく右下に(2026-10-29) */
-.baba-strip { padding: 2px 10px; border-radius: 8px; }
-.baba-strip .bv { gap: 3px; }
-.baba-strip .bv b { font-size: 11px; }
-.baba-strip .bc { width: 18px; height: 18px; font-size: 10px; }
-.baba-note { text-align: right; font-size: 8.5px; line-height: 1.2; margin: 1px 4px -2px 0; color: rgba(251,241,220,.45); }
 </style>
 
 <div class="lock" id="lock">
@@ -1195,12 +1201,18 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
   $("#stamp").textContent = S.demo ? "見本データ" : (u ? `更新 ${u}` : "");
 }
-function babaStripHtml(venues) {   // 2026-10-28 馬場の帯 H1: 会場ごとに 芝・ダ の丸に1文字(良=緑・稍重=黄・重=橙・不良=青)
-  const short = { "良": ["良", "g1"], "稍重": ["稍", "g2"], "重": ["重", "g3"], "不良": ["不", "g4"] };
-  const dot = (kind, g, v) => { const s = short[g] || ["—", "g0"]; return `<span class="bc ${s[1]}" title="${kind} ${esc(g || "未発表")}">${s[0]}</span>`; };
+function babaGoing(g) {   // 馬場状態を正式表記に(JRA-VANのコード1〜4・「良」「稍」「重」「不」などどちらでも)
+  const x = String(g ?? "").trim();
+  const m = { "1": "良", "2": "稍重", "3": "重", "4": "不良", "良": "良", "稍": "稍重", "稍重": "稍重", "重": "重", "不": "不良", "不良": "不良" };
+  return m[x] || m[x.replace(/^0+/, "")] || "";
+}
+function babaStripHtml(venues) {   // 馬場の帯(携帯用と同じ): 東京 芝良｜ダ稍重 を1段で。選択中の会場名だけ明るい金
+  const cls = { "良": "g1", "稍重": "g2", "重": "g3", "不良": "g4" };
+  const going = (kind, raw) => { const g = babaGoing(raw); return `<span class="bk">${kind}</span><span class="bg ${cls[g] || "g0"}" title="${kind === "ダ" ? "ダート" : "芝"} ${esc(g || "未発表")}">${g || "－"}</span>`; };
   if (!venues.length) return "";
-  return `<div class="baba-strip">${venues.map(v => `<span class="bv" title="${esc(v.venue)} ${esc(v.tenko || "天気未発表")}${v.time ? " " + esc(String(v.time).replace("時点", "").trim()) : ""}"><b>${esc(v.venue)}</b>${dot("芝", v.shiba, v)}${dot("ダ", v.dirt, v)}</span>`).join("")}</div>
-    <div class="baba-note">左の丸=芝・右の丸=ダート</div>`;
+  const resMode = S.tab === "race" && S.raceMode === "result";
+  const sel = (resMode ? S.resVenue : S.venue) || curDay()?.venues?.[0]?.venue;
+  return `<div class="baba-strip" style="--bn:${venues.length}">${venues.map(v => `<button type="button" class="bv${v.venue === sel ? " on" : ""}" ${resMode ? "data-res-venue" : "data-venue"}="${esc(v.venue)}" title="${esc(v.venue)} ${esc(v.tenko || "天気未発表")}${v.time ? " " + esc(String(v.time).replace("時点", "").trim()) : ""}"><span class="bv-name">${esc(v.venue)}</span><span class="bv-going">${going("芝", v.shiba)}<i class="bsep"></i>${going("ダ", v.dirt)}</span></button>`).join("")}</div>`;
 }
 function renderWeather() {
   const el = $("#weather");
@@ -1215,6 +1227,7 @@ function allHorses(day) {
   return out;
 }
 function render() {
+  if (S.snap) renderWeather();   // 選択中の会場名の色を合わせる
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
   const sigBtn = document.querySelector('#tabs button[data-tab="sig"]');
   if (sigBtn) {
@@ -1291,7 +1304,7 @@ function viewHome(d) {
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
       <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>${x.fin != null ? fzBlock(x.fin) : ""}
     </button>`;
-  h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5<span class="sub">${os.length}頭</span></h2>`;
+  h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5${(() => { const left = os.filter(x => x.fin == null).length; return `<span class="sub os-count"><span class="osc-n"><b>${os.length}</b>頭</span><span class="osc-split"><span>残り <b class="left">${left}</b></span><span>確定 <b>${os.length - left}</b></span></span></span>`; })()}</h2>`;
   if (os.length) {
     const g = S.snap.star_guide || {};
     for (const s of [5, 4, 3, 2]) {
