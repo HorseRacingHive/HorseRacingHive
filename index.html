@@ -895,6 +895,8 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rt-pre { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11.5px; line-height: 18px; font-weight: 800; color: var(--accent); flex-wrap: wrap; }
 .rt-pre .go { color: var(--muted); font-weight: 700; }
 .rt-os { padding: 0 7px; border-radius: 99px; background: linear-gradient(90deg, #f7c948, #e8b23a); color: #3a2604; font-size: 10.5px; line-height: 17px; font-weight: 900; }
+.rt-sub .rt-os { margin-left: auto; white-space: nowrap; flex: none; }
+.rt-os.miss { background: rgba(247,201,72,.14); color: #c9b27a; border: 1px solid rgba(247,201,72,.35); line-height: 15px; }   /* はずれは薄く */
 .rt-cd { color: #db2777; font-weight: 900; font-size: 12px; }
 .rt-row.rt-next .rt-card { border: 2px solid #ec4899; animation: rtGlow 2s ease-in-out infinite; }
 .rt-row.done.hit .rt-card { border-color: #e8b23a; box-shadow: 0 0 0 1px #e8b23a, var(--shadow); }
@@ -1574,7 +1576,7 @@ function rtCard(r, isNext, isToday) {
   if (r.done && r.top.length) {
     const w = r.top[0], rest = r.top.slice(1);
     l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${rtWaku(w.no, r.field, w.fr)}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
-      ${rest.length ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}</div>` : ""}`;
+      ${rest.length || r.osN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">★${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
   } else {
     const pd = postDate(r.post), started = pd && pd <= Date.now();
     const os = r.osN ? `<span class="rt-os">★おすすめ ${r.osN}頭が出走</span>` : "";
