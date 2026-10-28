@@ -690,6 +690,21 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 
 /* 下の ‹ › の分だけ、出馬表の一番下に余白 */
 .sheet { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+
+/* 結果画面: 印の馬が来たら色付け(2026-10-28) */
+.result-mark { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: center; font-size: 11px; font-weight: 900; color: #fff; line-height: 1; }
+.result-mark.rm-none { color: var(--muted); background: transparent; border: 1px dashed var(--line); font-weight: 600; font-size: 10px; }
+.result-mark.rm-hon { background: #8a6116; }
+.result-mark.rm-tai { background: #2f6fb5; }
+.result-mark.rm-tan { background: #2e7d44; }
+.result-mark.rm-ren { background: #6e6e6e; }
+.result-mark.rm-chu { background: #7b4bb0; }
+.result-mark.rm-ana { background: #c0392b; }
+.result-place { padding: 3px 6px; border-radius: 7px; }
+.result-place.rp-hit { background: rgba(247, 201, 72, .24); }
+.result-place.rp-hit.rp-1 { background: rgba(247, 201, 72, .62); font-weight: 800; }
+.result-row.hon-win { box-shadow: inset 0 0 0 2px #c99a2e; border-radius: 12px; }
+.res-pat { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: #8a6116; color: #fff; font-size: 10px; font-weight: 800; vertical-align: 1px; }
 </style>
 
 <div class="lock" id="lock">
@@ -1178,6 +1193,11 @@ function viewHome(d) {
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
 }
 
+// 結果画面の印バッジの色(2026-10-28)
+const RM_CLS = { "◎": "rm-hon", "○": "rm-tai", "▲": "rm-tan", "△": "rm-ren", "注": "rm-chu", "穴": "rm-ana" };
+const rmCls = m => RM_CLS[m] || "rm-none";
+const resPlace = (pos, mark, no, name) => `<span class="result-place${RM_CLS[mark] ? ` rp-hit${Number(pos) === 1 ? " rp-1" : ""}` : ""}"><span>${pos}着</span><span class="result-mark ${rmCls(mark)}">${esc(mark || "無")}</span><span>${no ?? ""} ${esc(name)}</span></span>`;
+const resTop3 = arr => arr.map(x => x.mark || "無").join("-");
 // 全レースの結果(開催場ごとのタブ。1着〜3着を1行ずつ「1着 ◎ 5 馬名」)
 function resultRaces(d) { return (d.venues || []).flatMap(v => (v.races || []).filter(r => r.done).map(r => ({ ...r, venue: v.venue }))); }
 function resultsList(d) {
@@ -1187,11 +1207,14 @@ function resultsList(d) {
   if (!vs.includes(S.resVenue)) S.resVenue = vs[0];
   const list = all.filter(r => r.venue === S.resVenue);
   return `<div class="seg" style="margin-bottom:8px">${vs.map(v => `<button data-res-venue="${esc(v)}" class="${v === S.resVenue ? "on" : ""}">${esc(v)}<span class="c">${all.filter(r => r.venue === v).length}</span></button>`).join("")}</div>
-    <div class="card list">${list.map(r => `<button class="row result-row" data-race="${esc(r.id)}" data-race-group="results">
+    <div class="card list">${list.map(r => {
+      const top = r.horses.filter(x => x.fin != null && x.fin >= 1).sort((a, b) => a.fin - b.fin).slice(0, 3);
+      const honWin = top[0]?.mark === "◎";
+      return `<button class="row result-row${honWin ? " hon-win" : ""}" data-race="${esc(r.id)}" data-race-group="results">
     <div class="when num"><b>${r.no}R</b>${esc(r.post || "")}</div>
-    <div class="main"><b>${esc(r.name || "")}</b><span class="result-places">${r.horses.filter(x => x.fin != null && x.fin >= 1).sort((a, b) => a.fin - b.fin).slice(0, 3)
-      .map(x => `<span class="result-place"><span>${x.fin}着</span><span class="result-mark">${esc(x.mark || "無")}</span><span>${x.no ?? ""} ${esc(x.name)}</span></span>`).join("")}</span></div>
-    <div class="right">›</div></button>`).join("")}</div>`;
+    <div class="main"><b>${esc(r.name || "")}${honWin ? `<span class="res-pat">${esc(resTop3(top))}</span>` : ""}</b><span class="result-places">${top.map(x => resPlace(x.fin, x.mark, x.no, x.name)).join("")}</span></div>
+    <div class="right">›</div></button>`;
+    }).join("")}</div>`;
 }
 
 const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "期待値が高い馬"],
