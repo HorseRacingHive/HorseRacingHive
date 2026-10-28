@@ -139,6 +139,42 @@ header.top::after {
 @keyframes dn-run { to { transform: translateX(-100%); } }
 @media (prefers-reduced-motion: reduce) { .day-nav .dn-tick .in { animation: none; padding-left: 0; } }
 :root[data-theme="light"] .day-nav .dn-mid { background: #1a1409; }
+/* 案B: 馬場を電光板の2段目に(良=緑・稍重=黄・重=橙・不良=赤)。上の馬場の帯はなくす(2026-10-29) */
+.day-nav .dn-line { display: none; }
+.day-nav .dn-mid { flex: 1; min-width: 0; }
+.day-nav .dn-date { position: relative; }
+.day-nav .dn-baba { display: flex; justify-content: center; gap: 4px; margin-top: 5px; padding-top: 4px; border-top: 1px solid #241c0c; }
+.day-nav .dn-baba:empty { display: none; }
+.day-nav .lb-v { display: inline-flex; align-items: baseline; gap: 2px; padding: 1px 4px; border: 0; border-radius: 3px; background: none; font: inherit; font-size: 11px; font-weight: 900; white-space: nowrap; cursor: pointer; color: #e9d9b0; }
+.day-nav .lb-v .lb-n { color: #f3e6c4; margin-right: 3px; }
+.day-nav .lb-v.on { background: rgba(247,201,72,.12); }
+.day-nav .lb-v.on .lb-n { color: var(--honey); text-shadow: 0 0 6px rgba(247,201,72,.8); }
+.day-nav .lb-v .lb-k { color: #d8c79a; font-size: 10px; font-weight: 800; margin-left: 3px; }   /* 芝・ダは明るめ(暗いと読みにくい) */
+.day-nav .lb-v .g1 { color: #58ff7a; text-shadow: 0 0 6px #58ff7a; }
+.day-nav .lb-v .g2 { color: #ffe14d; text-shadow: 0 0 6px #ffe14d; }
+.day-nav .lb-v .g3 { color: #ffa23a; text-shadow: 0 0 6px #ffa23a; }
+.day-nav .lb-v .g4 { color: #ff4b5c; text-shadow: 0 0 6px #ff4b5c; }
+.day-nav .lb-v .g0 { color: #6b5d3d; }
+#weather { display: none; }
+/* もっと掲示板ふうに: 黒い金属の枠・ネジ・名札・横線(走査線)・会場ごとの仕切り(2026-10-29) */
+.day-nav { gap: 2px; }
+.day-nav .day-arrow { width: 24px; font-size: 22px; }
+.day-nav .dn-mid { margin-top: 6px; padding: 9px 8px 6px; border: 3px solid #2c2c2c; border-radius: 6px; background-color: #050505;
+  box-shadow: inset 0 0 14px #000, 0 0 0 1px #000, 0 2px 0 #000, inset 0 1px 0 rgba(255,255,255,.04); }
+.day-nav .dn-mid::before { content: "HIVE BOARD"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); padding: 0 8px; border-radius: 2px;
+  background: #2c2c2c; color: #a8a8a8; font-size: 8px; font-weight: 700; letter-spacing: .3em; line-height: 13px; white-space: nowrap; }
+.day-nav .dn-mid::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 3px;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px),
+    radial-gradient(circle at 5px 5px, #5a5a5a 2px, transparent 2.5px), radial-gradient(circle at calc(100% - 5px) 5px, #5a5a5a 2px, transparent 2.5px),
+    radial-gradient(circle at 5px calc(100% - 5px), #5a5a5a 2px, transparent 2.5px), radial-gradient(circle at calc(100% - 5px) calc(100% - 5px), #5a5a5a 2px, transparent 2.5px); }
+.day-nav .dn-baba { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 6px; padding-top: 0; border-top: 1px solid #262626; }
+.day-nav .lb-v { justify-content: center; padding: 4px 0 2px; border-radius: 0; font-size: 10.5px; }
+.day-nav .lb-v + .lb-v { border-left: 1px solid #262626; }
+.day-nav .lb-v.on { background: rgba(247,201,72,.10); box-shadow: inset 0 -2px 0 rgba(247,201,72,.7); }
+.day-nav { width: 100%; min-width: 0; }
+.day-nav .dn-tick { width: 100%; max-width: none; border-top-color: #262626; }
+.day-nav .dn-tick .in { position: absolute; left: 0; top: 2px; }   /* 流れる文字で板が横に広がらないように */
+.day-nav .dn-w .nx, .day-nav .dn-w .wd { filter: brightness(1.1); }
 .day-nav .dn-mid .day-picker { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; margin: 0; font-size: 16px; }   /* 日付を押すとカレンダー */
 .day-nav .dn-d { font-family: "DejaVu Sans Mono", "Menlo", "Consolas", ui-monospace, monospace; font-size: 22px; font-weight: 900; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
 .day-nav .dn-w { font-family: "DejaVu Sans Mono", "Menlo", "Consolas", ui-monospace, monospace; font-size: 9.5px; letter-spacing: .3em; margin-top: 4px; color: var(--muted); white-space: nowrap; }
@@ -1268,8 +1304,9 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
   const min = days[0]?.date || S.date, max = days[days.length - 1]?.date || S.date;
   const [, mm, dd] = (S.date || "").split("-");
   $("#days").innerHTML = `<div class="day-nav"><button class="day-arrow" data-day-step="-1" aria-label="前の開催日" ${i <= 0 ? "disabled" : ""}>‹</button><span class="dn-line"></span>`
-    + `<div class="dn-mid"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden>LIVE</span></div><div class="dn-w"></div><div class="dn-tick" hidden><span class="in"></span></div>`
+    + `<div class="dn-mid"><div class="dn-date"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden>LIVE</span></div><div class="dn-w"></div>`
     + `<input class="day-picker" type="date" aria-label="開催日を選択" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}"></div>`
+    + `<div class="dn-baba"></div><div class="dn-tick" hidden><span class="in"></span></div></div>`
     + `<span class="dn-line r"></span><button class="day-arrow" data-day-step="1" aria-label="次の開催日" ${i >= days.length - 1 ? "disabled" : ""}>›</button></div>`;
   dayNavInfo();
   renderWeather();
@@ -1289,12 +1326,24 @@ function babaStripHtml(venues) {   // 馬場の帯(携帯用と同じ): 東京 �
   const sel = (resMode ? S.resVenue : S.venue) || curDay()?.venues?.[0]?.venue;
   return `<div class="baba-strip" style="--bn:${venues.length}">${venues.map(v => `<button type="button" class="bv${v.venue === sel ? " on" : ""}" ${resMode ? "data-res-venue" : "data-venue"}="${esc(v.venue)}" title="${esc(v.venue)} ${esc(v.tenko || "天気未発表")}${v.time ? " " + esc(String(v.time).replace("時点", "").trim()) : ""}"><span class="bv-name">${esc(v.venue)}</span><span class="bv-going">${going("芝", v.shiba)}<i class="bsep"></i>${going("ダ", v.dirt)}</span></button>`).join("")}</div>`;
 }
+
+// 電光板の2段目の馬場(案B)。押すとその会場に切り替わる(今までの馬場の帯と同じ動き)
+function ledBabaHtml(venues) {
+  if (!venues.length) return "";
+  const cls = { "良": "g1", "稍重": "g2", "重": "g3", "不良": "g4" };
+  const short = { "稍重": "稍" };
+  const resMode = S.tab === "race" && S.raceMode === "result";
+  const sel = (resMode ? S.resVenue : S.venue) || curDay()?.venues?.[0]?.venue;
+  const g = (k, raw) => { const x = babaGoing(raw); return `<span class="lb-k">${k}</span><span class="${cls[x] || "g0"}">${short[x] || x || "－"}</span>`; };
+  return venues.map(v => `<button type="button" class="lb-v${v.venue === sel ? " on" : ""}" ${resMode ? "data-res-venue" : "data-venue"}="${esc(v.venue)}" title="${esc(v.venue)} 芝${esc(babaGoing(v.shiba) || "未発表")}・ダ${esc(babaGoing(v.dirt) || "未発表")}"><span class="lb-n">${esc(v.venue)}</span>${g("芝", v.shiba)}${g("ダ", v.dirt)}</button>`).join("");
+}
 function renderWeather() {
   const el = $("#weather");
   const day = curDay();
   const venues = (day?.baba || []).slice().sort((a, b) => ["東京", "京都", "新潟"].indexOf(a.venue) - ["東京", "京都", "新潟"].indexOf(b.venue));
-  el.style.gridTemplateColumns = "minmax(0, 1fr)";
-  el.innerHTML = babaStripHtml(venues);
+  el.innerHTML = "";   // 馬場は電光板の中に出す(案B)
+  S.ledBaba = ledBabaHtml(venues);
+  const box = $("#days .dn-baba"); if (box && box.innerHTML !== S.ledBaba) box.innerHTML = S.ledBaba;
 }
 function allHorses(day) {
   const out = [];
