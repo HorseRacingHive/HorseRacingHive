@@ -898,6 +898,16 @@ function annBurst(list, annKey, seen) {
 const ANN_KIND = { "直前": "30分前", "最終": "締切直前", "急遽": "🚨急遽", "変更": "📢取消・乗替" };
 
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
+// 馬場の偏り(前日と同じ馬場のときの内有利/外有利)。買い条件・期待値には入れていない参考表示(2026-10-28 公開ページにも)
+function biasNote(b) {
+  if (!b || !b.label) return "";
+  const on = b.label === "内有利" || b.label === "外有利";
+  const col = !on ? "#777" : b.strength === "強め" ? "#b45309" : "#1e7b34";
+  const bg = !on ? "#f5f5f5" : b.strength === "強め" ? "#fff4e0" : "#eef8f0";
+  return `<div class="note" style="background:${bg};border-left:4px solid ${col};padding:8px 10px;border-radius:8px;margin:8px 0">
+    <b style="color:${col}">🧭 馬場の偏り(参考): ${esc(b.label)}${b.strength ? "・" + esc(b.strength) : ""}</b><br>
+    <small style="color:#6b5a3e">${esc(b.why || "")}${on ? "<br>あくまで参考です。おすすめ・期待値には入れていません。" : ""}</small></div>`;
+}
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
   if (!rows.length) return upcoming ? `<div class="card empty race-ann-empty">※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div>` : "";
@@ -1377,7 +1387,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}<div class="horses">${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
@@ -1391,6 +1401,8 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     if (x.sig === "過剰") tags.push(`<span class="sig-badge over">🔸 過剰人気(相手には残してOK)</span>`);
     if (x.himo) tags.push(`<span class="sig-badge himo">🪢 紐</span>`);
     if (x.buy) tags.push(`<span class="sig-badge buy">💰 おすすめ</span>`);
+    if (x.bf === "合う") tags.push(`<span class="pill" style="background:#e6f4ea;color:#1e7b34;border:1px solid #9bd3a8">🧭 偏りに合う</span>`);   // 参考
+    if (x.bf === "逆") tags.push(`<span class="pill" style="background:#f1f1f1;color:#666;border:1px solid #ccc">🧭 偏りの逆</span>`);
     const sg = x.sig === "危険" ? "sg-danger" : x.sig === "狙い" ? "sg-aim" : x.sig === "過剰" ? "sg-over" : x.sig === "妙味" ? "sg-ev" : x.himo ? "sg-himo" : "";
     h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${sg}${fzRow(x.fin)}" data-no="${x.no ?? ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
