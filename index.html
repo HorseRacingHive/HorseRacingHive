@@ -687,6 +687,9 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 /* 下の ‹ › も一緒に隠す(上へ戻す・一番下まで読むとまた出る) */
 .sheet.head-hidden .detail-float.show { opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .sheet .horse-sort { transition: none; } }
+
+/* 下の ‹ › の分だけ、出馬表の一番下に余白 */
+.sheet { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 </style>
 
 <div class="lock" id="lock">
@@ -1336,17 +1339,14 @@ function publicRaceSequence(group) {
 // 馬の一覧から開いた時の 前/次(対象の馬ごと)
 function focusNavHtml() {
   const i = S.focusIdx, n = S.focusNav.length;
-  return `<div class="detail-nav"><button data-detail-step="-1" ${i === 0 ? "disabled" : ""}>‹ 前の馬</button>
-    <span>${i + 1} / ${n}頭</span><button data-detail-step="1" ${i === n - 1 ? "disabled" : ""}>次の馬 ›</button></div>`
-    + `<div class="detail-float" aria-label="前後の馬"><button data-detail-step="-1" ${i === 0 ? "disabled" : ""}>‹ 前</button><span>${i + 1} / ${n}頭</span><button data-detail-step="1" ${i === n - 1 ? "disabled" : ""}>次 ›</button></div>`;
+  return `<div class="detail-float show" aria-label="前後の馬"><button data-detail-step="-1" ${i === 0 ? "disabled" : ""}>‹ 前</button><span>${i + 1} / ${n}頭</span><button data-detail-step="1" ${i === n - 1 ? "disabled" : ""}>次 ›</button></div>`;
 }
 function publicDetailNav(id) {
   if (S.focusNav) return focusNavHtml();
   const index = S.detailNav.indexOf(id);
   if (index < 0 || S.detailNav.length < 2) return "";
-  return `<div class="detail-nav"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前のレース</button>
-    <span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次のレース ›</button></div>`
-    + `<div class="detail-float" aria-label="前後のレース"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前</button><span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次 ›</button></div>`;
+  // 上の「前のレース/次のレース」の段はなくして、下の ‹ › だけに(開いた時から出す)(2026-10-28)
+  return `<div class="detail-float show" aria-label="前後のレース"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前</button><span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次 ›</button></div>`;
 }
 function openRace(id, group = "race", isStep = false, focusNo = null) {
   const d = curDay(); let r, venue;
@@ -1441,9 +1441,7 @@ function updateSheetHead(ev) {
 function updateDetailFloat() {
   const sh = $("#sheet"); if (!sh || sh.hidden) return;
   const f = sh.querySelector(".detail-float"); if (!f) return;
-  const nav = sh.querySelector(".detail-nav"), head = sh.querySelector(".sheet-head");
-  const hb = head ? head.getBoundingClientRect().bottom : 0;
-  f.classList.toggle("show", !!nav && (S.floatPinned || nav.getBoundingClientRect().bottom < hb + 2));
+  f.classList.add("show");   // 開いた時から出す。下へスクロール中だけ隠れる(.head-hidden)
 }
 (() => { const sh = $("#sheet"); if (!sh) return;
   sh.addEventListener("scroll", updateDetailFloat, { passive: true });
