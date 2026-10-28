@@ -1202,7 +1202,7 @@ function viewSig(d) {
   }
   const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
   const rowSgOf = k => ({ "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[k] || "");
-  return h + `<div class="card list">` + list.map(x => { const k = SIG_GROUP[S.sig] ? (SIG_GROUP[S.sig].find(g => g === "紐" ? x.himo : x.sig === g) || "紐") : S.sig; return `<button class="row ${SIG_GROUP[S.sig] ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
+  return h + `<div class="card list">` + list.map(x => { const k = SIG_GROUP[S.sig] ? (SIG_GROUP[S.sig].find(g => g === "紐" ? x.himo : x.sig === g) || "紐") : S.sig; return `<button class="row ${SIG_GROUP[S.sig] ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}" data-hno="${x.no ?? ""}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
     <div class="main"><b><span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
       ${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span>` : ""}
@@ -1317,7 +1317,15 @@ function publicRaceSequence(group) {
   }
   return [];
 }
+// 馬の一覧から開いた時の 前/次(対象の馬ごと)
+function focusNavHtml() {
+  const i = S.focusIdx, n = S.focusNav.length;
+  return `<div class="detail-nav"><button data-detail-step="-1" ${i === 0 ? "disabled" : ""}>‹ 前の馬</button>
+    <span>${i + 1} / ${n}頭</span><button data-detail-step="1" ${i === n - 1 ? "disabled" : ""}>次の馬 ›</button></div>`
+    + `<div class="detail-float" aria-label="前後の馬"><button data-detail-step="-1" ${i === 0 ? "disabled" : ""}>‹ 前</button><span>${i + 1} / ${n}頭</span><button data-detail-step="1" ${i === n - 1 ? "disabled" : ""}>次 ›</button></div>`;
+}
 function publicDetailNav(id) {
+  if (S.focusNav) return focusNavHtml();
   const index = S.detailNav.indexOf(id);
   if (index < 0 || S.detailNav.length < 2) return "";
   return `<div class="detail-nav"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前のレース</button>
@@ -1377,7 +1385,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
       ${tags.length ? `<div class="bar">${tags.join(" ")}</div>` : ""}${factorLine(x)}</div>`;
   }
   sh.innerHTML = h + `</div></div>`; sh.scrollTop = 0;
-  if (S.focus && S.focus.id === id) focusHorse(sh, S.focus.no, !isStep);
+  if (S.focus && S.focus.id === id) focusHorse(sh, S.focus.no, !isStep || !!S.focusNav);
 }
 
 // おすすめから開いたときは、その馬を目立たせて、その位置まで送る
@@ -1393,7 +1401,7 @@ function focusHorse(sh, no, scroll) {
     sh.scrollTop = Math.max(0, el.getBoundingClientRect().top - sh.getBoundingClientRect().top - (head ? head.offsetHeight : 0) - (nav ? nav.offsetHeight : 0) - 12); }
 }
 
-function closeSheet() { const sh = $("#sheet"); if (sh.hidden) return; sh.hidden = true; sh.innerHTML = ""; document.body.style.overflow = ""; }
+function closeSheet() { const sh = $("#sheet"); S.focusNav = null; S.floatPinned = false; if (sh.hidden) return; sh.hidden = true; sh.innerHTML = ""; document.body.style.overflow = ""; }
 window.addEventListener("popstate", closeSheet);
 // 出馬表で下にスクロールしたら、画面の下の ‹ › を出す(上の「前のレース/次のレース」が見えている間は隠す)
 function updateDetailFloat() {
@@ -1401,7 +1409,7 @@ function updateDetailFloat() {
   const f = sh.querySelector(".detail-float"); if (!f) return;
   const nav = sh.querySelector(".detail-nav"), head = sh.querySelector(".sheet-head");
   const hb = head ? head.getBoundingClientRect().bottom : 0;
-  f.classList.toggle("show", !!nav && nav.getBoundingClientRect().bottom < hb + 2);
+  f.classList.toggle("show", !!nav && (S.floatPinned || nav.getBoundingClientRect().bottom < hb + 2));
 }
 (() => { const sh = $("#sheet"); if (!sh) return;
   sh.addEventListener("scroll", updateDetailFloat, { passive: true });
@@ -1415,6 +1423,12 @@ document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || t.closest("form")) return;
   if (t.id === "back") { try { history.back(); } catch {} closeSheet(); return; }
   if (t.dataset.detailStep) {
+    S.floatPinned = true;   // 下の ‹ › で送ったら、次のレースでも出したままにする
+    if (S.focusNav) {   // 馬の一覧から開いた時: 次の「対象の馬」へ(同じレースの別の馬もあり)
+      const j = S.focusIdx + Number(t.dataset.detailStep), it = S.focusNav[j];
+      if (it) { S.focusIdx = j; S.focus = null; if (S.detailNavGroup.startsWith("sig:")) S.nextFocusLabel = "👀 この馬"; openRace(it.id, S.detailNavGroup, true, it.no); }
+      return;
+    }
     const index = S.detailNav.indexOf(S.detailRaceId);
     const id = S.detailNav[index + Number(t.dataset.detailStep)];
     if (id) openRace(id, S.detailNavGroup, true);
@@ -1485,7 +1499,19 @@ document.addEventListener("click", e => {
     const nb = $("#sheet .horse-sort"); if (nb) nb.scrollLeft = left; $("#sheet").scrollTop = top;
     return;
   }
-  if (t.dataset.race) { openRace(t.dataset.race, t.dataset.raceGroup || "race", false, t.dataset.hno ?? null); return; }
+  if (t.dataset.race) {
+    // おすすめ・狙い/危険などの「馬の一覧」から開いた時は、一覧の並びのまま 前/次 で「次の対象の馬」へ送れるように覚えておく
+    S.focusNav = null; S.floatPinned = false;
+    const g0 = t.dataset.raceGroup || "race";
+    if (t.dataset.hno != null && t.dataset.hno !== "" && t.closest("#view")) {
+      const items = [...document.querySelectorAll("#view [data-race][data-hno]")].filter(e => (e.dataset.raceGroup || "race") === g0 && e.dataset.hno !== "");
+      const seen = new Set(), uniq = items.filter(e => { const k = e.dataset.race + "|" + e.dataset.hno; if (seen.has(k)) return false; seen.add(k); return true; });
+      const idx = uniq.findIndex(e => e.dataset.race === t.dataset.race && e.dataset.hno === t.dataset.hno);
+      if (uniq.length > 1 && idx >= 0) { S.focusNav = uniq.map(e => ({ id: e.dataset.race, no: e.dataset.hno })); S.focusIdx = idx; }
+    }
+    if (g0.startsWith("sig:")) S.nextFocusLabel = "👀 この馬";   // 狙い・危険から開いた馬に「おすすめ」と出さない
+    openRace(t.dataset.race, g0, false, t.dataset.hno ?? null); return;
+  }
 });
 document.addEventListener("change", e => {
   const days = S.snap ? viewDays() : [];
