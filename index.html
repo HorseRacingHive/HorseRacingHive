@@ -933,75 +933,70 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
 </style>
 <!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
-<div id="kbLoader" style="position:fixed;inset:0;z-index:2147483000;background:#0b0b0a;display:flex;align-items:center;justify-content:center;transition:opacity .15s">
-  <div style="background:#444441;border:3px solid #2C2C2A;border-radius:10px;padding:8px;width:min(88vw,420px)">
-    <canvas id="kbLoaderCv" style="width:100%;display:block;border-radius:3px"></canvas>
-  </div>
+<!-- 2026-10-29 蜂ゴツン版(正面向き・かわいい蜂。ぶつかると目が><になる): 読み込み中は蜂が飛び回り、終わったら画面いっぱいにぶつかって(約0.6秒)開く。絵はSVGとCSSだけで軽い -->
+<style>
+#kbLoader{position:fixed;inset:0;z-index:2147483000;background:#0b0b0a;overflow:hidden;transition:opacity .18s}
+#kbLoader .kb-t{position:absolute;left:0;right:0;bottom:22%;text-align:center;font-family:Georgia,"Times New Roman",serif;font-size:20px;letter-spacing:.4em;color:#D8B25A}
+#kbLoader .kb-bee{position:absolute;left:50%;top:45%;width:60px;height:60px;margin:-30px 0 0 -30px;animation:kbWander 2.2s ease-in-out infinite;will-change:transform}
+#kbLoader .kb-ex{opacity:0}#kbLoader.hit .kb-eo{animation:kbOff .01s .28s forwards}#kbLoader.hit .kb-ex{animation:kbOn .01s .28s forwards}@keyframes kbOff{to{opacity:0}}#kbLoader .kb-wl{transform-box:fill-box;transform-origin:right center;animation:kbWing .08s linear infinite}#kbLoader .kb-wr{transform-box:fill-box;transform-origin:left center;animation:kbWing .08s linear infinite}
+#kbLoader .kb-crack,#kbLoader .kb-flash{position:absolute;inset:0;opacity:0;pointer-events:none}
+#kbLoader .kb-flash{background:#fff}
+#kbLoader.hit .kb-bee{animation:kbHit .3s cubic-bezier(.5,0,.9,.5) forwards}
+#kbLoader.hit .kb-crack{animation:kbOn .01s .28s forwards}
+#kbLoader.hit .kb-flash{animation:kbFlash .2s .28s}
+#kbLoader.hit{animation:kbShake .2s .28s}
+@keyframes kbWander{0%{transform:translate(-50px,-50px) scale(.35) rotate(-8deg)}25%{transform:translate(45px,-25px) scale(.45) rotate(8deg)}50%{transform:translate(15px,30px) scale(.6) rotate(-5deg)}75%{transform:translate(-40px,5px) scale(.45) rotate(6deg)}100%{transform:translate(-50px,-50px) scale(.35) rotate(-8deg)}}
+@keyframes kbHit{0%{transform:scale(.6)}90%{transform:scale(9)}100%{transform:scale(10.5,8.6)}}
+@keyframes kbWing{50%{transform:scaleX(.4)}}
+@keyframes kbOn{to{opacity:1}}
+@keyframes kbFlash{0%{opacity:.85}100%{opacity:0}}
+@keyframes kbShake{25%{transform:translate(5px,-4px)}50%{transform:translate(-5px,4px)}75%{transform:translate(3px,1px)}}
+@media (prefers-reduced-motion: reduce){#kbLoader .kb-bee{animation:none}}
+</style>
+<div id="kbLoader" aria-label="読み込み中">
+  <div class="kb-t">HIVE</div>
+  <div class="kb-bee"><svg viewBox="0 0 60 60" width="60" height="60">
+    <g transform="rotate(-20 13 22)"><ellipse class="kb-wl" cx="13" cy="22" rx="10" ry="7.5" fill="#dff3ff" opacity=".85" stroke="#fff" stroke-width=".8"/></g>
+    <g transform="rotate(20 47 22)"><ellipse class="kb-wr" cx="47" cy="22" rx="10" ry="7.5" fill="#dff3ff" opacity=".85" stroke="#fff" stroke-width=".8"/></g>
+    <ellipse cx="30" cy="46" rx="13" ry="10.5" fill="#FFC93C"/>
+    <path d="M18.5 43 Q30 47 41.5 43 L42.5 46.5 Q30 51 17.5 46.5 Z" fill="#4a3112"/>
+    <path d="M20 51 Q30 54.5 40 51 L38 54 Q30 57 22 54 Z" fill="#4a3112"/>
+    <path d="M24 13 Q21 5 16 4.5 M36 13 Q39 5 44 4.5" stroke="#4a3112" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="16" cy="4.5" r="2.8" fill="#4a3112"/><circle cx="44" cy="4.5" r="2.8" fill="#4a3112"/>
+    <circle cx="30" cy="27" r="17" fill="#FFD84D"/>
+    <g class="kb-eo"><ellipse cx="23" cy="27" rx="4" ry="5" fill="#2a1a08"/><ellipse cx="37" cy="27" rx="4" ry="5" fill="#2a1a08"/>
+      <circle cx="24.4" cy="25" r="1.7" fill="#fff"/><circle cx="38.4" cy="25" r="1.7" fill="#fff"/><circle cx="22" cy="29.5" r=".8" fill="#fff"/><circle cx="36" cy="29.5" r=".8" fill="#fff"/></g>
+    <g class="kb-ex" stroke="#2a1a08" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 23.5 L25.5 27 L20 30.5"/><path d="M40 23.5 L34.5 27 L40 30.5"/></g>
+    <ellipse cx="17.5" cy="33" rx="3.6" ry="2.2" fill="#ff8fa3" opacity=".75"/><ellipse cx="42.5" cy="33" rx="3.6" ry="2.2" fill="#ff8fa3" opacity=".75"/>
+    <path d="M27.5 33 Q30 35.5 32.5 33" stroke="#2a1a08" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></div>
+  <svg class="kb-crack" viewBox="0 0 200 380" preserveAspectRatio="none"><g stroke="#fff" stroke-width="1.4" fill="none" opacity=".9" vector-effect="non-scaling-stroke">
+    <path d="M100 190 L60 120 L40 60 L20 0 M60 120 L10 110"/><path d="M100 190 L150 130 L175 70 L200 40 M150 130 L200 140"/>
+    <path d="M100 190 L130 260 L150 330 L160 380 M130 260 L200 280"/><path d="M100 190 L55 250 L30 320 L0 360 M55 250 L0 230"/>
+    <path d="M100 190 L0 185 M100 190 L200 200 M100 190 L95 380 M100 190 L105 0"/>
+    <path d="M85 175 L115 172 L118 205 L84 207 Z"/><path d="M70 160 L132 155 L138 222 L66 226 Z" opacity=".6"/></g></svg>
+  <div class="kb-flash"></div>
 </div>
 <script>
 (function(){
-  var box=document.getElementById('kbLoader'),cv=document.getElementById('kbLoaderCv');
-  if(!box||!cv)return;
-  var F={'0':['01110','10001','10011','10101','11001','10001','01110'],'1':['00100','01100','00100','00100','00100','00100','01110'],'2':['01110','10001','00001','00010','00100','01000','11111'],'3':['11111','00010','00100','00010','00001','10001','01110'],'4':['00010','00110','01010','10010','11111','00010','00010'],'5':['11111','10000','11110','00001','00001','10001','01110'],'6':['00110','01000','10000','11110','10001','10001','01110'],'7':['11111','00001','00010','00100','01000','01000','01000'],'8':['01110','10001','10001','01110','10001','10001','01110'],'9':['01110','10001','10001','01111','00001','00010','01100'],':':['00000','01100','01100','00000','01100','01100','00000'],'.':['00000','00000','00000','00000','00000','01100','01100']};
-  var W=340,H=222,dpr=Math.min(window.devicePixelRatio||1,2),ON='#FFA81E',OFF='#2b2216',BG='#121211';
-  var x=cv.getContext('2d');cv.width=W*dpr;cv.height=H*dpr;cv.style.aspectRatio=W+'/'+H;x.scale(dpr,dpr);
-
-  /* 文字を粒々に変換（着差のカタカナ用） */
-  function rast(s,h,cols){var o=document.createElement('canvas');o.width=cols;o.height=h;var c=o.getContext('2d');c.font='500 '+(h-1)+'px sans-serif';c.textBaseline='top';c.fillText(s,0,0);var d=c.getImageData(0,0,cols,h).data,b=[];for(var r=0;r<h;r++){var row='';for(var k=0;k<cols;k++)row+=d[(r*cols+k)*4+3]>110?'1':'0';b.push(row);}return b;}
-  var slots=[];
-  function slot(ox,oy,cols,rows,D,G){var s={ox:ox,oy:oy,cols:cols,rows:rows,D:D,G:G};slots.push(s);return s;}
-  function dots(ctx,s,bits,col){ctx.fillStyle=col;for(var r=0;r<s.rows;r++)for(var c=0;c<s.cols;c++){if(bits&&bits[r]&&bits[r][c]!=='1')continue;ctx.beginPath();ctx.arc(s.ox+c*(s.D+s.G)+s.D/2,s.oy+r*(s.D+s.G)+s.D/2,s.D/2,0,7);ctx.fill();}}
-
-  var R=[32,80,128].map(function(y){return{rank:slot(30,y,5,7,4,1.2),n1:slot(116,y,5,7,4,1.2),n2:slot(148,y,5,7,4,1.2),diff:slot(222,y,26,11,2.6,0.7)};});
-  var T=[0,1,2,3,4,5].map(function(i){return slot(196+i*21,186,5,7,2.6,0.8);});
-  var diffBits=[null,rast('クビ',11,26),rast('1/2',11,26)];
-
-  /* 枠と消灯中の電球は最初に1回だけ描く */
-  var st=document.createElement('canvas');st.width=W*dpr;st.height=H*dpr;var s=st.getContext('2d');s.scale(dpr,dpr);
-  s.fillStyle=BG;s.fillRect(0,0,W,H);
-  s.fillStyle='#B4B2A9';s.font='500 11px sans-serif';s.textAlign='center';
-  s.fillText('着順',43,20);s.fillText('馬番',144,20);s.fillText('着差',265,20);
-  s.fillStyle='#2C2C2A';[74,122,170].forEach(function(y){s.fillRect(10,y,W-20,1);});s.fillRect(92,26,1,140);s.fillRect(204,26,1,140);
-  s.fillStyle='#B4B2A9';s.textAlign='left';s.fillText('タイム',150,200);
-  slots.forEach(function(sl){dots(s,sl,null,OFF);});
-
-  var FIN=['8','2','1'],LOCK=[32,22,12],TIME='2:34.5';
-  function lamp(t,lx,on,col){x.fillStyle=on?col:'#2b2216';x.fillRect(lx,182,54,28);x.fillStyle=on?'#fff':'#55493a';x.font='500 15px sans-serif';x.textAlign='center';x.fillText(t,lx+27,201);}
-
-  /* 読み込み状況の見張り（通信が落ち着いたら完了） */
-  var pending=0,loaded=document.readyState==='complete',quiet=0,doneReq=false,start=Date.now();
+  var box=document.getElementById('kbLoader');
+  if(!box)return;
+  /* 読み込み状況の見張り（通信が落ち着いたら、蜂がぶつかって閉じる） */
+  var pending=0,loaded=document.readyState==='complete',start=Date.now(),timer,ended=false;
   var of=window.fetch,os=XMLHttpRequest.prototype.send;
   if(of)window.fetch=function(){pending++;return of.apply(this,arguments).finally(function(){pending--;});};
   XMLHttpRequest.prototype.send=function(){pending++;this.addEventListener('loadend',function(){pending--;},{once:true});return os.apply(this,arguments);};
   window.addEventListener('load',function(){loaded=true;});
-  window.KeibaLoader={done:function(){doneReq=true;}};
-
-  var k=0,hold=0,timer;
-  function frame(){
-    if(!doneReq){quiet=(loaded&&pending<=0)?quiet+1:0;if(quiet>=1||Date.now()-start>20000)doneReq=true;}
-    if(doneReq)k=40;else if(!doneReq)k=Math.min(k+1,31);
-    x.drawImage(st,0,0,W,H);
-    for(var i=0;i<3;i++){
-      var r=R[i];dots(x,r.rank,F[String(i+1)],ON);
-      var lock=k>=LOCK[i],v=lock?FIN[i]:String(1+Math.floor(Math.random()*18));
-      if(v.length>1)dots(x,r.n1,F[v[0]],ON);
-      dots(x,r.n2,F[v[v.length-1]],ON);
-      if(lock&&diffBits[i])dots(x,r.diff,diffBits[i],ON);
-    }
-    var done=k>=40;
-    if(done)for(var j=0;j<TIME.length;j++)dots(x,T[j],F[TIME[j]],ON);
-    lamp('審議',16,!done&&(k>>2)%2===0,'#BA7517');
-    lamp('確定',78,done,'#E24B4A');
-    if(done&&++hold>=1)finish();   /* 読み込みが終わったらすぐ閉じる(最速優先 2026-10-29) */
-  }
   function finish(){
+    if(ended)return; ended=true;
     clearInterval(timer);
     if(window.fetch!==of&&of)window.fetch=of;
     XMLHttpRequest.prototype.send=os;
-    box.style.opacity='0';
-    setTimeout(function(){box.remove();},160);
+    box.classList.add('hit');   /* ゴツン(0.3秒で画面いっぱい→ヒビ) */
+    setTimeout(function(){box.style.opacity='0';},560);
+    setTimeout(function(){box.remove();},760);
   }
-  timer=setInterval(frame,120);frame();
+  window.KeibaLoader={done:finish};
+  timer=setInterval(function(){if((loaded&&pending<=0)||Date.now()-start>20000)finish();},100);
 })();
 </script>
 <!-- ===== 着順掲示板ローディング ここまで ===== -->
