@@ -911,6 +911,12 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 @media (prefers-reduced-motion: reduce) { .rt-row.rt-next::after, .rt-row.rt-next .rt-card, .rt-bar i { animation: none; } }
 
 /* 馬場の帯を細長く・凡例は小さく右下に(2026-10-29) */
+
+/* レースの格付け(2026-10-29): おすすめ馬の一番高い★の数＋言葉で ★5勝負・★4注目・★2〜3買い(★表示はおすすめタブ・Discordとそろえる) */
+.rtier{display:inline-block;font-size:11px;font-weight:700;line-height:1.5;padding:0 7px;border-radius:999px;margin-right:4px;white-space:nowrap;vertical-align:middle}
+.rtier.t3{background:#E53935;color:#fff}
+.rtier.t2{background:#FB8C00;color:#fff}
+.rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
 </style>
 
 <div class="lock" id="lock">
@@ -979,6 +985,11 @@ window.addEventListener("resize", () => {
 const pct = (p, d = 1) => p == null ? "—" : (p * 100).toFixed(d) + "%";
 const evf = e => e == null ? "—" : e.toFixed(2);
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
+// レースの格付け(2026-10-29): おすすめ馬(★2〜5)の一番高い★で決める。★5 → 勝負 / ★4 → 注目 / ★2〜3 → 買い。★の数はそのまま出す(おすすめタブ・Discordとそろえる)
+const RACE_TIER = { 3: "勝負", 2: "注目", 1: "買い" };
+const raceTier = st => st >= 5 ? 3 : st >= 4 ? 2 : st >= 2 ? 1 : 0;
+const tierHtml = st => st >= 2 ? `<span class="stars t${st}">${starStr(st)}</span>` : "";   // 札はおすすめタブと同じ★表示(2026-10-29)
+
 const yenPM = n => n == null ? "—" : (n >= 0 ? "+" : "−") + Math.abs(Math.round(n)).toLocaleString("ja-JP") + "円";
 // 収支(案A): 投資と払戻を並べ、収支の数字はカウントアップ。periods = { key: { lab, invest, payout, n, hit } }
 function moneyA(periods, cur, attr) {
@@ -1582,10 +1593,10 @@ function rtCard(r, isNext, isToday) {
   if (r.done && r.top.length) {
     const w = r.top[0], rest = r.top.slice(1);
     l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${rtWaku(w.no, r.field, w.fr)}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
-      ${rest.length || r.osN || r.lowN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
+      ${rest.length || r.osN || r.lowN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">${r.osSt ? tierHtml(r.osSt) : "おすすめ"} ${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
   } else {
     const pd = postDate(r.post), started = pd && pd <= Date.now();
-    const os = r.osN ? `<span class="rt-os">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭が出走</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : "";
+    const os = r.osN ? `<span class="rt-os">${r.osSt ? tierHtml(r.osSt) : "おすすめ"} ${r.osN}頭が出走</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : "";
     l2 = isNext
       ? `<div class="rt-pre"><span class="rt-cd">発走まであと <span data-cd="${esc(r.post)}" data-fallback="まもなく"></span></span>${os}</div><div class="rt-pre"><span class="go">予想を見る ›</span></div>`
       : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
