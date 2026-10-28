@@ -755,61 +755,68 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .result-place.rp-hit.rp-1 .result-mark { background: #fff; color: rgb(var(--mk)); }
 .result-place.rp-hit.rp-1.mk-ren { color: #2b1d0e; }
 /* ===== レース一覧: タイムラインのカード(2026-10-29) ===== */
-.rt-prog { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 8px 0 12px; }
+.rt-prog { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; margin: 6px 0 10px; }
 .rt-prog-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.rt-prog-top b { font-family: var(--f-disp); font-size: 15px; color: var(--ink); }
-.rt-prog-top span { color: var(--muted); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+.rt-prog-top b { font-family: var(--f-disp); font-size: 13px; color: var(--ink); }
+.rt-prog-top span { color: var(--muted); font-weight: 700; font-size: 11.5px; white-space: nowrap; }
 .rt-prog-top span em { font-style: normal; color: #db2777; }
-.rt-bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 7px; }
+.rt-bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 7px; }
 .rt-bar i { display: block; height: 100%; background: linear-gradient(90deg, #d4a73a, #f7c948); border-radius: 99px; animation: barGrow .8s ease-out; }
-.rt-list { position: relative; display: grid; gap: 10px; padding-left: 22px; }
+.rt-list { position: relative; display: grid; gap: 7px; padding-left: 18px; }
 .rt-row { position: relative; }
-.rt-row::before { content: ""; position: absolute; left: -15px; top: -10px; bottom: -10px; width: 3px; border-radius: 2px; background: var(--line); }
+.rt-row::before { content: ""; position: absolute; left: -12px; top: -7px; bottom: -7px; width: 3px; border-radius: 2px; background: var(--line); }
 .rt-row:first-child::before { top: 50%; }
 .rt-row:last-child::before { bottom: 50%; }
 .rt-row.done::before { background: #d4a73a; }
-.rt-row::after { content: ""; position: absolute; left: -20px; top: 50%; width: 13px; height: 13px; margin-top: -6.5px; border-radius: 50%; background: var(--panel); border: 3px solid var(--line); box-sizing: border-box; }
+.rt-row::after { content: ""; position: absolute; left: -16.5px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--panel); border: 3px solid var(--line); box-sizing: border-box; }
 .rt-row.done::after { background: #f7c948; border-color: #d4a73a; }
 .rt-row.rt-next::after { background: #ec4899; border-color: #fbcfe8; animation: rtPulse 1.6s ease-out infinite; }
-.rt-card { display: grid; grid-template-columns: 52px minmax(0, 1fr); width: 100%; text-align: left; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; box-shadow: var(--shadow); color: var(--ink); font: inherit; }
-.rt-side { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #fff; padding: 10px 2px; }
+.rt-card { display: grid; grid-template-columns: 42px minmax(0, 1fr); width: 100%; text-align: left; padding: 0; border: 1px solid var(--line); border-radius: 11px; background: var(--panel); overflow: hidden; box-shadow: var(--shadow); color: var(--ink); font: inherit; }
+.rt-side { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #fff; padding: 6px 1px; }
 .rt-side.turf { background: linear-gradient(180deg, #43a35f, #2b7a44); }
 .rt-side.dirt { background: linear-gradient(180deg, #a9744a, #7a4f2e); }
 .rt-side.jump { background: linear-gradient(180deg, #7186a1, #4f6178); }
-.rt-side b { font-family: var(--f-disp); font-size: 21px; line-height: 1; font-weight: 900; }
-.rt-side small { font-size: 11px; font-weight: 800; opacity: .95; }
-.rt-body { padding: 9px 12px 10px; min-width: 0; display: grid; gap: 6px; align-content: center; }
-.rt-l1 { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); font-weight: 700; min-width: 0; white-space: nowrap; }
-.rt-cls { padding: 1px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 800; background: var(--soft); color: var(--accent); border: 1px solid rgba(212,167,58,.35); flex: none; }
+.rt-side b { font-family: var(--f-disp); font-size: 15px; line-height: 1; font-weight: 900; }
+.rt-side small { font-size: 9.5px; font-weight: 800; opacity: .95; }
+.rt-body { padding: 6px 10px 7px; min-width: 0; display: grid; gap: 3px; align-content: center; }
+.rt-l1 { display: flex; align-items: center; gap: 5px; font-size: 11px; line-height: 18px; color: var(--muted); font-weight: 700; min-width: 0; white-space: nowrap; }
+.rt-cls { padding: 0 6px; border-radius: 99px; font-size: 10px; line-height: 16px; font-weight: 800; background: var(--soft); color: var(--accent); border: 1px solid rgba(212,167,58,.35); flex: none; }
 .rt-cls.new { background: #fce7f3; color: #be185d; border-color: #f9a8d4; }
 .rt-cls.g { background: linear-gradient(90deg, #f7c948, #e8962b); color: #3a2604; border-color: transparent; }
 .rt-name { color: var(--ink); font-weight: 800; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.rt-gd { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 10.5px; color: #fff; font-weight: 800; flex: none; }
+.rt-gd { width: 15px; height: 15px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9px; color: #fff; font-weight: 800; flex: none; }
 .rt-gd.g1 { background: #3f8f4e; } .rt-gd.g2 { background: #d4a92e; color: #2a1d04; } .rt-gd.g3 { background: #c06a2a; } .rt-gd.g4 { background: #3f5fb0; }
-.rt-post { margin-left: auto; font-family: var(--f-disp); font-size: 15px; color: var(--ink); font-weight: 900; flex: none; padding-left: 6px; }
-.rt-win { display: flex; align-items: center; gap: 7px; min-width: 0; }
-.rt-win .waku { min-width: 25px; height: 25px; font-size: 12.5px; }
-.rt-win b { font-size: 16px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.rt-trophy { width: 19px; height: 19px; flex: none; color: var(--muted); opacity: .35; }
+.rt-post { margin-left: auto; font-family: var(--f-disp); font-size: 12.5px; color: var(--ink); font-weight: 900; flex: none; padding-left: 6px; }
+.rt-win { display: grid; grid-template-columns: 15px 20px minmax(0, max-content) 17px; justify-content: start; align-items: center; gap: 5px; min-width: 0; height: 22px; }
+.rt-win .waku { min-width: 20px; width: 20px; height: 20px; font-size: 11px; border-radius: 5px; }
+.rt-win b { font-size: 14px; line-height: 20px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.rt-trophy { width: 15px; height: 15px; display: block; flex: none; color: var(--muted); opacity: .35; }
 .rt-trophy.gold { color: #e8b23a; opacity: 1; filter: drop-shadow(0 0 4px rgba(247,201,72,.75)); }
-.rt-mk { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; font-weight: 900; color: #fff; flex: none; line-height: 1; }
-.rt-mk.sm { width: 16px; height: 16px; font-size: 9px; }
+.rt-mk { width: 17px; height: 17px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9.5px; box-sizing: border-box; font-weight: 900; color: #fff; flex: none; line-height: 1; }
+.rt-mk.sm { width: 14px; height: 14px; font-size: 8px; }
 .rt-mk.m-hon { background: rgb(214,40,40); } .rt-mk.m-tai { background: rgb(30,100,200); } .rt-mk.m-tan { background: rgb(20,140,70); }
 .rt-mk.m-ren { background: rgb(212,165,0); } .rt-mk.m-chu { background: rgb(235,115,20); } .rt-mk.m-ana { background: rgb(214,70,140); }
 .rt-mk.m-hosi { background: rgb(120,120,120); }
 .rt-mk.m-none { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
-.rt-sub { font-size: 12px; color: var(--muted); display: flex; gap: 14px; align-items: center; padding-left: 26px; font-weight: 700; }
-.rt-sub span { display: inline-flex; align-items: center; gap: 3px; }
-.rt-num { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 50%; font-size: 10.5px; font-weight: 800; border: 1px solid rgba(0,0,0,.2); padding: 0 2px; }
-.rt-pre { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 800; color: var(--accent); flex-wrap: wrap; }
+.rt-sub { font-size: 10.5px; color: var(--muted); display: flex; gap: 12px; align-items: center; padding-left: 20px; font-weight: 700; line-height: 16px; }
+.rt-sub > span { display: inline-flex; align-items: center; gap: 3px; }
+.rt-sub .rt-num { display: inline-grid; place-items: center; min-width: 15px; width: auto; height: 15px; border-radius: 50%; font-size: 9px; font-weight: 800; border: 1px solid rgba(0,0,0,.2); padding: 0 2px; line-height: 1; box-sizing: border-box; }
+.rt-pre { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11.5px; line-height: 18px; font-weight: 800; color: var(--accent); flex-wrap: wrap; }
 .rt-pre .go { color: var(--muted); font-weight: 700; }
-.rt-os { padding: 2px 9px; border-radius: 99px; background: linear-gradient(90deg, #f7c948, #e8b23a); color: #3a2604; font-size: 12px; font-weight: 900; }
-.rt-cd { color: #db2777; font-weight: 900; font-size: 13px; }
+.rt-os { padding: 0 7px; border-radius: 99px; background: linear-gradient(90deg, #f7c948, #e8b23a); color: #3a2604; font-size: 10.5px; line-height: 17px; font-weight: 900; }
+.rt-cd { color: #db2777; font-weight: 900; font-size: 12px; }
 .rt-row.rt-next .rt-card { border: 2px solid #ec4899; animation: rtGlow 2s ease-in-out infinite; }
 .rt-row.done.hit .rt-card { border-color: #e8b23a; box-shadow: 0 0 0 1px #e8b23a, var(--shadow); }
 @keyframes rtPulse { 0% { box-shadow: 0 0 0 0 rgba(236,72,153,.6); } 100% { box-shadow: 0 0 0 9px rgba(236,72,153,0); } }
 @keyframes rtGlow { 0%, 100% { box-shadow: 0 0 0 2px rgba(236,72,153,.15), 0 0 10px rgba(236,72,153,.25); } 50% { box-shadow: 0 0 0 4px rgba(236,72,153,.25), 0 0 22px rgba(236,72,153,.5); } }
 @media (prefers-reduced-motion: reduce) { .rt-row.rt-next::after, .rt-row.rt-next .rt-card, .rt-bar i { animation: none; } }
+
+/* 馬場の帯を細長く・凡例は小さく右下に(2026-10-29) */
+.baba-strip { padding: 2px 10px; border-radius: 8px; }
+.baba-strip .bv { gap: 3px; }
+.baba-strip .bv b { font-size: 11px; }
+.baba-strip .bc { width: 18px; height: 18px; font-size: 10px; }
+.baba-note { text-align: right; font-size: 8.5px; line-height: 1.2; margin: 1px 4px -2px 0; color: rgba(251,241,220,.45); }
 </style>
 
 <div class="lock" id="lock">
@@ -1386,9 +1393,19 @@ const RT_MK = { "◎": "m-hon", "○": "m-tai", "▲": "m-tan", "△": "m-ren", 
 const rtMk = (m, sm) => `<span class="rt-mk ${RT_MK[m] || "m-none"}${sm ? " sm" : ""}">${esc(m || "無")}</span>`;
 const RT_GD = { "良": ["良", "g1"], "稍重": ["稍", "g2"], "重": ["重", "g3"], "不良": ["不", "g4"] };
 const RT_TROPHY = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zm0 4H6v1a2 2 0 0 0 1.2 1.8A5 5 0 0 1 7 8.5V7zm10 0v1.5c0 .4 0 .9-.2 1.3A2 2 0 0 0 18 8V7h-1z"/><rect x="7" y="20" width="10" height="2" rx="1"/></svg>`;
+function rtWaku(no, field, fr) {
+  if (fr) return fr;
+  no = Number(no); field = Number(field);
+  if (!no || !field) return 0;
+  if (field <= 8) return no;
+  const base = Math.floor(field / 8), extra = field % 8;
+  let n = 0;
+  for (let w = 1; w <= 8; w++) { n += base + (w > 8 - extra ? 1 : 0); if (no <= n) return w; }
+  return 8;
+}
 function rtCard(r, isNext, isToday) {
   const s = String(r.course || ""), surf = s[0] === "芝" ? "turf" : s[0] === "障" ? "jump" : "dirt";
-  const surfJa = { turf: "芝", dirt: "ダート", jump: "障害" }[surf], dist = s.replace(/^[芝ダ障]/, "");
+  const surfJa = { turf: "芝", dirt: "ダート", jump: "障害" }[surf], dist = s.replace(/^(芝|ダート|ダ|障害|障)/, "");
   const cls = String(r.cls || "").replace("以上", "上").replace(/クラス$/, ""), graded = /G|重賞|L|OP|オープン/.test(cls);
   const showName = r.name && r.name !== r.cls && !/(新馬|未勝利|[123]勝|クラス|オープン)$/.test(r.name);   // 特別戦・重賞の名前だけ出す
   const gd = RT_GD[r.going];
@@ -1397,8 +1414,8 @@ function rtCard(r, isNext, isToday) {
   let l2;
   if (r.done && r.top.length) {
     const w = r.top[0], rest = r.top.slice(1);
-    l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${w.fr || 0}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
-      ${rest.length ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${x.fr || 0}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}</div>` : ""}`;
+    l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${rtWaku(w.no, r.field, w.fr)}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
+      ${rest.length ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}</div>` : ""}`;
   } else {
     const pd = postDate(r.post), started = pd && pd <= Date.now();
     const os = r.osN ? `<span class="rt-os">★おすすめ ${r.osN}頭が出走</span>` : "";
