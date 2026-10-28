@@ -1190,7 +1190,7 @@ function announceBlock(list, showEmpty) {
   return h + `</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
-const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null,
+const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null, venuePicked: false, resPicked: false,
   detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: { key: "no", direction: "asc" } };
 
 /* ---------------------------------------------------------------- 合言葉で開く */
@@ -1372,7 +1372,7 @@ function ledBabaHtml(venues) {
   const cls = { "良": "g1", "稍重": "g2", "重": "g3", "不良": "g4" };
   const short = { "稍重": "稍" };
   const resMode = S.tab === "race" && S.raceMode === "result";
-  const sel = S.tab !== "race" ? null : (resMode ? S.resVenue : S.venue) || curDay()?.venues?.[0]?.venue;   // 下線は会場で切り替える「レース・結果」タブのときだけ
+  const sel = S.tab !== "race" ? null : resMode ? (S.resPicked ? S.resVenue : null) : (S.venuePicked ? S.venue : null);   // 下線は「自分で会場を押したとき」だけ。未選択なら先頭の会場で代わりに埋めない(2026-10-29 再発防止)
   const g = (k, raw) => { const x = babaGoing(raw); return `<span class="lb-k">${k}</span><span class="${cls[x] || "g0"}">${short[x] || x || "－"}</span>`; };
   return venues.map(v => `<button type="button" class="lb-v${v.venue === sel ? " on" : ""}" ${resMode ? "data-res-venue" : "data-venue"}="${esc(v.venue)}" title="${esc(v.venue)} 芝${esc(babaGoing(v.shiba) || "未発表")}・ダ${esc(babaGoing(v.dirt) || "未発表")}"><span class="lb-n">${esc(v.venue)}</span>${g("芝", v.shiba)}${g("ダ", v.dirt)}</button>`).join("");
 }
@@ -1508,9 +1508,9 @@ function resultsList(d) {
   const all = resultRaces(d);
   if (!all.length) return `<div class="card empty">この日の確定結果はまだありません</div>`;
   const vs = [...new Set(all.map(r => r.venue))];
-  if (!vs.includes(S.resVenue)) S.resVenue = vs[0];
+  if (!vs.includes(S.resVenue)) { S.resVenue = vs[0]; S.resPicked = false; }
   const list = all.filter(r => r.venue === S.resVenue);
-  return `<div class="seg vled" style="margin-bottom:8px;--vn:${vs.length}">${vs.map(v => `<button data-res-venue="${esc(v)}" class="${v === S.resVenue ? "on" : ""}"><span class="vn">${esc(v)}</span><span class="vs">${all.filter(r => r.venue === v).length}R 確定</span></button>`).join("")}</div>
+  return `<div class="seg vled" style="margin-bottom:8px;--vn:${vs.length}">${vs.map(v => `<button data-res-venue="${esc(v)}" class="${S.resPicked && v === S.resVenue ? "on" : ""}"><span class="vn">${esc(v)}</span><span class="vs">${all.filter(r => r.venue === v).length}R 確定</span></button>`).join("")}</div>
     <div class="card list">${list.map(r => {
       const top = r.horses.filter(x => x.fin != null && x.fin >= 1).sort((a, b) => a.fin - b.fin).slice(0, 3);
       const honWin = top[0]?.mark === "◎";
@@ -1619,16 +1619,16 @@ function viewRaces(d) {
   if (S.raceMode === "result") return `<section id="res-sec"><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section><p class="note">もう一度「結果」タブを押すと、レースの一覧に戻ります</p>`;
   const vs = d.venues;
   if (!vs.length) return `<div class="card empty">レースがありません</div>`;
-  if (!vs.some(v => v.venue === S.venue)) S.venue = vs[0].venue;
+  if (!vs.some(v => v.venue === S.venue)) { S.venue = vs[0].venue; S.venuePicked = false; }   // 一覧の表示用に先頭を出すだけ(選んだことにはしない)
   const v = vs.find(x => x.venue === S.venue);
-  return `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${x.venue === S.venue ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
+  return `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${S.venuePicked && x.venue === S.venue ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
   <p class="race-warn">※全レースの予想を載せていますが、全レースを買うと回収率はマイナスになります。買うのは「おすすめ」の馬にしぼり、ここは参考としてご覧ください。</p></div>
   ` + (() => {
     const osAll = d.osusume || [], os = osAll.filter(o => (o.st || 0) >= 2);   // おすすめとして数えるのは★2以上。★1は薄い札だけ
     const list = v.races.map(r => {
       const top = [1, 2, 3].map(p => r.horses.find(h => h.fin === p)).filter(Boolean).map(h => ({ pos: h.fin, no: h.no, fr: h.fr, name: h.name, mark: h.mark }));
       return { id: r.id, no: r.no, course: r.course, cls: r.cls || "", name: r.name || "", field: r.field, going: r.going, post: r.post,
-        done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), lowN: osAll.filter(o => o.id === r.id && (o.st || 0) === 1).length, hit: os.some(o => o.id === r.id && o.fin === 1) };
+        done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), lowN: (r.horses || []).filter(h => (h.st || 0) === 1).length, hit: os.some(o => o.id === r.id && o.fin === 1) };
     });
     return raceTimeline(list, "asc", d.date === todayStr());
   })() + `<p class="note">もう一度「レース」タブを押すと、この日の全レース結果(1着〜3着)に切り替わります</p></div>`;
@@ -1911,10 +1911,10 @@ document.addEventListener("click", e => {
     const nb = document.querySelector(".horse-sort button[data-sig-sort]")?.parentElement; if (nb) nb.scrollLeft = left;
     window.scrollTo(0, y); return;
   }
-  if (t.dataset.resVenue) { S.resVenue = t.dataset.resVenue; render(); return; }
+  if (t.dataset.resVenue) { S.resVenue = t.dataset.resVenue; S.resPicked = true; render(); return; }
   if (t.dataset.venue) {
-    S.venue = t.dataset.venue;
-    if (t.closest("#days") && S.tab !== "race") { S.resVenue = S.venue; S.tab = "race"; store.set("hivep_tab", S.tab); window.scrollTo(0, 0); }   // 電光板の会場を押したら、その会場のレース一覧へ
+    S.venue = t.dataset.venue; S.venuePicked = true;
+    if (t.closest("#days") && S.tab !== "race") { S.resVenue = S.venue; S.resPicked = true; S.tab = "race"; store.set("hivep_tab", S.tab); window.scrollTo(0, 0); }   // 電光板の会場を押したら、その会場のレース一覧へ
     render(); return;
   }
   if (t.dataset.publicSort) {
