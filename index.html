@@ -592,6 +592,13 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .horse.fzx { opacity: .62; }
 .horse.fz1::before { content: "👑"; position: absolute; top: -10px; left: 14px; font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .fz.f1 .fz-hex { animation: none; } }
+
+.pick.has-fz { grid-template-columns: auto 1fr auto auto; }
+.pick.pz1 { border-color: var(--honey); border-left-color: var(--honey); background: linear-gradient(90deg, rgba(247,201,72,.2), var(--panel) 62%); box-shadow: 0 0 0 2px rgba(247,201,72,.28), 0 0 18px rgba(247,201,72,.18); }
+.pick.pz2 { border-left-color: var(--silver); background: linear-gradient(90deg, rgba(203,213,225,.10), var(--panel) 62%); }
+.pick.pz3 { border-left-color: var(--bronze); background: linear-gradient(90deg, rgba(217,160,106,.13), var(--panel) 62%); }
+.pick.pz1::after { content: "👑"; position: absolute; top: -11px; left: 28px; font-size: 15px; pointer-events: none; }
+.pick.pz1 .pill.hit { background: linear-gradient(135deg, var(--honey), var(--amber)); color: var(--comb); }
 </style>
 
 <div class="lock" id="lock">
@@ -990,12 +997,12 @@ function viewHome(d) {
   h += announceBlock(d.announce, d.date === todayStr());
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
-    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : "done-miss") : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">
+    <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">
       <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
-        <span class="t">${x.fin != null ? finPill(x.fin) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
+        <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎯 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
-      <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>
+      <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>${x.fin != null ? fzBlock(x.fin) : ""}
     </button>`;
   h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5<span class="sub">${os.length}頭</span></h2>`;
   if (os.length) {
@@ -1034,10 +1041,13 @@ const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価よ�
   "紐": ["himo", "🪢", "3着内に来やすい穴馬(ワイド・3連系の相手)"], "過剰": ["over", "🔸", "人気のわりに勝率が低く、単勝では割引が必要な馬。3着内率は平均並みなので、相手には残してOK"], "危険": ["danger", "⚠️", "人気ほど勝てていない人気馬(3着も危ない)"] };   // 買い材料 → 消し材料の順(ボタンの並び)
 SIG_INFO["すべて"] = ["all", "", "狙い・妙味・紐・過剰・危険のすべて"];
 // 下の「狙い・危険」タブを押すたびに すべて → 買い側(狙い・妙味・紐) → 消し側(過剰・危険) → すべて… と切り替わる(携帯用と同じ)
-const SIG_MODES = { all: ["すべて", "狙い", "妙味", "紐", "過剰", "危険"], buy: ["狙い", "妙味", "紐"], danger: ["過剰", "危険"] };
+SIG_INFO["狙いすべて"] = ["aim", "", "狙い・妙味・紐をまとめて表示"];
+SIG_INFO["危険すべて"] = ["danger", "", "過剰・危険をまとめて表示"];
+const SIG_MODES = { all: ["すべて", "狙い", "妙味", "紐", "過剰", "危険"], buy: ["狙いすべて", "狙い", "妙味", "紐"], danger: ["危険すべて", "過剰", "危険"] };
+const SIG_GROUP = { "すべて": ["狙い", "妙味", "紐", "過剰", "危険"], "狙いすべて": ["狙い", "妙味", "紐"], "危険すべて": ["過剰", "危険"] };
 const SIG_CYCLE = ["all", "buy", "danger"];
 const sigKindOf = x => x.sig && SIG_INFO[x.sig] ? x.sig : (x.himo ? "紐" : "");
-const sigPick = (all, k) => all.filter(x => k === "すべて" ? !!sigKindOf(x) || x.himo : k === "紐" ? x.himo : x.sig === k);
+const sigPick = (all, k) => all.filter(x => (SIG_GROUP[k] || [k]).some(g => g === "紐" ? x.himo : x.sig === g));
 const sigLabel = x => x.sig === "過剰" ? "過剰人気" : x.sig === "危険" && x.lv >= 2 ? "かなり危険" : x.sig;
 function viewSig(d) {
   const all = allHorses(d);
@@ -1045,7 +1055,7 @@ function viewSig(d) {
   const pick = k => sigPick(all, k).sort(byPost);
   const kinds = SIG_MODES[S.sigMode || "all"];
   if (!kinds.includes(S.sig)) S.sig = kinds[0];
-  let h = `<div class="seg">${kinds.map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1] ? SIG_INFO[k][1] + " " : ""}${k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
+  let h = `<div class="seg">${kinds.map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1] ? SIG_INFO[k][1] + " " : ""}${SIG_GROUP[k] ? "すべて" : k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
     <p class="note" style="margin:0">※${SIG_INFO[S.sig][2]}</p>`;
   const list = pick(S.sig);
   if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
@@ -1064,7 +1074,7 @@ function viewSig(d) {
   }
   const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
   const rowSgOf = k => ({ "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[k] || "");
-  return h + `<div class="card list">` + list.map(x => { const k = S.sig === "すべて" ? (sigKindOf(x) || "紐") : S.sig; return `<button class="row ${S.sig === "すべて" ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
+  return h + `<div class="card list">` + list.map(x => { const k = SIG_GROUP[S.sig] ? (SIG_GROUP[S.sig].find(g => g === "紐" ? x.himo : x.sig === g) || "紐") : S.sig; return `<button class="row ${SIG_GROUP[S.sig] ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
     <div class="main"><b><span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>${x.no ?? ""} ${esc(x.name)}</b>${x.mark ? ` <span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}
       ${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span>` : ""}
