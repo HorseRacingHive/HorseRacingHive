@@ -76,6 +76,14 @@ header.top::after {
 /* 天気・馬場(ヘッダーの黒の上に置くので、ライト・ダークどちらでも同じ配色) */
 .weather-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding-bottom: 6px; }
 .weather-row:empty { display: none; }
+.baba-strip { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px 10px; border: 1px solid rgba(247,201,72,.3); border-radius: 10px; background: rgba(247,201,72,.09); }   /* 2026-10-28 馬場の帯 H1: 丸に1文字 */
+.baba-strip .bv { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.baba-strip .bv b { color: #f7c948; font-size: 12.5px; margin-right: 1px; white-space: nowrap; }
+.baba-strip .bc { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; line-height: 1; flex: none; }
+.baba-strip .bc.g1 { background: #3f8f4e; color: #fff; } .baba-strip .bc.g2 { background: #d4a92e; color: #2a1d04; }
+.baba-strip .bc.g3 { background: #c06a2a; color: #fff; } .baba-strip .bc.g4 { background: #3f5fb0; color: #fff; }
+.baba-strip .bc.g0 { background: rgba(251,241,220,.12); color: rgba(251,241,220,.6); }
+.baba-note { grid-column: 1 / -1; color: rgba(251,241,220,.55); font-size: 10.5px; margin: 2px 2px 0; }
 .card.weather-card { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 5px; padding: 3px 7px; border: 1px solid rgba(247,201,72,.3); border-radius: 8px; background: rgba(247,201,72,.09); box-shadow: none; color: #fbf1dc; line-height: 1.25; }
 .weather-card .weather-place { color: rgba(251,241,220,.78); font-size: 11px; font-weight: 700; }
 .weather-card b { color: #f7c948; font-family: var(--f-disp); font-size: 12.5px; }
@@ -1045,17 +1053,19 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
   $("#stamp").textContent = S.demo ? "見本データ" : (u ? `更新 ${u}` : "");
 }
+function babaStripHtml(venues) {   // 2026-10-28 馬場の帯 H1: 会場ごとに 芝・ダ の丸に1文字(良=緑・稍重=黄・重=橙・不良=青)
+  const short = { "良": ["良", "g1"], "稍重": ["稍", "g2"], "重": ["重", "g3"], "不良": ["不", "g4"] };
+  const dot = (kind, g, v) => { const s = short[g] || ["—", "g0"]; return `<span class="bc ${s[1]}" title="${kind} ${esc(g || "未発表")}">${s[0]}</span>`; };
+  if (!venues.length) return "";
+  return `<div class="baba-strip">${venues.map(v => `<span class="bv" title="${esc(v.venue)} ${esc(v.tenko || "天気未発表")}${v.time ? " " + esc(String(v.time).replace("時点", "").trim()) : ""}"><b>${esc(v.venue)}</b>${dot("芝", v.shiba, v)}${dot("ダ", v.dirt, v)}</span>`).join("")}</div>
+    <div class="baba-note">左の丸=芝・右の丸=ダート</div>`;
+}
 function renderWeather() {
   const el = $("#weather");
   const day = curDay();
-  const weatherIcon = { "晴": "☀️", "曇": "☁️", "雨": "☔", "小雨": "🌦️", "雪": "❄️", "小雪": "🌨️" };
   const venues = (day?.baba || []).slice().sort((a, b) => ["東京", "京都", "新潟"].indexOf(a.venue) - ["東京", "京都", "新潟"].indexOf(b.venue));
-  el.style.gridTemplateColumns = `repeat(${Math.max(1, venues.length)}, minmax(0, 1fr))`;
-  el.innerHTML = venues.length ? venues.map(x => `<div class="card weather-card">
-    <span class="weather-place">${esc(x.venue)}</span>
-    <b>${x.tenko ? `${weatherIcon[x.tenko] || ""}${esc(x.tenko)}` : "未発表"}</b><i class="weather-time">${x.time ? esc(x.time) : "発表待ち"}</i>
-    <small>芝${esc(x.shiba || "—")}／ダ${esc(x.dirt || "—")}</small>
-  </div>`).join("") : "";
+  el.style.gridTemplateColumns = "minmax(0, 1fr)";
+  el.innerHTML = babaStripHtml(venues);
 }
 function allHorses(day) {
   const out = [];
