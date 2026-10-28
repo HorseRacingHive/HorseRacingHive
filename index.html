@@ -705,6 +705,54 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .result-place.rp-hit.rp-1 { background: rgba(247, 201, 72, .62); font-weight: 800; }
 .result-row.hon-win { box-shadow: inset 0 0 0 2px #c99a2e; border-radius: 12px; }
 .res-pat { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: #8a6116; color: #fff; font-size: 10px; font-weight: 800; vertical-align: 1px; }
+/* 急遽バッジ・直前で見送った馬(2026-10-29) */
+.urg-badge { background: var(--dang); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 800; }
+.urg-badge.dim { background: var(--muted); }
+.skip-box { margin-top: 18px; padding-top: 12px; border-top: 2px dashed var(--line); }
+.skip-head { font-size: 14px; color: var(--muted); margin: 0 0 8px; display: flex; align-items: baseline; gap: 8px; }
+.skip-head small { font-size: 11px; font-weight: 600; }
+.skip-alert { background: var(--over-soft); color: var(--over); border: 1px solid var(--over); border-radius: 10px; padding: 8px 10px; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.pick.skip-card { box-shadow: none; filter: grayscale(.9); opacity: .7; border-style: dashed; }
+.pick.skip-card .ph small { white-space: normal; }
+.pick.skip-card.skip-won { filter: grayscale(.3); opacity: .95; border-color: var(--over); }
+.pill.skip { background: var(--line); color: var(--muted); }
+.pill.skipwin { background: var(--over-soft); color: var(--over); }
+
+
+/* 結果画面: 印の馬が来たら色付け v2(2026-10-28) 印ごとの色で行を塗る */
+.result-row { padding: 10px; }
+.result-places { gap: 4px; margin-top: 4px; }
+.result-place { grid-template-columns: 34px 24px minmax(0, 1fr); padding: 5px 8px; border-radius: 9px; font-size: 13px; }
+.result-mark { width: 22px; height: 22px; font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.result-place.rp-hit { --mk: 138, 97, 22; background: rgba(var(--mk), .14); }
+.result-place.rp-hit.rp-1 { background: rgba(var(--mk), .30); font-weight: 900; }
+.result-place.mk-hon { --mk: 201, 154, 46; }
+.result-place.mk-tai { --mk: 47, 111, 181; }
+.result-place.mk-tan { --mk: 46, 125, 68; }
+.result-place.mk-ren { --mk: 120, 120, 120; }
+.result-place.mk-chu { --mk: 123, 75, 176; }
+.result-place.mk-ana { --mk: 192, 57, 43; }
+.result-row.hon-win { box-shadow: inset 0 0 0 3px #d4a73a; background: linear-gradient(180deg, rgba(247, 201, 72, .22), rgba(247, 201, 72, .06)); border-radius: 12px; }
+.res-pat { display: inline-flex; gap: 3px; margin-left: 6px; padding: 0; background: transparent; vertical-align: -3px; }
+.res-pat .result-mark { width: 17px; height: 17px; font-size: 9px; box-shadow: none; }
+
+/* 結果画面 v3(2026-10-29): 枠色ベース(◎赤 ○青 ▲緑 △黄 注橙 穴桃)+1着は印の色で塗りつぶし */
+.result-mark.rm-hon { background: rgb(214, 40, 40); }
+.result-mark.rm-tai { background: rgb(30, 100, 200); }
+.result-mark.rm-tan { background: rgb(20, 140, 70); }
+.result-mark.rm-ren { background: rgb(212, 165, 0); }
+.result-mark.rm-chu { background: rgb(235, 115, 20); }
+.result-mark.rm-ana { background: rgb(214, 70, 140); }
+.result-place.mk-hon { --mk: 214, 40, 40; }
+.result-place.mk-tai { --mk: 30, 100, 200; }
+.result-place.mk-tan { --mk: 20, 140, 70; }
+.result-place.mk-ren { --mk: 212, 165, 0; }
+.result-place.mk-chu { --mk: 235, 115, 20; }
+.result-place.mk-ana { --mk: 214, 70, 140; }
+.result-place.rp-hit { background: rgba(var(--mk), .16); }
+.result-place.rp-hit.rp-1 { background: rgb(var(--mk)); color: #fff; font-weight: 900; box-shadow: 0 2px 6px rgba(var(--mk), .35); }
+.result-place.rp-hit.rp-1 .result-mark { background: #fff; color: rgb(var(--mk)); }
+.result-place.rp-hit.rp-1.mk-ren { color: #2b1d0e; }
 </style>
 
 <div class="lock" id="lock">
@@ -1171,7 +1219,7 @@ function viewHome(d) {
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
     <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">${x.fin === 1 ? hitFx() : ""}
-      <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
+      <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
@@ -1189,6 +1237,19 @@ function viewHome(d) {
   } else {
     h += `<div class="card empty">${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
   }
+  if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから、直前のオッズで新しく おすすめ に入った馬。</p>`;
+  const sk = d.skipped || [];
+  if (sk.length) {
+    const won = sk.filter(x => x.fin === 1).length;
+    h += `<div class="skip-box"><h3 class="skip-head">直前で見送った馬<small>${sk.length}頭・成績には入れません</small></h3>
+      ${won ? `<div class="skip-alert">見送った馬が${won}頭 1着でした(成績には入れません)</div>` : ""}
+      <div class="picks">${sk.map(x => `<button class="pick skip-card${x.fin === 1 ? " skip-won" : ""}" data-race="${esc(x.id)}" data-race-group="skipped" data-hno="${x.hno ?? ""}">
+        <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge dim">急遽</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post || "")}発走</span>
+          <span class="t">${x.fin != null ? `<span class="pill ${x.fin === 1 ? "skipwin" : "miss"}">${x.fin}着</span>` : `<span class="pill skip">見送り</span>`}</span></div>
+        <span class="hex">${x.hno ?? "—"}</span>
+        <div class="ph"><b>${esc(x.name)}</b><small>${esc(x.stage)}に見送り:${esc(x.why)}</small></div>
+      </button>`).join("")}</div></div>`;
+  }
   h += `</section><p class="note">※オッズは生きてるので予想は締切まで変わります</p>`;
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
 }
@@ -1196,8 +1257,8 @@ function viewHome(d) {
 // 結果画面の印バッジの色(2026-10-28)
 const RM_CLS = { "◎": "rm-hon", "○": "rm-tai", "▲": "rm-tan", "△": "rm-ren", "注": "rm-chu", "穴": "rm-ana" };
 const rmCls = m => RM_CLS[m] || "rm-none";
-const resPlace = (pos, mark, no, name) => `<span class="result-place${RM_CLS[mark] ? ` rp-hit${Number(pos) === 1 ? " rp-1" : ""}` : ""}"><span>${pos}着</span><span class="result-mark ${rmCls(mark)}">${esc(mark || "無")}</span><span>${no ?? ""} ${esc(name)}</span></span>`;
-const resTop3 = arr => arr.map(x => x.mark || "無").join("-");
+const resPlace = (pos, mark, no, name) => `<span class="result-place${RM_CLS[mark] ? ` rp-hit mk-${RM_CLS[mark].slice(3)}${Number(pos) === 1 ? " rp-1" : ""}` : ""}"><span>${pos}着</span><span class="result-mark ${rmCls(mark)}">${esc(mark || "無")}</span><span>${no ?? ""} ${esc(name)}</span></span>`;
+const resTop3 = arr => arr.map(x => `<span class="result-mark ${rmCls(x.mark)}">${esc(x.mark || "無")}</span>`).join("");
 // 全レースの結果(開催場ごとのタブ。1着〜3着を1行ずつ「1着 ◎ 5 馬名」)
 function resultRaces(d) { return (d.venues || []).flatMap(v => (v.races || []).filter(r => r.done).map(r => ({ ...r, venue: v.venue }))); }
 function resultsList(d) {
@@ -1212,7 +1273,7 @@ function resultsList(d) {
       const honWin = top[0]?.mark === "◎";
       return `<button class="row result-row${honWin ? " hon-win" : ""}" data-race="${esc(r.id)}" data-race-group="results">
     <div class="when num"><b>${r.no}R</b>${esc(r.post || "")}</div>
-    <div class="main"><b>${esc(r.name || "")}${honWin ? `<span class="res-pat">${esc(resTop3(top))}</span>` : ""}</b><span class="result-places">${top.map(x => resPlace(x.fin, x.mark, x.no, x.name)).join("")}</span></div>
+    <div class="main"><b>${esc(r.name || "")}${top.some(x => RM_CLS[x.mark]) ? `<span class="res-pat">${resTop3(top)}</span>` : ""}</b><span class="result-places">${top.map(x => resPlace(x.fin, x.mark, x.no, x.name)).join("")}</span></div>
     <div class="right">›</div></button>`;
     }).join("")}</div>`;
 }
@@ -1359,6 +1420,7 @@ function publicRaceSequence(group) {
     return (group === "osusume" ? list : list.filter(x => x.fin == null && postDate(x.post) > Date.now())
       .sort((a, b) => postDate(a.post) - postDate(b.post))).map(item => item.id);
   }
+  if (group === "skipped") return (d?.skipped || []).map(x => x.id);
   if (group === "hits") return (d?.osusume || []).filter(x => x.fin === 1).sort((a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true })).map(x => x.id);
   if (group === "results") return resultRaces(d).filter(r => !S.resVenue || r.venue === S.resVenue).map(r => r.id);
   if (group.startsWith("sig:")) {
@@ -1577,6 +1639,7 @@ document.addEventListener("click", e => {
       if (uniq.length > 1 && idx >= 0) { S.focusNav = uniq.map(e => ({ id: e.dataset.race, no: e.dataset.hno })); S.focusIdx = idx; }
     }
     if (g0.startsWith("sig:")) S.nextFocusLabel = "👀 この馬";   // 狙い・危険から開いた馬に「おすすめ」と出さない
+    if (g0 === "skipped") S.nextFocusLabel = "見送った馬";
     openRace(t.dataset.race, g0, false, t.dataset.hno ?? null); return;
   }
 });
