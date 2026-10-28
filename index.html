@@ -284,6 +284,17 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 /* ---------- 狙いのリスト */
 .seg { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .seg::-webkit-scrollbar { display: none; }
+/* 会場の切り替え 案4: 電光板とおそろいの黒い板・光る会場名・下に次の発走(2026-10-29) */
+.seg.vled { display: grid; grid-template-columns: repeat(var(--vn, 3), minmax(0, 1fr)); gap: 0; overflow: hidden; border: 3px solid #2c2c2c; border-radius: 6px; background: #050505; box-shadow: inset 0 0 10px #000; }
+.seg.vled button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0; padding: 6px 0 5px; border: 0; border-radius: 0; background: none; color: #8a7a52; font-weight: 900; }
+.seg.vled button + button { border-left: 1px solid #262626; }
+.seg.vled .vn { font-size: 15px; letter-spacing: .08em; line-height: 1.2; }
+.seg.vled .vs { font-family: "DejaVu Sans Mono", "Menlo", "Consolas", ui-monospace, monospace; font-size: 10px; font-weight: 700; color: #8a7a52; }
+.seg.vled .vs.nx { color: #58ff7a; text-shadow: 0 0 6px rgba(88,255,122,.8); }
+.seg.vled button.on { background: rgba(255,176,0,.10); }
+.seg.vled button.on .vn { color: #ffb000; text-shadow: 0 0 8px rgba(255,176,0,.9); }
+.seg.vled button.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #ffb000; box-shadow: 0 0 6px #ffb000; }
+.seg.vled .c { display: none; }
 .seg button { flex: none; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 13px; color: var(--muted); }
 .seg button.on { background: var(--comb); color: var(--honey); border-color: var(--comb); }
 .seg button .c { margin-left: 4px; font-size: 11px; opacity: .8; }
@@ -1272,6 +1283,17 @@ function dayNavTicker(t) {
   inEl.innerHTML = `<span class="st">★</span> ${text} <span class="st">★</span> <span class="cd">${left}</span> <span class="st">★</span> ${esc(t.horses)}`;
   inEl.style.animationDuration = `${Math.max(10, Math.round((text.length + t.horses.length + 12) * 0.5))}s`;
 }
+
+// 会場の切り替え(案4)の下の小さい文字: 当日で残りがあれば「次 15:00」、それ以外はレース数
+function venueSub(v, isToday) {
+  const rs = v.races || [];
+  if (isToday) {
+    const up = rs.filter(r => !r.done && r.post && postDate(r.post) > Date.now() - 60000).sort((a, b) => a.post.localeCompare(b.post));
+    if (up.length) return `<span class="vs nx">次 ${esc(up[0].post)}</span>`;
+    if (rs.length) return `<span class="vs">${rs.length}R 終了</span>`;
+  }
+  return `<span class="vs">${rs.length}R</span>`;
+}
 function dayNavInfo() {
   const el = $("#days .dn-w"); if (!el) return;
   const d = curDay();
@@ -1469,7 +1491,7 @@ function resultsList(d) {
   const vs = [...new Set(all.map(r => r.venue))];
   if (!vs.includes(S.resVenue)) S.resVenue = vs[0];
   const list = all.filter(r => r.venue === S.resVenue);
-  return `<div class="seg" style="margin-bottom:8px">${vs.map(v => `<button data-res-venue="${esc(v)}" class="${v === S.resVenue ? "on" : ""}">${esc(v)}<span class="c">${all.filter(r => r.venue === v).length}</span></button>`).join("")}</div>
+  return `<div class="seg vled" style="margin-bottom:8px;--vn:${vs.length}">${vs.map(v => `<button data-res-venue="${esc(v)}" class="${v === S.resVenue ? "on" : ""}"><span class="vn">${esc(v)}</span><span class="vs">${all.filter(r => r.venue === v).length}R 確定</span></button>`).join("")}</div>
     <div class="card list">${list.map(r => {
       const top = r.horses.filter(x => x.fin != null && x.fin >= 1).sort((a, b) => a.fin - b.fin).slice(0, 3);
       const honWin = top[0]?.mark === "◎";
@@ -1580,7 +1602,7 @@ function viewRaces(d) {
   if (!vs.length) return `<div class="card empty">レースがありません</div>`;
   if (!vs.some(v => v.venue === S.venue)) S.venue = vs[0].venue;
   const v = vs.find(x => x.venue === S.venue);
-  return `<div><div class="seg">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${x.venue === S.venue ? "on" : ""}">${esc(x.venue)}</button>`).join("")}</div>
+  return `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${x.venue === S.venue ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
   <p class="race-warn">※全レースの予想を載せていますが、全レースを買うと回収率はマイナスになります。買うのは「おすすめ」の馬にしぼり、ここは参考としてご覧ください。</p></div>
   ` + (() => {
     const os = d.osusume || [];
