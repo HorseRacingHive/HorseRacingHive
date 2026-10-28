@@ -1040,6 +1040,9 @@ function render() {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
   const sigBtn = document.querySelector('#tabs button[data-tab="sig"]');
   if (sigBtn) { sigBtn.dataset.mode = S.sigMode || "all"; const lab = sigBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "sig" ? { all: "すべて", buy: "狙い", danger: "危険" }[S.sigMode || "all"] : "狙い・危険"; }
+  // レース・結果タブ: 1回目 レース(出馬表) / 2回目 結果 / …と押すたびに切り替え(狙い・危険と同じ)
+  const raceBtn = document.querySelector('#tabs button[data-tab="race"]');
+  if (raceBtn) { raceBtn.dataset.mode = S.raceMode || "race"; const lab = raceBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "race" ? { race: "レース", result: "結果" }[S.raceMode || "race"] : "レース・結果"; }
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   if (!d) { v.innerHTML = h + `<div class="card empty">まだ予想がありません。出馬表が出たら表示されます。</div>`; return; }
@@ -1171,6 +1174,7 @@ function viewSig(d) {
 }
 
 function viewRaces(d) {
+  if (S.raceMode === "result") return `<section id="res-sec"><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section><p class="note">もう一度「結果」タブを押すと、レースの一覧に戻ります</p>`;
   const vs = d.venues;
   if (!vs.length) return `<div class="card empty">レースがありません</div>`;
   if (!vs.some(v => v.venue === S.venue)) S.venue = vs[0].venue;
@@ -1185,9 +1189,7 @@ function viewRaces(d) {
     return `<button class="race" data-race="${esc(r.id)}" data-race-group="race"><span class="rno ${r.done ? "past" : ""}">${r.no}R</span>
       <div class="info"><b>${esc(r.name)}</b><small>${esc(r.course)} ${r.field ?? ""}頭${r.going ? " ・" + esc(r.going) : ""}</small><span class="marks">${line}</span></div>
       <div class="side"><div class="post num">${esc(r.post)}</div>${r.st ? `<span class="stars">${"★".repeat(r.st)}</span>` : ""}</div></button>`;
-  }).join("") + `</div>`
-  // この日の全レース結果(1着〜3着)。おすすめタブから移した(2026-10-28)
-  + `<section id="res-sec"><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section></div>`;
+  }).join("") + `</div><p class="note">もう一度「レース」タブを押すと、この日の全レース結果(1着〜3着)に切り替わります</p></div>`;
 }
 
 // 手元の公開データ(90日分)から、おすすめの日ごとの累積収支(単勝1,000円)を作る
@@ -1388,14 +1390,8 @@ document.addEventListener("click", e => {
     const y = window.scrollY; S.annOpen = t.closest(".ann-tick.burst") ? false : !S.annOpen; render(); window.scrollTo(0, y); return;   // 広げて出していた時は1行に戻す
   }
   if (t.dataset.tab) {
-    if (t.dataset.tab === "race" && S.tab === "race") {   // 全レース・結果タブをもう一度押す(ダブルタップ)と、その日の全レース結果へ飛ぶ
-      const sec = $("#res-sec");
-      if (sec) {   // 下へ送る時はヘッダーが隠れるので差し引かない。上へ戻る時はヘッダーの分だけ空ける
-        const hd = $("header.top"), y = sec.getBoundingClientRect().top + window.scrollY;
-        const top = y - 8 - (y < window.scrollY && hd ? hd.offsetHeight : 0);
-        window.scrollTo({ top, behavior: "smooth" });
-      }
-      return;
+    if (t.dataset.tab === "race") {   // レース・結果タブ: 1回目 レースだけ / もう一度押すと 結果だけ / …と切り替え
+      S.raceMode = S.tab === "race" ? (S.raceMode === "result" ? "race" : "result") : "race";
     }
     if (t.dataset.tab === "sig") {   // 狙い・危険タブ: 1回目 すべて / 2回目 狙い側 / 3回目 危険側 / …とループ
       const m = S.tab === "sig" ? SIG_CYCLE[(SIG_CYCLE.indexOf(S.sigMode || "all") + 1) % SIG_CYCLE.length] : "all";
