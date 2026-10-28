@@ -124,16 +124,24 @@ header.top::after {
 .day-nav .day-arrow:first-child { border-radius: 999px 0 0 999px; } .day-nav .day-arrow:last-child { border-radius: 0 999px 999px 0; }
 .day-nav .day-arrow:disabled { opacity: .3; }
 /* 日付の段: D+F案(金線の間に電光掲示板の光る日付・当日はLIVE点滅・次がおすすめのレースなら金色)(2026-10-29) */
-.day-nav { background: none; border-radius: 0; align-items: center; gap: 6px; min-height: 58px; }
-.day-nav .day-arrow { width: 34px; min-height: 40px; border: 0; background: none; color: var(--honey); font-size: 24px; font-weight: 300; text-shadow: 0 0 8px rgba(247,201,72,.6); }
+.day-nav { background: none; border-radius: 0; align-items: center; gap: 6px; min-height: 44px; }   /* 少し小さく(2026-10-29) */
+.day-nav .day-arrow { width: 34px; min-height: 36px; border: 0; background: none; color: var(--honey); font-size: 24px; font-weight: 300; text-shadow: 0 0 8px rgba(247,201,72,.6); }
 .day-nav .dn-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--honey)); }
 .day-nav .dn-line.r { background: linear-gradient(270deg, transparent, var(--honey)); }
-.day-nav .dn-mid { position: relative; flex: none; text-align: center; line-height: 1; padding: 5px 12px; border-radius: 6px;
-  background-image: radial-gradient(circle, rgba(247,201,72,.09) 1px, transparent 1.4px); background-size: 4px 4px; }
+.day-nav .dn-mid { position: relative; flex: none; text-align: center; line-height: 1; padding: 4px 10px; border-radius: 5px; background: #070604;
+  background-image: radial-gradient(circle, rgba(247,201,72,.08) 1px, transparent 1.4px); background-size: 3px 3px; box-shadow: inset 0 0 10px #000, 0 0 0 1px #2a2010; }   /* 黒い電光板(案A・2026-10-29) */
+.day-nav .dn-d .dn-num { display: inline-block; color: #ffb000; filter: drop-shadow(0 0 5px rgba(255,176,0,.9));   /* 数字をLEDの点の集まりに */
+  -webkit-mask-image: radial-gradient(circle, #000 .9px, transparent 1.15px); -webkit-mask-size: 2.5px 2.5px; mask-image: radial-gradient(circle, #000 .9px, transparent 1.15px); mask-size: 2.5px 2.5px; }
+.day-nav .dn-tick { position: relative; width: 236px; max-width: calc(100vw - 110px); height: 16px; margin-top: 5px; padding-top: 2px; overflow: hidden; border-top: 1px solid #241c0c; }   /* 流れる電光文字 */
+.day-nav .dn-tick .in { display: inline-block; white-space: nowrap; padding-left: 100%; font-family: var(--f-disp, sans-serif); font-size: 12.5px; font-weight: 900; letter-spacing: .06em; line-height: 14px;
+  color: #ffb000; text-shadow: 0 0 6px rgba(255,176,0,.9); animation: dn-run 12s linear infinite; }
+.day-nav .dn-tick .in .st { color: #ff3b3b; text-shadow: 0 0 6px #ff3b3b; }
+@keyframes dn-run { to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .day-nav .dn-tick .in { animation: none; padding-left: 0; } }
+:root[data-theme="light"] .day-nav .dn-mid { background: #1a1409; }
 .day-nav .dn-mid .day-picker { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; margin: 0; font-size: 16px; }   /* 日付を押すとカレンダー */
-.day-nav .dn-d { font-family: "DejaVu Sans Mono", "Menlo", "Consolas", ui-monospace, monospace; font-size: 30px; font-weight: 700; letter-spacing: .1em; color: #ffc93c;
-  text-shadow: 0 0 10px rgba(255,190,40,.85), 0 0 2px #ffc93c; font-variant-numeric: tabular-nums; }
-.day-nav .dn-w { font-family: "DejaVu Sans Mono", "Menlo", "Consolas", ui-monospace, monospace; font-size: 10.5px; letter-spacing: .3em; margin-top: 6px; color: var(--muted); white-space: nowrap; }
+.day-nav .dn-d { font-family: "DejaVu Sans Mono", "Menlo", "Consolas", ui-monospace, monospace; font-size: 22px; font-weight: 900; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.day-nav .dn-w { font-family: "DejaVu Sans Mono", "Menlo", "Consolas", ui-monospace, monospace; font-size: 9.5px; letter-spacing: .3em; margin-top: 4px; color: var(--muted); white-space: nowrap; }
 .day-nav .dn-w .wd { font-weight: 700; color: var(--honey); text-shadow: 0 0 7px rgba(247,201,72,.8); }
 .day-nav .dn-w .wd.sun { color: #ff4b5c; text-shadow: 0 0 7px rgba(255,75,92,.9); }
 .day-nav .dn-w .wd.sat { color: #4fa3ff; text-shadow: 0 0 7px rgba(79,163,255,.9); }
@@ -1216,6 +1224,20 @@ function tick() { if (new Date().getSeconds() === 0) dayNavInfo(); document.quer
 function viewDays() { return S.snap.days.filter(d => d.date <= todayStr()); }   // 未来の予想には行けない
 
 // 日付の段の下の行: 曜日 ・ 次の発走(当日)/レース数。次のレースにおすすめの馬がいれば金色で光る(2026-10-29)
+
+// 流れる電光文字(次のレースにおすすめ馬がいるときだけ)。同じレースの間は流れを止めずに「あと◯分」だけ書き換える
+function dayNavTicker(t) {
+  const box = $("#days .dn-tick"); if (!box) return;
+  if (!t) { box.hidden = true; box.dataset.key = ""; return; }
+  const mins = Math.max(0, Math.round((postDate(t.post) - Date.now()) / 60000));
+  const left = mins <= 0 ? "まもなく発走" : `あと${mins}分`;
+  const inEl = box.querySelector(".in");
+  if (box.dataset.key === t.key && !box.hidden) { const cd = inEl.querySelector(".cd"); if (cd) cd.textContent = left; return; }
+  box.dataset.key = t.key; box.hidden = false;
+  const text = `${esc(t.venue || "")}${t.no}R ${esc(t.post)} おすすめレース`;
+  inEl.innerHTML = `<span class="st">★</span> ${text} <span class="st">★</span> <span class="cd">${left}</span> <span class="st">★</span> ${esc(t.horses)}`;
+  inEl.style.animationDuration = `${Math.max(10, Math.round((text.length + t.horses.length + 12) * 0.5))}s`;
+}
 function dayNavInfo() {
   const el = $("#days .dn-w"); if (!el) return;
   const d = curDay();
@@ -1223,15 +1245,19 @@ function dayNavInfo() {
   const wd = `<span class="wd${wdN === 0 ? " sun" : wdN === 6 ? " sat" : ""}">${["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][wdN]}</span>`;
   const races = d ? (d.venues || []).flatMap(v => v.races || []) : [];
   let right = races.length ? `${races.length}R` : (S.date > todayStr() ? "未定" : "");
+  let tickText = null;   // 次のレースにおすすめ馬がいれば、流れる電光文字に(案A)
   if (d && S.date === todayStr() && races.length) {
     const now = Date.now();
     const up = races.filter(r => !r.done && r.post && postDate(r.post) > now - 60000).sort((a, b) => a.post.localeCompare(b.post));
     if (up.length) {
-      const rec = (d.osusume || []).some(o => o.id === up[0].id);
-      right = `<span class="nx${rec ? " rec" : ""}">${rec ? "★" : ""}次 ${esc(up[0].post)}</span>`;
+      right = `<span class="nx">次 ${esc(up[0].post)}</span>`;
+      const picks = (d.osusume || []).filter(o => o.id === up[0].id);
+      if (picks.length) tickText = { key: up[0].id, post: up[0].post, venue: (d.venues || []).find(v => (v.races || []).includes(up[0]))?.venue, no: up[0].no,
+        horses: picks.map(o => `${o.hno ?? ""}番 ${o.name || ""}${o.st ? "(★" + o.st + ")" : ""}`).join("・") };
     } else right = "終了";
   }
   el.innerHTML = `${wd} <span style="opacity:.5">·</span> ${right}`;
+  dayNavTicker(tickText);
   const live = $("#days .dn-live");
   if (live) live.hidden = !(d && S.date === todayStr() && races.length && races.some(r => !r.done));
 }
@@ -1242,7 +1268,7 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
   const min = days[0]?.date || S.date, max = days[days.length - 1]?.date || S.date;
   const [, mm, dd] = (S.date || "").split("-");
   $("#days").innerHTML = `<div class="day-nav"><button class="day-arrow" data-day-step="-1" aria-label="前の開催日" ${i <= 0 ? "disabled" : ""}>‹</button><span class="dn-line"></span>`
-    + `<div class="dn-mid"><div class="dn-d">${esc(mm || "--")}.${esc(dd || "--")}<span class="dn-live" hidden>LIVE</span></div><div class="dn-w"></div>`
+    + `<div class="dn-mid"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden>LIVE</span></div><div class="dn-w"></div><div class="dn-tick" hidden><span class="in"></span></div>`
     + `<input class="day-picker" type="date" aria-label="開催日を選択" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}"></div>`
     + `<span class="dn-line r"></span><button class="day-arrow" data-day-step="1" aria-label="次の開催日" ${i >= days.length - 1 ? "disabled" : ""}>›</button></div>`;
   dayNavInfo();
