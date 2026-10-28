@@ -269,7 +269,8 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .picks { display: grid; gap: 10px; }
 .pick { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); background: var(--panel); border-radius: var(--r); box-shadow: var(--shadow); text-align: left; width: 100%; }
 .pick.s5 { border-color: var(--amber); background: linear-gradient(135deg, var(--soft), var(--panel) 60%); }
-.pick .where { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.pick .where { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 3px 8px; font-size: 12px; color: var(--muted); font-weight: 600; }   /* 札が入りきらなければ次の行へ(2026-10-29) */
+.pick .where > span { white-space: nowrap; }
 .pick .where .t { margin-left: auto; }
 .pick .ph { min-width: 0; }
 .pick .ph b { display: block; font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -795,8 +796,8 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .result-row.hon-win { box-shadow: inset 0 0 0 2px #c99a2e; border-radius: 12px; }
 .res-pat { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: #8a6116; color: #fff; font-size: 10px; font-weight: 800; vertical-align: 1px; }
 /* 急遽バッジ・直前で見送った馬(2026-10-29) */
-.urg-badge { background: var(--dang); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 800; }
-.urg-badge.back { background: var(--aim); }
+.urg-badge { background: var(--dang); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; flex: none; }
+.urg-badge.back { background: var(--aim); width: auto; height: auto; display: inline-block; border-radius: 999px; color: #fff; place-items: unset; }   /* 戻るボタンの .back に負けないように(2026-10-29) */
 .urg-badge.dim { background: var(--muted); }
 .skip-box { margin-top: 18px; padding-top: 12px; border-top: 2px dashed var(--line); }
 .skip-head { font-size: 14px; color: var(--muted); margin: 0 0 8px; display: flex; align-items: baseline; gap: 8px; }
@@ -875,7 +876,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rt-cls.new { background: #fce7f3; color: #be185d; border-color: #f9a8d4; }
 .rt-cls.g { background: linear-gradient(90deg, #f7c948, #e8962b); color: #3a2604; border-color: transparent; }
 .rt-name { color: var(--ink); font-weight: 800; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.rt-gd { width: 15px; height: 15px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9px; color: #fff; font-weight: 800; flex: none; }
+.rt-gd { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9.5px; color: #fff; font-weight: 800; flex: none; line-height: 1; box-sizing: border-box; }   /* 文字が下にずれないよう行の高さを1に(2026-10-29) */
 .rt-gd.g1 { background: #3f8f4e; } .rt-gd.g2 { background: #d4a92e; color: #2a1d04; } .rt-gd.g3 { background: #c06a2a; } .rt-gd.g4 { background: #3f5fb0; }
 .rt-post { margin-left: auto; font-family: var(--f-disp); font-size: 12.5px; color: var(--ink); font-weight: 900; flex: none; padding-left: 6px; }
 .rt-win { display: grid; grid-template-columns: 15px 20px minmax(0, max-content) 17px; justify-content: start; align-items: center; gap: 5px; min-width: 0; height: 22px; }
@@ -889,14 +890,15 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rt-mk.m-ren { background: rgb(212,165,0); } .rt-mk.m-chu { background: rgb(235,115,20); } .rt-mk.m-ana { background: rgb(214,70,140); }
 .rt-mk.m-hosi { background: rgb(30,170,210); }
 .rt-mk.m-none { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
-.rt-sub { font-size: 10.5px; color: var(--muted); display: flex; gap: 12px; align-items: center; padding-left: 20px; font-weight: 700; line-height: 16px; }
-.rt-sub > span { display: inline-flex; align-items: center; gap: 3px; }
+.rt-sub { font-size: 10.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 3px 12px; align-items: center; padding-left: 20px; font-weight: 700; line-height: 16px; }   /* 入りきらない札は次の行へ(2026-10-29) */
+.rt-sub > span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .rt-sub .rt-num { display: inline-grid; place-items: center; min-width: 15px; width: auto; height: 15px; border-radius: 50%; font-size: 9px; font-weight: 800; border: 1px solid rgba(0,0,0,.2); padding: 0 2px; line-height: 1; box-sizing: border-box; }
 .rt-pre { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11.5px; line-height: 18px; font-weight: 800; color: var(--accent); flex-wrap: wrap; }
 .rt-pre .go { color: var(--muted); font-weight: 700; }
 .rt-os { padding: 0 7px; border-radius: 99px; background: linear-gradient(90deg, #f7c948, #e8b23a); color: #3a2604; font-size: 10.5px; line-height: 17px; font-weight: 900; }
 .rt-sub .rt-os { margin-left: auto; white-space: nowrap; flex: none; }
 .rt-os.miss { background: rgba(247,201,72,.14); color: #c9b27a; border: 1px solid rgba(247,201,72,.35); line-height: 15px; }   /* はずれは薄く */
+.rt-os .stars { font-size: 10.5px; letter-spacing: -.5px; color: inherit; }   /* 札の中の星(その レースのおすすめの最高★) */
 .rt-cd { color: #db2777; font-weight: 900; font-size: 12px; }
 .rt-row.rt-next .rt-card { border: 2px solid #ec4899; animation: rtGlow 2s ease-in-out infinite; }
 .rt-row.done.hit .rt-card { border-color: #e8b23a; box-shadow: 0 0 0 1px #e8b23a, var(--shadow); }
@@ -1576,10 +1578,10 @@ function rtCard(r, isNext, isToday) {
   if (r.done && r.top.length) {
     const w = r.top[0], rest = r.top.slice(1);
     l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${rtWaku(w.no, r.field, w.fr)}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
-      ${rest.length || r.osN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">★${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
+      ${rest.length || r.osN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
   } else {
     const pd = postDate(r.post), started = pd && pd <= Date.now();
-    const os = r.osN ? `<span class="rt-os">★おすすめ ${r.osN}頭が出走</span>` : "";
+    const os = r.osN ? `<span class="rt-os">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭が出走</span>` : "";
     l2 = isNext
       ? `<div class="rt-pre"><span class="rt-cd">発走まであと <span data-cd="${esc(r.post)}" data-fallback="まもなく"></span></span>${os}</div><div class="rt-pre"><span class="go">予想を見る ›</span></div>`
       : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
@@ -1611,7 +1613,7 @@ function viewRaces(d) {
     const list = v.races.map(r => {
       const top = [1, 2, 3].map(p => r.horses.find(h => h.fin === p)).filter(Boolean).map(h => ({ pos: h.fin, no: h.no, fr: h.fr, name: h.name, mark: h.mark }));
       return { id: r.id, no: r.no, course: r.course, cls: r.cls || "", name: r.name || "", field: r.field, going: r.going, post: r.post,
-        done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, hit: os.some(o => o.id === r.id && o.fin === 1) };
+        done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), hit: os.some(o => o.id === r.id && o.fin === 1) };
     });
     return raceTimeline(list, "asc", d.date === todayStr());
   })() + `<p class="note">もう一度「レース」タブを押すと、この日の全レース結果(1着〜3着)に切り替わります</p></div>`;
