@@ -918,6 +918,80 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rtier.t2{background:#FB8C00;color:#fff}
 .rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
 </style>
+<!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
+<div id="kbLoader" style="position:fixed;inset:0;z-index:2147483000;background:#0b0b0a;display:flex;align-items:center;justify-content:center;transition:opacity .3s">
+  <div style="background:#444441;border:3px solid #2C2C2A;border-radius:10px;padding:8px;width:min(88vw,420px)">
+    <canvas id="kbLoaderCv" style="width:100%;display:block;border-radius:3px"></canvas>
+  </div>
+</div>
+<script>
+(function(){
+  var box=document.getElementById('kbLoader'),cv=document.getElementById('kbLoaderCv');
+  if(!box||!cv)return;
+  var F={'0':['01110','10001','10011','10101','11001','10001','01110'],'1':['00100','01100','00100','00100','00100','00100','01110'],'2':['01110','10001','00001','00010','00100','01000','11111'],'3':['11111','00010','00100','00010','00001','10001','01110'],'4':['00010','00110','01010','10010','11111','00010','00010'],'5':['11111','10000','11110','00001','00001','10001','01110'],'6':['00110','01000','10000','11110','10001','10001','01110'],'7':['11111','00001','00010','00100','01000','01000','01000'],'8':['01110','10001','10001','01110','10001','10001','01110'],'9':['01110','10001','10001','01111','00001','00010','01100'],':':['00000','01100','01100','00000','01100','01100','00000'],'.':['00000','00000','00000','00000','00000','01100','01100']};
+  var W=340,H=222,dpr=Math.min(window.devicePixelRatio||1,2),ON='#FFA81E',OFF='#2b2216',BG='#121211';
+  var x=cv.getContext('2d');cv.width=W*dpr;cv.height=H*dpr;cv.style.aspectRatio=W+'/'+H;x.scale(dpr,dpr);
+
+  /* 文字を粒々に変換（着差のカタカナ用） */
+  function rast(s,h,cols){var o=document.createElement('canvas');o.width=cols;o.height=h;var c=o.getContext('2d');c.font='500 '+(h-1)+'px sans-serif';c.textBaseline='top';c.fillText(s,0,0);var d=c.getImageData(0,0,cols,h).data,b=[];for(var r=0;r<h;r++){var row='';for(var k=0;k<cols;k++)row+=d[(r*cols+k)*4+3]>110?'1':'0';b.push(row);}return b;}
+  var slots=[];
+  function slot(ox,oy,cols,rows,D,G){var s={ox:ox,oy:oy,cols:cols,rows:rows,D:D,G:G};slots.push(s);return s;}
+  function dots(ctx,s,bits,col){ctx.fillStyle=col;for(var r=0;r<s.rows;r++)for(var c=0;c<s.cols;c++){if(bits&&bits[r]&&bits[r][c]!=='1')continue;ctx.beginPath();ctx.arc(s.ox+c*(s.D+s.G)+s.D/2,s.oy+r*(s.D+s.G)+s.D/2,s.D/2,0,7);ctx.fill();}}
+
+  var R=[32,80,128].map(function(y){return{rank:slot(30,y,5,7,4,1.2),n1:slot(116,y,5,7,4,1.2),n2:slot(148,y,5,7,4,1.2),diff:slot(222,y,26,11,2.6,0.7)};});
+  var T=[0,1,2,3,4,5].map(function(i){return slot(196+i*21,186,5,7,2.6,0.8);});
+  var diffBits=[null,rast('クビ',11,26),rast('1/2',11,26)];
+
+  /* 枠と消灯中の電球は最初に1回だけ描く */
+  var st=document.createElement('canvas');st.width=W*dpr;st.height=H*dpr;var s=st.getContext('2d');s.scale(dpr,dpr);
+  s.fillStyle=BG;s.fillRect(0,0,W,H);
+  s.fillStyle='#B4B2A9';s.font='500 11px sans-serif';s.textAlign='center';
+  s.fillText('着順',43,20);s.fillText('馬番',144,20);s.fillText('着差',265,20);
+  s.fillStyle='#2C2C2A';[74,122,170].forEach(function(y){s.fillRect(10,y,W-20,1);});s.fillRect(92,26,1,140);s.fillRect(204,26,1,140);
+  s.fillStyle='#B4B2A9';s.textAlign='left';s.fillText('タイム',150,200);
+  slots.forEach(function(sl){dots(s,sl,null,OFF);});
+
+  var FIN=['8','2','1'],LOCK=[32,22,12],TIME='2:34.5';
+  function lamp(t,lx,on,col){x.fillStyle=on?col:'#2b2216';x.fillRect(lx,182,54,28);x.fillStyle=on?'#fff':'#55493a';x.font='500 15px sans-serif';x.textAlign='center';x.fillText(t,lx+27,201);}
+
+  /* 読み込み状況の見張り（通信が落ち着いたら完了） */
+  var pending=0,loaded=document.readyState==='complete',quiet=0,doneReq=false,start=Date.now();
+  var of=window.fetch,os=XMLHttpRequest.prototype.send;
+  if(of)window.fetch=function(){pending++;return of.apply(this,arguments).finally(function(){pending--;});};
+  XMLHttpRequest.prototype.send=function(){pending++;this.addEventListener('loadend',function(){pending--;},{once:true});return os.apply(this,arguments);};
+  window.addEventListener('load',function(){loaded=true;});
+  window.KeibaLoader={done:function(){doneReq=true;}};
+
+  var k=0,hold=0,timer;
+  function frame(){
+    if(!doneReq){quiet=(loaded&&pending<=0)?quiet+1:0;if(quiet>=3||Date.now()-start>20000)doneReq=true;}
+    if(doneReq&&k<40)k=Math.min(k+3,40);else if(!doneReq)k=Math.min(k+1,31);
+    x.drawImage(st,0,0,W,H);
+    for(var i=0;i<3;i++){
+      var r=R[i];dots(x,r.rank,F[String(i+1)],ON);
+      var lock=k>=LOCK[i],v=lock?FIN[i]:String(1+Math.floor(Math.random()*18));
+      if(v.length>1)dots(x,r.n1,F[v[0]],ON);
+      dots(x,r.n2,F[v[v.length-1]],ON);
+      if(lock&&diffBits[i])dots(x,r.diff,diffBits[i],ON);
+    }
+    var done=k>=40;
+    if(done)for(var j=0;j<TIME.length;j++)dots(x,T[j],F[TIME[j]],ON);
+    lamp('審議',16,!done&&(k>>2)%2===0,'#BA7517');
+    lamp('確定',78,done,'#E24B4A');
+    if(done&&++hold>=6)finish();
+  }
+  function finish(){
+    clearInterval(timer);
+    if(window.fetch!==of&&of)window.fetch=of;
+    XMLHttpRequest.prototype.send=os;
+    box.style.opacity='0';
+    setTimeout(function(){box.remove();},320);
+  }
+  timer=setInterval(frame,120);frame();
+})();
+</script>
+<!-- ===== 着順掲示板ローディング ここまで ===== -->
+
 
 <div class="lock" id="lock">
   <div class="lock-card">
