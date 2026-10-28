@@ -707,6 +707,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .res-pat { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: #8a6116; color: #fff; font-size: 10px; font-weight: 800; vertical-align: 1px; }
 /* 急遽バッジ・直前で見送った馬(2026-10-29) */
 .urg-badge { background: var(--dang); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 800; }
+.urg-badge.back { background: var(--aim); }
 .urg-badge.dim { background: var(--muted); }
 .skip-box { margin-top: 18px; padding-top: 12px; border-top: 2px dashed var(--line); }
 .skip-head { font-size: 14px; color: var(--muted); margin: 0 0 8px; display: flex; align-items: baseline; gap: 8px; }
@@ -1219,7 +1220,7 @@ function viewHome(d) {
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
     <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">${x.fin === 1 ? hitFx() : ""}
-      <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
+      <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}${x.back ? `<span class="urg-badge back">✅やっぱり買い</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
@@ -1238,6 +1239,7 @@ function viewHome(d) {
     h += `<div class="card empty">${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
   }
   if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから、直前のオッズで新しく おすすめ に入った馬。</p>`;
+  if (os.some(x => x.back)) h += `<p class="note">✅やっぱり買い = 直前の見直しで一度見送りにしたが、最後の判断で買いに戻った馬。</p>`;
   const sk = d.skipped || [];
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
