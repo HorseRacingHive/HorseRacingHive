@@ -673,6 +673,12 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .detail-float button:disabled { opacity: .3; }
 .detail-float span { color: rgba(251,241,220,.75); font-size: 12px; padding: 0 8px; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .detail-float { transition: none; } }
+
+/* 出馬表: スクロール中は「前/次」を隠し、上へ戻す・一番下まで読むとまた出す(2026-10-28) */
+.sheet .horse-sort { top: var(--sheet-head-h, 58px); transition: top .18s ease; }
+/* 下の ‹ › も一緒に隠す(上へ戻す・一番下まで読むとまた出る) */
+.sheet.head-hidden .detail-float.show { opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .sheet .horse-sort { transition: none; } }
 </style>
 
 <div class="lock" id="lock">
@@ -1401,8 +1407,26 @@ function focusHorse(sh, no, scroll) {
     sh.scrollTop = Math.max(0, el.getBoundingClientRect().top - sh.getBoundingClientRect().top - (head ? head.offsetHeight : 0) - (nav ? nav.offsetHeight : 0) - 12); }
 }
 
-function closeSheet() { const sh = $("#sheet"); S.focusNav = null; S.floatPinned = false; if (sh.hidden) return; sh.hidden = true; sh.innerHTML = ""; document.body.style.overflow = ""; }
+function closeSheet() { const sh = $("#sheet"); S.focusNav = null; S.floatPinned = false; sh.classList.remove("head-hidden"); if (sh.hidden) return; sh.hidden = true; sh.innerHTML = ""; document.body.style.overflow = ""; }
 window.addEventListener("popstate", closeSheet);
+// 出馬表: 下へスクロール中は上の見出しを隠す / 上へ戻す・一番上に近づくとまた出す
+let sheetHeadY = 0, sheetHeadIgnoreUntil = 0;
+function updateSheetHead(ev) {
+  const sh = $("#sheet"); if (!sh || sh.hidden) return;
+  const head = sh.querySelector(".sheet-head");
+  if (head) sh.style.setProperty("--sheet-head-h", head.offsetHeight + "px");
+  const y = sh.scrollTop, dy = y - sheetHeadY;
+  sheetHeadY = y;
+  if (!ev || Date.now() < sheetHeadIgnoreUntil) return;   // 開いた直後の自動スクロール(対象の馬へ送る)では隠さない
+  const atBottom = y + sh.clientHeight >= sh.scrollHeight - 40;   // 一番下まで読んだら、次へ進めるように両方出す
+  if (y <= 40 || dy < -6 || atBottom) sh.classList.remove("head-hidden");
+  else if (dy > 6) sh.classList.add("head-hidden");
+}
+(() => { const sh = $("#sheet"); if (!sh) return;
+  sh.addEventListener("scroll", updateSheetHead, { passive: true });
+  try { new MutationObserver(() => { sh.classList.remove("head-hidden"); sheetHeadIgnoreUntil = Date.now() + 500; requestAnimationFrame(() => updateSheetHead()); }).observe(sh, { childList: true }); } catch {}
+})();
+
 // 出馬表で下にスクロールしたら、画面の下の ‹ › を出す(上の「前のレース/次のレース」が見えている間は隠す)
 function updateDetailFloat() {
   const sh = $("#sheet"); if (!sh || sh.hidden) return;
