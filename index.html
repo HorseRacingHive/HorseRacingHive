@@ -273,7 +273,9 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .pick .where > span { white-space: nowrap; }
 .pick .where .t { margin-left: auto; }
 .pick .ph { min-width: 0; }
-.pick .ph b { display: block; font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick .ph b { display: block; font-size: 17px; font-weight: 800; line-height: 1.25; white-space: normal; word-break: break-all; overflow-wrap: anywhere; }
+/* 馬名は「…」で切らずに2行まで折り返す。着順の六角がある(結果が出た)カードは少し小さく(2026-10-29) */
+.pick.has-fz .ph b { font-size: 15.5px; }
 .pick .ph small { font-size: 12px; color: var(--muted); }
 .pick .fig { text-align: right; line-height: 1.25; }
 .pick .fig .o { font-family: var(--f-disp); font-weight: 900; font-size: 19px; }
@@ -898,7 +900,9 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rt-os { padding: 0 7px; border-radius: 99px; background: linear-gradient(90deg, #f7c948, #e8b23a); color: #3a2604; font-size: 10.5px; line-height: 17px; font-weight: 900; }
 .rt-sub .rt-os { margin-left: auto; white-space: nowrap; flex: none; }
 .rt-os.miss { background: rgba(247,201,72,.14); color: #c9b27a; border: 1px solid rgba(247,201,72,.35); line-height: 15px; }   /* はずれは薄く */
-.rt-os .stars { font-size: 10.5px; letter-spacing: -.5px; color: inherit; }   /* 札の中の星(その レースのおすすめの最高★) */
+.rt-os .stars { font-size: 10.5px; letter-spacing: -.5px; color: inherit; }
+.rt-os.low { background: none; color: #8a7a52; border: 1px solid rgba(247,201,72,.25); line-height: 15px; }   /* ★1はおすすめではないので薄く・的中/はずれなし */
+.rt-pre .rt-os.low { margin-left: auto; }   /* 札の中の星(その レースのおすすめの最高★) */
 .rt-cd { color: #db2777; font-weight: 900; font-size: 12px; }
 .rt-row.rt-next .rt-card { border: 2px solid #ec4899; animation: rtGlow 2s ease-in-out infinite; }
 .rt-row.done.hit .rt-card { border-color: #e8b23a; box-shadow: 0 0 0 1px #e8b23a, var(--shadow); }
@@ -1578,10 +1582,10 @@ function rtCard(r, isNext, isToday) {
   if (r.done && r.top.length) {
     const w = r.top[0], rest = r.top.slice(1);
     l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${rtWaku(w.no, r.field, w.fr)}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
-      ${rest.length || r.osN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
+      ${rest.length || r.osN || r.lowN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
   } else {
     const pd = postDate(r.post), started = pd && pd <= Date.now();
-    const os = r.osN ? `<span class="rt-os">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭が出走</span>` : "";
+    const os = r.osN ? `<span class="rt-os">${r.osSt ? `<span class="stars t${r.osSt}">${starStr(r.osSt)}</span>` : "おすすめ"} ${r.osN}頭が出走</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : "";
     l2 = isNext
       ? `<div class="rt-pre"><span class="rt-cd">発走まであと <span data-cd="${esc(r.post)}" data-fallback="まもなく"></span></span>${os}</div><div class="rt-pre"><span class="go">予想を見る ›</span></div>`
       : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
@@ -1609,11 +1613,11 @@ function viewRaces(d) {
   return `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${x.venue === S.venue ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
   <p class="race-warn">※全レースの予想を載せていますが、全レースを買うと回収率はマイナスになります。買うのは「おすすめ」の馬にしぼり、ここは参考としてご覧ください。</p></div>
   ` + (() => {
-    const os = d.osusume || [];
+    const osAll = d.osusume || [], os = osAll.filter(o => (o.st || 0) >= 2);   // おすすめとして数えるのは★2以上。★1は薄い札だけ
     const list = v.races.map(r => {
       const top = [1, 2, 3].map(p => r.horses.find(h => h.fin === p)).filter(Boolean).map(h => ({ pos: h.fin, no: h.no, fr: h.fr, name: h.name, mark: h.mark }));
       return { id: r.id, no: r.no, course: r.course, cls: r.cls || "", name: r.name || "", field: r.field, going: r.going, post: r.post,
-        done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), hit: os.some(o => o.id === r.id && o.fin === 1) };
+        done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), lowN: osAll.filter(o => o.id === r.id && (o.st || 0) === 1).length, hit: os.some(o => o.id === r.id && o.fin === 1) };
     });
     return raceTimeline(list, "asc", d.date === todayStr());
   })() + `<p class="note">もう一度「レース」タブを押すと、この日の全レース結果(1着〜3着)に切り替わります</p></div>`;
