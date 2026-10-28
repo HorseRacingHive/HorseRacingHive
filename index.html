@@ -662,6 +662,17 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .ov-strip > div, .ov-strip > button { padding: 6px 2px 7px; }
 .ov-strip b { font-size: 14px; letter-spacing: -.01em; }
 .ov-strip small { font-size: 10px; letter-spacing: -.02em; }
+
+/* 下にスクロールして「前のレース/次のレース」が隠れたら、画面の下に小さな ‹ › を出す(2026-10-28) */
+.detail-float { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 45; transform: translate(-50%, 16px);
+  display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px; background: var(--comb); border: 1px solid rgba(247,201,72,.55);
+  box-shadow: 0 6px 20px rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+.detail-float.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.detail-float button { border: 0; border-radius: 999px; padding: 10px 16px; background: rgba(247,201,72,.14); color: #f7c948; font: inherit; font-size: 13.5px; font-weight: 800; white-space: nowrap; }
+.detail-float button:active { background: rgba(247,201,72,.3); }
+.detail-float button:disabled { opacity: .3; }
+.detail-float span { color: rgba(251,241,220,.75); font-size: 12px; padding: 0 8px; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .detail-float { transition: none; } }
 </style>
 
 <div class="lock" id="lock">
@@ -1310,7 +1321,8 @@ function publicDetailNav(id) {
   const index = S.detailNav.indexOf(id);
   if (index < 0 || S.detailNav.length < 2) return "";
   return `<div class="detail-nav"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前のレース</button>
-    <span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次のレース ›</button></div>`;
+    <span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次のレース ›</button></div>`
+    + `<div class="detail-float" aria-label="前後のレース"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前</button><span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次 ›</button></div>`;
 }
 function openRace(id, group = "race", isStep = false, focusNo = null) {
   const d = curDay(); let r, venue;
@@ -1383,6 +1395,19 @@ function focusHorse(sh, no, scroll) {
 
 function closeSheet() { const sh = $("#sheet"); if (sh.hidden) return; sh.hidden = true; sh.innerHTML = ""; document.body.style.overflow = ""; }
 window.addEventListener("popstate", closeSheet);
+// 出馬表で下にスクロールしたら、画面の下の ‹ › を出す(上の「前のレース/次のレース」が見えている間は隠す)
+function updateDetailFloat() {
+  const sh = $("#sheet"); if (!sh || sh.hidden) return;
+  const f = sh.querySelector(".detail-float"); if (!f) return;
+  const nav = sh.querySelector(".detail-nav"), head = sh.querySelector(".sheet-head");
+  const hb = head ? head.getBoundingClientRect().bottom : 0;
+  f.classList.toggle("show", !!nav && nav.getBoundingClientRect().bottom < hb + 2);
+}
+(() => { const sh = $("#sheet"); if (!sh) return;
+  sh.addEventListener("scroll", updateDetailFloat, { passive: true });
+  try { new MutationObserver(() => requestAnimationFrame(updateDetailFloat)).observe(sh, { childList: true }); } catch {}
+})();
+
 
 /* ---------------------------------------------------------------- 操作 */
 $("#lockForm").addEventListener("submit", e => { e.preventDefault(); unlock($("#pw").value.trim(), $("#remember").checked); });
