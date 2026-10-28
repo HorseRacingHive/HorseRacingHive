@@ -376,6 +376,8 @@ nav.tabs button.on[data-tab="sig"][data-mode="all"] { color: var(--honey); } nav
 nav.tabs button.on[data-tab="sig"][data-mode="danger"] { color: var(--dang); } nav.tabs button.on[data-tab="sig"][data-mode="danger"] svg { filter: drop-shadow(0 0 6px rgba(251,113,133,.65)); }
 .seg button.sig-all { color: var(--honey); border-color: var(--honey); } .seg button.on.sig-all { background: var(--honey); color: #2b1d00; }
 nav.tabs button.on[data-tab="race"] { color: var(--evc); } nav.tabs button.on[data-tab="race"] svg { filter: drop-shadow(0 0 6px rgba(125,211,252,.6)); }
+/* レース・結果タブ: レース=空色の旗 / 結果=金のトロフィー */
+nav.tabs button.on[data-tab="race"][data-mode="result"] { color: var(--honey); } nav.tabs button.on[data-tab="race"][data-mode="result"] svg { filter: drop-shadow(0 0 6px rgba(247,201,72,.65)); }
 nav.tabs button.on[data-tab="perf"] { color: #c4b5fd; } nav.tabs button.on[data-tab="perf"] svg { filter: drop-shadow(0 0 6px rgba(196,181,253,.6)); }
 /* おすすめ度: ★の数で色を変える(★5=赤 ★4=橙 ★3=蜜 ★2=薄) */
 .stars.t5 { color: var(--s5); } .stars.t4 { color: var(--s4); } .stars.t3 { color: var(--s3); } .stars.t2 { color: var(--s2); }
@@ -691,7 +693,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 <nav class="tabs" id="tabs">
   <button data-tab="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8l1.2 2.5 2.8.4-2 2 .5 2.8-2.5-1.3-2.5 1.3.5-2.8-2-2 2.8-.4z" fill="currentColor"/></svg>おすすめ</button>
   <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>狙い・危険</button>
-  <button data-tab="race"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>レース・結果</button>
+  <button data-tab="race"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4 2.5 4H5"/></svg>レース・結果</button>
   <button data-tab="perf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>成績</button>
 </nav>
 </div>
@@ -1042,7 +1044,14 @@ function render() {
   if (sigBtn) { sigBtn.dataset.mode = S.sigMode || "all"; const lab = sigBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "sig" ? { all: "すべて", buy: "狙い", danger: "危険" }[S.sigMode || "all"] : "狙い・危険"; }
   // レース・結果タブ: 1回目 レース(出馬表) / 2回目 結果 / …と押すたびに切り替え(狙い・危険と同じ)
   const raceBtn = document.querySelector('#tabs button[data-tab="race"]');
-  if (raceBtn) { raceBtn.dataset.mode = S.raceMode || "race"; const lab = raceBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "race" ? { race: "レース", result: "結果" }[S.raceMode || "race"] : "レース・結果"; }
+  if (raceBtn) {
+    const mode = S.tab === "race" ? (S.raceMode || "race") : "race";
+    raceBtn.dataset.mode = mode;
+    const lab = raceBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "race" ? { race: "レース", result: "結果" }[mode] : "レース・結果";
+    const ic = raceBtn.querySelector("svg");   // 旗(レース) ⇄ トロフィー(結果)
+    const want = mode === "result" ? '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M9 20h6"/>' : '<path d="M5 21V4"/><path d="M5 4h12l-2.5 4 2.5 4H5"/>';
+    if (ic && ic.dataset.mode !== mode) { ic.innerHTML = want; ic.dataset.mode = mode; }
+  }
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   if (!d) { v.innerHTML = h + `<div class="card empty">まだ予想がありません。出馬表が出たら表示されます。</div>`; return; }
