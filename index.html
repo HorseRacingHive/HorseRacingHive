@@ -700,10 +700,10 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .fz.f3 .fz-hex { background: var(--bronze); color: #fff; } .fz.f3 small { color: var(--bronze); }
 .fz.fx .fz-hex { width: 30px; height: 26px; font-size: 13px; }
 .horse.has-fz { grid-template-columns: auto auto 1fr auto auto; position: relative; }
-.horse.fz1 { border-color: var(--honey); border-left-color: var(--honey); background: linear-gradient(90deg, rgba(247,201,72,.18), var(--panel) 62%); box-shadow: 0 0 0 2px rgba(247,201,72,.25), 0 0 18px rgba(247,201,72,.16); }
-.horse.fz2 { border-left-color: var(--silver); background: linear-gradient(90deg, rgba(203,213,225,.10), var(--panel) 62%); }
-.horse.fz3 { border-left-color: var(--bronze); background: linear-gradient(90deg, rgba(217,160,106,.13), var(--panel) 62%); }
-.horse.fzx { opacity: .62; }
+.horse.fz1 { border-top: 1.5px solid var(--honey); border-right: 1.5px solid var(--honey); border-bottom: 1.5px solid var(--honey); background: linear-gradient(90deg, rgba(247,201,72,.18), var(--panel) 62%); box-shadow: 0 0 0 2px rgba(247,201,72,.25), 0 0 18px rgba(247,201,72,.16); }
+.horse.fz2 { border-top: 1.5px solid var(--silver); border-right: 1.5px solid var(--silver); border-bottom: 1.5px solid var(--silver); background: linear-gradient(90deg, rgba(203,213,225,.10), var(--panel) 62%); }
+.horse.fz3 { border-top: 1.5px solid var(--bronze); border-right: 1.5px solid var(--bronze); border-bottom: 1.5px solid var(--bronze); background: linear-gradient(90deg, rgba(217,160,106,.13), var(--panel) 62%); }
+.horse.fzx { opacity: 1; }   /* 着外は暗くしない(案1) */
 .horse.fz1::before { content: "👑"; position: absolute; top: -10px; left: 14px; font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .fz.f1 .fz-hex { animation: none; } }
 
