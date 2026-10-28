@@ -692,7 +692,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 <main class="wrap" id="view"></main>
 <nav class="tabs" id="tabs">
   <button data-tab="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8l1.2 2.5 2.8.4-2 2 .5 2.8-2.5-1.3-2.5 1.3.5-2.8-2-2 2.8-.4z" fill="currentColor"/></svg>おすすめ</button>
-  <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>狙い・危険</button>
+  <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>狙い・危険</button>
   <button data-tab="race"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4 2.5 4H5"/></svg>レース・結果</button>
   <button data-tab="perf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>成績</button>
 </nav>
@@ -1041,7 +1041,17 @@ function allHorses(day) {
 function render() {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
   const sigBtn = document.querySelector('#tabs button[data-tab="sig"]');
-  if (sigBtn) { sigBtn.dataset.mode = S.sigMode || "all"; const lab = sigBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "sig" ? { all: "すべて", buy: "狙い", danger: "危険" }[S.sigMode || "all"] : "狙い・危険"; }
+  if (sigBtn) {
+    sigBtn.dataset.mode = S.sigMode || "all";
+    const lab = sigBtn.lastChild; if (lab && lab.nodeType === 3) lab.textContent = S.tab === "sig" ? { all: "すべて", buy: "狙い", danger: "危険" }[S.sigMode || "all"] : "狙い・危険";
+    // マークも切り替え: すべて=的 / 狙い=的に矢 / 危険=⚠(別のタブにいる時は的)
+    const mode = S.tab === "sig" ? (S.sigMode || "all") : "all";
+    const ic = sigBtn.querySelector("svg");
+    const want = { all: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
+      buy: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 12l7-7M15 5h4v4"/>',
+      danger: '<path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.6v.4"/>' }[mode];
+    if (ic && ic.dataset.mode !== mode) { ic.innerHTML = want; ic.dataset.mode = mode; }
+  }
   // レース・結果タブ: 1回目 レース(出馬表) / 2回目 結果 / …と押すたびに切り替え(狙い・危険と同じ)
   const raceBtn = document.querySelector('#tabs button[data-tab="race"]');
   if (raceBtn) {
