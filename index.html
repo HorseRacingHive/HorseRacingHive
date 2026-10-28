@@ -1106,8 +1106,7 @@ function viewHome(d) {
     h += `<div class="card empty">${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
   }
   h += `</section><p class="note">※オッズは生きてるので予想は締切まで変わります</p>`;
-  h += `<section><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section>`;
-  return h;
+  return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
 }
 
 // 全レースの結果(開催場ごとのタブ。1着〜3着を1行ずつ「1着 ◎ 5 馬名」)
@@ -1186,7 +1185,9 @@ function viewRaces(d) {
     return `<button class="race" data-race="${esc(r.id)}" data-race-group="race"><span class="rno ${r.done ? "past" : ""}">${r.no}R</span>
       <div class="info"><b>${esc(r.name)}</b><small>${esc(r.course)} ${r.field ?? ""}頭${r.going ? " ・" + esc(r.going) : ""}</small><span class="marks">${line}</span></div>
       <div class="side"><div class="post num">${esc(r.post)}</div>${r.st ? `<span class="stars">${"★".repeat(r.st)}</span>` : ""}</div></button>`;
-  }).join("") + `</div>`;
+  }).join("") + `</div>`
+  // この日の全レース結果(1着〜3着)。おすすめタブから移した(2026-10-28)
+  + `<section><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section></div>`;
 }
 
 // 手元の公開データ(90日分)から、おすすめの日ごとの累積収支(単勝1,000円)を作る
