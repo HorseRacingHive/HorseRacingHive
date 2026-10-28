@@ -909,7 +909,7 @@ function moneyA(periods, cur, attr) {
       <div class="bar-row"><span>投資</span><div class="track"><div class="fill inv" style="width:${(a.invest / max * 100).toFixed(1)}%"></div></div><span class="v">${Math.round(a.invest).toLocaleString("ja-JP")}円</span></div>
       <div class="bar-row"><span>払戻</span><div class="track"><div class="fill ret" style="width:${((a.payout || 0) / max * 100).toFixed(1)}%"></div></div><span class="v">${Math.round(a.payout || 0).toLocaleString("ja-JP")}円</span></div></div>
     <div class="meta"><span>回収率 <b class="${prof >= 0 ? "plus" : "minus"}">${Math.round((a.payout || 0) / a.invest * 100)}%</b></span><span>的中 <b>${a.hit}/${a.n}</b></span><span>1点1,000円</span></div>`
-    : `<div class="note">${a.loading ? "集計しています…" : "まだ結果が出ていません"}</div>`}</div>`;
+    : `<div class="note">${a.loading ? "集計しています…" : a.empty || "まだ結果が出ていません"}</div>`}</div>`;
 }
 // data-count の数字を0から数え上げる(同じ数字は2回目からはそのまま表示)
 const countSeen = new Set();
@@ -1492,10 +1492,12 @@ function perfDashboard(d, rp) {
     const invest = x.invest ?? x.n * 1000, payout = x.payout ?? (x.profit != null ? invest + x.profit : null);
     return payout == null ? null : { invest, payout, n: x.n, hit: x.hit };
   };
-  const periods = { day: { lab: d.label, tab: "この日", ...(pm(today) || {}) }, month: { lab: "今月", ...(pm(per.month) || {}) },
+  const osN = (d.osusume || []).length;   // この日のおすすめの頭数(0なら「おすすめなし」と出す)
+  const dayEmpty = osN ? `結果待ち(おすすめ${osN}頭)` : "この日はおすすめの馬がいませんでした";
+  const periods = { day: { lab: d.label, tab: "この日", empty: dayEmpty, ...(pm(today) || {}) }, month: { lab: "今月", ...(pm(per.month) || {}) },
     year: { lab: `今年${per.year?.label ? `(${per.year.label})` : ""}`, ...(pm(per.year) || {}) } };
   let h = `<section><h2>ひと目でわかる成績<span class="sub">おすすめ・単勝1,000円ずつ</span></h2>${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
-  h += gaugeSvg(today?.n ? today.roi : null, `${esc(d.label)}`, today?.n ? `${today.hit}/${today.n}的中${today.profit != null ? " ・ " + yenPM(today.profit) : ""}` : "まだ結果なし");
+  h += gaugeSvg(today?.n ? today.roi : null, `${esc(d.label)}`, today?.n ? `${today.hit}/${today.n}的中${today.profit != null ? " ・ " + yenPM(today.profit) : ""}` : (osN ? `結果待ち・おすすめ${osN}頭` : "おすすめなし"));
   h += gaugeSvg(per.month?.n ? per.month.roi : null, "今月", per.month?.n ? `${per.month.hit}/${per.month.n}的中 ・ ${yenPM(per.month.profit)}` : "まだ結果なし");
   h += `</div><div class="dash">`;
   h += gaugeSvg(per.year?.n ? per.year.roi : null, `今年${per.year?.label ? `(${esc(per.year.label)})` : ""}`, per.year?.n ? `${per.year.hit}/${per.year.n}的中 ・ ${yenPM(per.year.profit)}` : "—");
@@ -1508,7 +1510,7 @@ function perfDashboard(d, rp) {
 function viewPerf(d) {
   const p0 = d.perf || {};
   const rp = d.rec_perf || (p0.n ? { source: "app", actual: { n: p0.n, hit: p0.hit, hit_rate: p0.hit / p0.n, roi: p0.roi, profit: p0.roi == null ? null : (p0.roi - 1) * p0.n * 1000 } } : null);
-  let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2><div class="card empty">まだ結果が出ていません</div></section>`);
+  let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2><div class="card empty">${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}</div></section>`);
   const per = S.snap.period;
   if (per) {
     h += `<section><h2>今月・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${periodCard("今月", per.month)}${periodCard("今年", per.year)}
