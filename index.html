@@ -1100,6 +1100,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .bk-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .bk-ch { border: 0; background: #3a2808; color: #f6e7bf; border-radius: 14px; padding: 8px 0; font-size: 13px; font-weight: 700; }
 .bk-ch.on { background: #ffc94a; color: #2a1a02; }
+.bk-ch.rec { box-shadow: inset 0 0 0 1px #c98b2b; } .bk-ch.rec:not(.on)::after { content: "おすすめ"; display: block; font-size: 9px; color: #c9a35a; margin-top: -2px; }
 .bk-ch.warn { background: #5a2a14; color: #f6c4a8; }
 .bk-ch.wide { padding: 9px 0; }
 .bk-fund { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
@@ -1277,7 +1278,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
   <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>狙い・危険</button>
   <button data-tab="race"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4 2.5 4H5"/></svg>レース・結果</button>
   <button data-tab="perf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l6-7 4 4 8-9"/><path d="M15 7h6v6"/></svg>成績</button>
-  <button data-tab="bank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10v2.5c2.3 1.5 3 3.6 3 6.5 0 4.2-3.4 7-8 7s-8-2.8-8-7c0-2.9.7-5 3-6.5z"/><path d="M5.5 13.5h13" /><path d="M9 3h6"/></svg>資金</button>
+  <button data-tab="bank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h9v2.3c2.1 1.4 2.8 3.4 2.8 6.1 0 4-3.2 6.6-7.3 6.6S3.2 18.4 3.2 14.4c0-2.7.7-4.7 2.8-6.1z"/><path d="M4.6 14h11.8"/><path d="M8 4h5"/><g class="tab-bee" stroke-width="1.3"><ellipse cx="18.6" cy="2.9" rx="1.5" ry="1.3"/><ellipse cx="21.2" cy="2.9" rx="1.5" ry="1.3"/><ellipse cx="19.9" cy="5.3" rx="2.4" ry="1.6" fill="currentColor" stroke="none"/><path d="M19.2 4v2.6M20.6 4v2.6" stroke="#16110a" stroke-width=".9"/></g></svg>資金</button>
 </nav>
 </div>
 <div class="sheet" id="sheet" hidden></div>
@@ -1306,7 +1307,8 @@ window.addEventListener("resize", () => {
 const pct = (p, d = 1) => p == null ? "—" : (p * 100).toFixed(d) + "%";
 const evf = e => e == null ? "—" : e.toFixed(2);
 // 期待値は数字を出さず段階で(2026-10-29。期待値 ÷ 勝率 でオッズを逆算されないように)。eb: 1=プラス / -1〜-3 = 期待値マイナス☆の数
-const evBand = x => x.eb !== undefined ? x.eb : x.ev == null ? null : x.ev >= 1 ? 1 : x.ev >= .8 ? -1 : x.ev >= .6 ? -2 : -3;
+const evBand = x => x.eb !== undefined ? x.eb : x.ev == null ? null : x.ev >= 1.5 ? 3 : x.ev >= 1.2 ? 2 : x.ev >= 1 ? 1 : x.ev >= .8 ? -1 : x.ev >= .6 ? -2 : -3;
+const EV_NOTE = "※期待値 = AIの勝率から見て、オッズがおいしいか。＋ほどお得、−ほど割高";
 const evMark = x => { const b = evBand(x); return b == null ? "" : b > 0 ? `<span class="evm plus" title="期待値がプラス(1.0以上)">期待値＋</span>`
   : `<span class="evm minus m${-b}" title="期待値がマイナス(☆が多いほど低い)">期待値−${"☆".repeat(-b)}</span>`; };
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
@@ -1866,7 +1868,7 @@ function resultsList(d) {
     }).join("")}</div>`;
 }
 
-const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "期待値が高い馬"],
+const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "勝率のわりにオッズがおいしい馬"],
   "紐": ["himo", "🪢", "3着内に来やすい穴馬(ワイド・3連系の相手)"], "過剰": ["over", "🔸", "人気のわりに勝率が低く、単勝では割引が必要な馬。3着内率は平均並みなので、相手には残してOK"], "危険": ["danger", "⚠️", "人気ほど勝てていない人気馬(3着も危ない)"] };   // 買い材料 → 消し材料の順(ボタンの並び)
 SIG_INFO["すべて"] = ["all", "", "狙い・妙味・紐・過剰・危険のすべて"];
 // 下の「狙い・危険」タブを押すたびに すべて → 買い側(狙い・妙味・紐) → 消し側(過剰・危険) → すべて… と切り替わる(携帯用と同じ)
@@ -1895,6 +1897,7 @@ function viewSig(d) {
   const dirLabel = k => k === "post" ? (sd === "asc" ? "早い順" : "遅い順") : k === "fin" ? (sd === "asc" ? "1着から" : "下から") : (sd === "desc" ? "高い順" : "低い順");
   h += `<div class="horse-sort" aria-label="並べ替え(もう一度押すと昇順・降順が入れ替わります)"><button data-sig-sort="post" class="${sk === "post" ? "on" : ""}" data-direction="${dirLabel("post")}">発走順</button>${
     sortKeys.map(([k, label]) => `<button data-sig-sort="${k}" class="${sk === k ? "on" : ""}" data-direction="${dirLabel(k)}">${label.endsWith("順") ? label : label + "順"}</button>`).join("")}</div>`;
+  if (sk === "eb") h += `<p class="note" style="margin:0">${EV_NOTE}</p>`;
   if (sk === "post") { if (sd === "desc") list.reverse(); }
   else {
     const val = x => sk === "fplus" || sk === "fminus" ? (x.kp == null ? null : factorSum(x, sk)) : sk === "eb" ? evBand(x) : x[sk];
@@ -2127,7 +2130,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
-  }).join("")}</div>`;
+  }).join("")}</div>${key === "eb" ? `<p class="note" style="margin:4px 0 0">${EV_NOTE}</p>` : ""}`;
   for (const x of sortedHorses) {
     const tags = [];
     if (x.st) tags.push(`<span class="stars t${x.st}">${starStr(x.st)}</span>`);
@@ -2375,16 +2378,16 @@ function viewBank() {
       <div class="bk-lab num">/ ${yen(BK.day)}・1点${yen(BK.unit)}で${stopped ? "おしまい" : `あと${Math.floor(left / BK.unit)}点`}</div></div>
     <span class="bk-tap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="${S.bkOpen ? "M6 15l6-6 6 6" : "M6 9l6 6 6-6"}"/></svg>${S.bkOpen ? "閉じる" : "設定"}</span></button>`;
   if (S.bkOpen) {
-    const bal = bkBalance(), lo = bkR100(bal * 0.01), hi = bkR100(bal * 0.02);
+    const bal = bkBalance(), lo = Math.max(100, Math.ceil(bal * 0.001 / 100) * 100), hi = Math.max(lo, Math.floor(bal * 0.01 / 100) * 100);   // おすすめの1点 = 軍資金の0.1〜1%(2026-10-29 本人の指定)
     h += `<div class="bk-panel">
       <div class="bk-lab">今日の予算</div>
       <div class="bk-row">${[3000, 5000, 10000, 20000].map(v => `<button type="button" class="bk-ch${BK.day === v ? " on" : ""}" data-bk="day" data-v="${v}">${v >= 10000 ? v / 10000 + "万" : v / 1000 + "千"}</button>`).join("")}</div>
       <div class="bk-lab" style="margin-top:6px">1点の金額</div>
-      <div class="bk-row">${[100, 300, 500, 1000].map(v => `<button type="button" class="bk-ch${BK.unit === v ? " on" : ""}" data-bk="unit" data-v="${v}">${v.toLocaleString("ja-JP")}</button>`).join("")}</div>
-      <div class="bk-sub num">軍資金の残り ${yen(bal)} の1〜2%がおすすめ(${lo.toLocaleString("ja-JP")}〜${hi.toLocaleString("ja-JP")}円)</div>
+      <div class="bk-row">${[100, 300, 500, 1000].map(v => `<button type="button" class="bk-ch${BK.unit === v ? " on" : ""}${v >= lo && v <= hi ? " rec" : ""}" data-bk="unit" data-v="${v}">${v.toLocaleString("ja-JP")}</button>`).join("")}</div>
+      <div class="bk-sub num">🐝 おすすめの1点 <b style="color:#ffd866">${lo.toLocaleString("ja-JP")}〜${hi.toLocaleString("ja-JP")}円</b>(軍資金の0.1〜1%)</div>
       <div class="bk-lab" style="margin-top:6px">軍資金(いま ${yen(bal)})</div>
       <div class="bk-fund3"><input id="bk-fund-in" class="bk-in num" type="number" inputmode="numeric" min="0" step="1000" placeholder="30000"><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fundset">この額にする</button><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fund">＋ 足す</button></div>
-      <div class="bk-sub">はじめは金額を入れて「この額にする」。入金した時は「＋ 足す」</div>
+      <div class="bk-sub">最初は「この額にする」・入金は「＋ 足す」</div>
       <button type="button" class="bk-ch warn wide" style="margin-top:6px" data-bk="stop"${stopped ? " disabled" : ""}>🌙 今日はここまで</button>
     </div>`;
   }
