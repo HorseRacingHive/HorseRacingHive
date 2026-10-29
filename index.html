@@ -1137,8 +1137,33 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .bk-off { opacity: .55; }
 .evm { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 11px; color: #d9b874; white-space: nowrap; vertical-align: middle; }
 .evm svg { display: block; overflow: visible; }
-.evm.plus svg path { fill: #ffc94a; filter: drop-shadow(0 0 2px rgba(255,201,74,.55)); }
+.evm.plus svg path { fill: #ffc94a; }   /* 影(filter)は付けない: 馬の一覧で数が多く重くなるため */
 .evm.minus svg path { fill: none; stroke: #ff8a9b; stroke-width: 1.3; }
+/* 回収率プラスの演出(案11 宝箱のように開く 2026-10-29)。動くのはその日・その回収率で最初に開いた1回だけ */
+.bk-fxjar { flex: none; margin: -4px -6px 0 -8px; }
+.bk-fxjar .bk-beam { transform-box: fill-box; transform-origin: 50% 100%; }
+.bk-fxjar .bk-lid { transform-box: fill-box; transform-origin: 0% 100%; transform: translate(-4px, -9px) rotate(-32deg); }
+.bk-fxjar .bk-rib { transform-box: fill-box; transform-origin: 50% 100%; }
+.bk-fxjar .bk-tw { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.bk-fxjar.play .bk-lid { animation: bkLid .7s cubic-bezier(.3,1.7,.5,1) both .25s; }
+.bk-fxjar.play .bk-beam { animation: bkBeam 1s ease-out both .55s; }
+.bk-fxjar.play .bk-rib { animation: bkRib .8s cubic-bezier(.2,1.5,.4,1) both 1.1s; }
+.bk-fxjar.play .bk-tw { animation: bkTw 1.4s ease-in-out 3 1.2s; }
+.bk-fxjar .bk-shine { animation: none; }
+.bk-fxjar.play .bk-shine { animation: bkShine 1.4s ease-in-out both 1.5s; }
+@keyframes bkLid { from { transform: translateY(0) rotate(0); } }
+@keyframes bkBeam { from { transform: scaleY(0); opacity: 0; } }
+@keyframes bkRib { from { transform: scale(.2) translateY(20px); opacity: 0; } }
+@keyframes bkTw { 0%, 100% { opacity: 0; transform: scale(.3); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes bkShine { from { transform: translateX(-60px) skewX(-20deg); } to { transform: translateX(110px) skewX(-20deg); } }
+.bk-plus { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 10px; border-radius: 999px; background: linear-gradient(90deg, #ffd866, #e8a317); color: #2a1a02; font-size: 12px; font-weight: 900; }
+/* 連敗ストップ(案8): 連敗のあとに当たったら、巣穴が左から金に光る */
+.bk-hex .lit { fill: #3a2808; stroke: #ffc94a; stroke-width: 1.5; }
+.bk-hex.play .lit { animation: bkLit .5s ease-out both; }
+.bk-hex:not(.play) .lit { fill: #ffd866; }
+@keyframes bkLit { 0% { fill: #3a2808; } 60% { fill: #fff6c4; } 100% { fill: #ffd866; } }
+.bk-stop { color: #ffd866; font-weight: 900; }
+@media (prefers-reduced-motion: reduce) { .bk-fxjar.play *, .bk-hex.play .lit { animation: none !important; opacity: 1; } }
 .buy-chip { grid-column: 1 / -1; justify-self: end; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 6px 14px; border-radius: 14px; background: #ffc94a; color: #2a1a02; font-size: 13px; font-weight: 800; }
 .buy-chip.done { background: #3a2808; color: #ffd866; border: 1px solid #e8a317; }
 .buy-chip.off { background: #3a2808; color: #a8894a; }
@@ -2311,7 +2336,7 @@ function bkBuy(c) {
 }
 function bkAct(k) {
   const a = k.dataset.bk, v = Number(k.dataset.v);
-  if (a !== "unit" && a !== "stop" && a !== "del") S.bkConfirm = null;
+  if (a !== "unit" && a !== "stop" && a !== "del" && a !== "resume") S.bkConfirm = null;
   if (a === "jar") { S.bkOpen = !S.bkOpen; return bkRerender(); }
   if (a === "day") { BK.day = v; bkSave(); return bkRerender(); }
   if (a === "unit") {   // 連敗中に金額を大きく上げる時は、もう一度押してもらう(追い上げ防止)
@@ -2337,8 +2362,13 @@ function bkAct(k) {
   }
   if (a === "stop") {
     if (bkStopped()) return;
-    if (S.bkConfirm !== "stop") { S.bkConfirm = "stop"; toast("もう一度押すと、今日はここまでにします<br>(今日はもう戻せません)"); return; }
+    if (S.bkConfirm !== "stop") { S.bkConfirm = "stop"; toast("もう一度押すと、今日はここまでにします<br>(間違えた時は「再開する」で戻せます)"); return; }
     S.bkConfirm = null; BK.stop = todayStr(); S.bkOpen = false; bkSave(); toast("おつかれさまでした。また次の開催日に🐝"); return bkRerender();
+  }
+  if (a === "resume") {   // 「今日はここまで」を解除(押し間違え用 2026-10-29)。熱くなって戻すのを防ぐため、もう一度押してもらう
+    if (!bkStopped()) return;
+    if (S.bkConfirm !== "resume") { S.bkConfirm = "resume"; toast("もう一度押すと再開します<br>熱くなっていないか、ひと呼吸おいてから"); return; }
+    S.bkConfirm = null; BK.stop = null; bkSave(); toast("再開しました"); return bkRerender();
   }
   if (a === "pay") {
     const b = BK.bets[+k.dataset.i], n = Math.round(Number(document.getElementById("bk-pay-" + k.dataset.i)?.value || 0));
@@ -2377,16 +2407,65 @@ document.addEventListener("change", async e => {
   } catch { toast("読み込めませんでした。HIVEで書き出したファイルを選んでください"); }
 });
 
+function bkSeen(key) {   // 演出は同じ内容で1回だけ(この端末に覚える)
+  const k = "hivep_bk_fx", v = store.get(k) || "";
+  if (v.split("\n").includes(key)) return true;
+  store.set(k, [key, ...v.split("\n").filter(Boolean)].slice(0, 30).join("\n"));
+  return false;
+}
+function bkPlusFx() {   // 回収率プラス: 今日(結果が出た分)→ だめなら今月
+  const t = todayStr(), d = bkSum(BK.bets.filter(b => b.d === t));
+  if (d.n && d.roi >= 1) return { lab: "今日", roi: d.roi };
+  const m = bkSum(bkIn("m"));
+  if (m.n && m.roi >= 1) return { lab: "今月", roi: m.roi };
+  return null;
+}
+function bkPlusPlay(fx) {   // プラスになるたびに演出(マイナス→プラス、または的中で回収率が上がった時)。下がった時は動かさない
+  const k = "hivep_bk_plus", now = fx ? { lab: fx.lab, pct: Math.round(fx.roi * 100), d: todayStr() } : null;
+  let last = null; try { last = JSON.parse(store.get(k) || "null"); } catch {}
+  store.set(k, JSON.stringify(now));
+  if (!now) return false;
+  return !last || last.d !== now.d || last.lab !== now.lab || now.pct > last.pct;
+}
+function bkFxJar(fx, play) {   // 宝箱のように開く蜜壺(光の柱・回収率のリボン)
+  const body = "M16 22 h46 v6 c9 6 11 16 11 30 c0 21-15 35-34 35 S5 79 5 58 c0-14 2-24 11-30z", id = "bkfx" + (++bkJid), pct = Math.round(fx.roi * 100);
+  const tw = (x, y, d, r = 4) => `<polygon class="bk-tw" style="animation-delay:${d}s" points="${x},${y - r} ${x + r * .3},${y - r * .3} ${x + r},${y} ${x + r * .3},${y + r * .3} ${x},${y + r} ${x - r * .3},${y + r * .3} ${x - r},${y} ${x - r * .3},${y - r * .3}" fill="#fff"/>`;
+  return `<svg class="bk-fxjar${play ? " play" : ""}" width="96" height="136" viewBox="-9 -40 96 136" aria-label="${fx.lab}の回収率 ${pct}%">
+    <defs><clipPath id="${id}"><path d="${body}"/></clipPath>
+      <radialGradient id="${id}g"><stop offset="0" stop-color="#ffd866" stop-opacity=".55"/><stop offset="1" stop-color="#ffd866" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}b" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff6c4" stop-opacity=".9"/><stop offset="1" stop-color="#ffd866" stop-opacity="0"/></linearGradient></defs>
+    <circle cx="39" cy="50" r="46" fill="url(#${id}g)"/>
+    <g class="bk-beam"><polygon points="20,22 58,22 86,-40 -8,-40" fill="url(#${id}b)" opacity=".55"/><polygon points="30,22 48,22 58,-40 20,-40" fill="url(#${id}b)"/></g>
+    <path d="${body}" fill="#3a2808" stroke="#ffd866" stroke-width="2.2"/>
+    <g clip-path="url(#${id})"><rect x="0" y="27" width="78" height="70" fill="#e8a317"/><rect x="0" y="27" width="78" height="4" fill="#ffd866"/>
+      <rect class="bk-shine" x="0" y="20" width="12" height="80" fill="#fff6c4" opacity=".55"/></g>
+    <path d="M16 22h46" stroke="#ffd866" stroke-width="2.2"/>
+    <g class="bk-lid"><rect x="10" y="11" width="58" height="10" rx="3" fill="#ffd866" stroke="#b97a0e" stroke-width="1.2"/><rect x="33" y="7" width="12" height="5" rx="2" fill="#b97a0e"/></g>
+    <g class="bk-rib"><path d="M5 -36 h68 l-6 8 6 8 h-68 l6 -8z" fill="#b97a0e"/><rect x="11" y="-39" width="56" height="22" rx="5" fill="#ffd866" stroke="#fff6c4" stroke-width="1.2"/>
+      <text x="39" y="-23" text-anchor="middle" font-size="15" font-weight="900" fill="#2a1a02">${pct}%</text></g>
+    ${tw(0, -8, 0, 4.5)}${tw(78, -4, .5, 5)}${tw(74, 44, 1, 3.5)}${tw(4, 50, .8, 3)}
+    <text x="39" y="68" text-anchor="middle" font-size="12" font-weight="900" fill="#2a1a02" letter-spacing="1">PLUS</text>
+  </svg>`;
+}
+function bkBreak() {   // 連敗ストップ: いちばん新しい結果が的中で、その前に2連敗以上していた
+  const xs = bkSorted(BK.bets).filter(b => b.fin != null);
+  const last = xs[xs.length - 1];
+  if (!last || last.fin !== 1) return null;
+  let n = 0;
+  for (let i = xs.length - 2; i >= 0 && xs[i].fin !== 1; i--) n++;
+  return n >= 2 ? { n, key: `stop|${last.id}|${last.hno}`, d: last.d } : null;
+}
 function viewBank() {
   bkSync();
   const today = todayStr(), stopped = bkStopped(), spent = bkSpent(), left = Math.max(0, BK.day - spent);
   const md = today.slice(5).split("-").map(Number), W = "日月火水木金土"[new Date(today + "T00:00:00+09:00").getDay()];
+  const fx = stopped ? null : bkPlusFx(), fxPlay = bkPlusPlay(fx);
   let h = `<section class="bk">${BK_DRIP}<div class="bk-head"><b>資金管理</b><span class="num">${md[0]}/${md[1]} ${W}</span></div>`;
   // 蜜壺(今日の残り)。押すと予算・1点の金額・軍資金を決めるパネル
   h += `<button type="button" class="bk-jarbtn${S.bkOpen ? " open" : ""}${stopped ? " closed" : ""}" data-bk="jar" aria-expanded="${S.bkOpen ? "true" : "false"}">
-    ${bkJar(BK.day ? left / BK.day : 0, { closed: stopped })}
+    ${fx ? bkFxJar(fx, fxPlay) : bkJar(BK.day ? left / BK.day : 0, { closed: stopped })}
     <div><div class="bk-lab">${stopped ? "今日はここまで" : "今日の残りの蜜"}</div><div class="bk-big num">${yen(left)}</div>
-      <div class="bk-lab num">/ ${yen(BK.day)}・1点${yen(BK.unit)}で${stopped ? "おしまい" : `あと${Math.floor(left / BK.unit)}点`}</div></div>
+      <div class="bk-lab num">/ ${yen(BK.day)}・1点${yen(BK.unit)}で${stopped ? "おしまい" : `あと${Math.floor(left / BK.unit)}点`}</div>${fx ? `<div class="bk-plus">🎉 ${fx.lab}プラス 回収率${Math.round(fx.roi * 100)}%</div>` : ""}</div>
     <span class="bk-tap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="${S.bkOpen ? "M6 15l6-6 6 6" : "M6 9l6 6 6-6"}"/></svg>${S.bkOpen ? "閉じる" : "設定"}</span></button>`;
   if (S.bkOpen) {
     const bal = bkBalance(), lo = Math.max(100, Math.ceil(bal * 0.001 / 100) * 100), hi = Math.max(lo, Math.floor(bal * 0.01 / 100) * 100);   // おすすめの1点 = 軍資金の0.1〜1%(2026-10-29 本人の指定)
@@ -2400,7 +2479,8 @@ function viewBank() {
       <div class="bk-lab" style="margin-top:6px">軍資金(いま ${yen(bal)})</div>
       <div class="bk-fund3"><input id="bk-fund-in" class="bk-in num" type="number" inputmode="numeric" min="0" step="1000" placeholder="30000"><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fundset">この額にする</button><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fund">＋ 足す</button></div>
       <div class="bk-sub">最初は「この額にする」・入金は「＋ 足す」</div>
-      <button type="button" class="bk-ch warn wide" style="margin-top:6px" data-bk="stop"${stopped ? " disabled" : ""}>🌙 今日はここまで</button>
+      ${stopped ? `<button type="button" class="bk-ch wide" style="margin-top:6px" data-bk="resume">☀️ 再開する(今日はここまで を解除)</button>`
+        : `<button type="button" class="bk-ch warn wide" style="margin-top:6px" data-bk="stop">🌙 今日はここまで</button>`}
     </div>`;
   }
   // 払戻の入力待ち(的中した記録)
@@ -2411,10 +2491,15 @@ function viewBank() {
   // 連敗(巣穴メーター)
   const lim = bkLimit(), sk = bkStreaks(BK.bets), nH = Math.min(20, Math.max(10, lim)), { lim: sl, lab: slLab } = bkStarLimits();
   const st = sk.cur <= lim * 0.7 ? ["ok", "想定内", "#e8a317"] : sk.cur <= lim ? ["long", "長めの連敗・まだ想定内", "#f0a030"] : ["over", "推奨の最大を超えています", "#f08a5d"];
-  const hx = i => { const x = i * 30 + 2, on = i < sk.cur; return `<polygon points="${x + 6},2 ${x + 18},2 ${x + 24},13 ${x + 18},24 ${x + 6},24 ${x},13" ${on ? `fill="${st[2]}"` : `fill="none" stroke="#6b4a0c" stroke-width="1.5"`}/>`; };
+  const brk = sk.cur === 0 ? bkBreak() : null, brkPlay = brk ? !bkSeen(brk.key) : false, brkShow = brk && (brkPlay || brk.d === today);
+  const nHx = brkShow ? Math.min(20, Math.max(nH, brk.n)) : nH;
+  const hx = i => { const x = i * 30 + 2, on = i < sk.cur, lit = brkShow && i < brk.n, pts = `${x + 6},2 ${x + 18},2 ${x + 24},13 ${x + 18},24 ${x + 6},24 ${x},13`;
+    if (lit) return `<polygon class="lit" style="animation-delay:${(i * .12).toFixed(2)}s" points="${pts}"/>`;
+    return `<polygon points="${pts}" ${on ? `fill="${st[2]}"` : `fill="none" stroke="#6b4a0c" stroke-width="1.5"`}/>`; };
   const starNote = ["5", "4", "3", "2"].filter(k => sl[k] != null).map(k => `<b>★${k}</b> ${sl[k]}`).join("・");
-  h += `<div class="bk-card"><div class="bk-head"><span class="bk-lab" style="font-size:13px">連敗</span><span class="bk-state ${st[0]}">${sk.cur}連敗・${st[1]}</span></div>
-    <svg class="bk-hex" viewBox="0 0 ${nH * 30} 26" preserveAspectRatio="xMinYMid meet" aria-hidden="true">${Array.from({ length: nH }, (_, i) => hx(i)).join("")}</svg>
+  h += `<div class="bk-card"><div class="bk-head"><span class="bk-lab" style="font-size:13px">連敗</span>${brkShow ? `<span class="bk-stop">🎉 連敗ストップ！</span>` : `<span class="bk-state ${st[0]}">${sk.cur}連敗・${st[1]}</span>`}</div>
+    <svg class="bk-hex${brkPlay ? " play" : ""}" viewBox="0 0 ${nHx * 30} 26" preserveAspectRatio="xMinYMid meet" aria-hidden="true">${Array.from({ length: nHx }, (_, i) => hx(i)).join("")}</svg>
+    ${brkShow ? `<div class="bk-sub" style="color:#ffd866">${brk.n}連敗を的中で止めました。連敗は0に戻りました</div>` : ""}
     <div class="bk-sub">巣穴が蜜で埋まるほど連敗。${lim}連敗までは推奨でも起きた範囲です</div>
     ${starNote ? `<div class="bk-sub bk-note num" style="margin-top:2px">※${slLab} ${starNote}</div>` : ""}
     ${st[0] === "over" ? `<div class="bk-sub" style="color:#f6c4a8;margin-top:6px">一度休んで、予算と1点の金額を見直しましょう</div>` : ""}</div>`;
