@@ -87,6 +87,7 @@
   if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
   intro=true;var fast=false;   /* 動画が約1.6秒と短いので、毎回ふつうの速さで最後まで見せる(2026-10-29) */
   box.classList.add('intro');
+  try{box.style.bottom='auto';box.style.height=(window.innerHeight||document.documentElement.clientHeight)+'px';}catch(e){}   /* 裏で画面ができて高さが変わっても、ロゴと巣が動かないように高さを固定(2026-10-29) */
   var dbg=/[?&]debug\b/.test(location.search),klog=[],dlog=function(m){klog.push((Date.now()-start)+'ms '+m);if(!dbg)return;var e=document.getElementById('kbDbg');if(!e){e=document.createElement('div');e.id='kbDbg';e.style.cssText='position:absolute;left:4px;bottom:4px;right:4px;color:#7f7;font:11px monospace;white-space:pre-wrap;z-index:9';box.appendChild(e);}e.textContent+=((Date.now()-start)+'ms '+m+'\n');};
   var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   var v=document.createElement(ios?'div':'video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
