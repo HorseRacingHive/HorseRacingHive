@@ -933,54 +933,57 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
 </style>
 <!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
-<!-- 2026-10-29 蜂ゴツン版(正面向き・かわいい蜂。ぶつかると目が><になる): 読み込み中は蜂が飛び回り、終わったら画面いっぱいにぶつかって(約0.6秒)開く。絵はSVGとCSSだけで軽い -->
+<!-- 2026-10-29 蹄鉄形の巣(S)×蜜で色づく(V)。六角をすき間なくつなげた蜂の巣の形。軽さ・速さ優先: 画像なし・SVGとCSSだけ。読み込みが終わったら残りの枠を一気に染めて0.2秒で開く -->
 <style>
-#kbLoader{position:fixed;inset:0;z-index:2147483000;background:#0b0b0a;overflow:hidden;transition:opacity .18s}
-#kbLoader .kb-t{position:absolute;left:0;right:0;bottom:22%;text-align:center;font-family:Georgia,"Times New Roman",serif;font-size:20px;letter-spacing:.4em;color:#D8B25A}
-#kbLoader .kb-bee{position:absolute;left:50%;top:45%;width:60px;height:60px;margin:-30px 0 0 -30px;animation:kbWander 2.2s ease-in-out infinite;will-change:transform}
-#kbLoader .kb-ex{opacity:0}#kbLoader.hit .kb-eo{animation:kbOff .01s .28s forwards}#kbLoader.hit .kb-ex{animation:kbOn .01s .28s forwards}@keyframes kbOff{to{opacity:0}}#kbLoader .kb-wl{transform-box:fill-box;transform-origin:right center;animation:kbWing .08s linear infinite}#kbLoader .kb-wr{transform-box:fill-box;transform-origin:left center;animation:kbWing .08s linear infinite}
-#kbLoader .kb-crack,#kbLoader .kb-flash{position:absolute;inset:0;opacity:0;pointer-events:none}
-#kbLoader .kb-flash{background:#fff}
-#kbLoader.hit .kb-bee{animation:kbHit .3s cubic-bezier(.5,0,.9,.5) forwards}
-#kbLoader.hit .kb-crack{animation:kbOn .01s .28s forwards}
-#kbLoader.hit .kb-flash{animation:kbFlash .2s .28s}
-#kbLoader.hit{animation:kbShake .2s .28s}
-@keyframes kbWander{0%{transform:translate(-50px,-50px) scale(.35) rotate(-8deg)}25%{transform:translate(45px,-25px) scale(.45) rotate(8deg)}50%{transform:translate(15px,30px) scale(.6) rotate(-5deg)}75%{transform:translate(-40px,5px) scale(.45) rotate(6deg)}100%{transform:translate(-50px,-50px) scale(.35) rotate(-8deg)}}
-@keyframes kbHit{0%{transform:scale(.6)}90%{transform:scale(9)}100%{transform:scale(10.5,8.6)}}
+#kbLoader{position:fixed;inset:0;z-index:2147483000;background:#0b0b0a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
+#kbLoader svg{width:160px;height:auto;overflow:visible}
+#kbLoader use{stroke:#b8862b;stroke-width:2.4;stroke-linejoin:round}   /* 蜜ろうの壁 */
+#kbLoader .kc{fill-opacity:0;animation:kbFill .25s ease-out forwards;animation-delay:calc(var(--i) * .2s)}
+#kbLoader.done .kc{animation:none;fill-opacity:1}
+#kbLoader .kb-b{animation:kbFloat 1.2s ease-in-out infinite}
+#kbLoader .kb-w1,#kbLoader .kb-w2{transform-box:fill-box;animation:kbWing .08s linear infinite}
+#kbLoader .kb-w1{transform-origin:right center}#kbLoader .kb-w2{transform-origin:left center}
+#kbLoader .kb-t{font-family:Georgia,"Times New Roman",serif;font-size:15px;letter-spacing:.45em;color:#D8B25A;margin-left:.45em}
+@keyframes kbFill{to{fill-opacity:1}}
+@keyframes kbFloat{50%{transform:translateY(-4px)}}
 @keyframes kbWing{50%{transform:scaleX(.4)}}
-@keyframes kbOn{to{opacity:1}}
-@keyframes kbFlash{0%{opacity:.85}100%{opacity:0}}
-@keyframes kbShake{25%{transform:translate(5px,-4px)}50%{transform:translate(-5px,4px)}75%{transform:translate(3px,1px)}}
-@media (prefers-reduced-motion: reduce){#kbLoader .kb-bee{animation:none}}
+@media (prefers-reduced-motion: reduce){#kbLoader .kc{animation:none;fill-opacity:1}#kbLoader .kb-b,#kbLoader .kb-w1,#kbLoader .kb-w2{animation:none}}
 </style>
 <div id="kbLoader" aria-label="読み込み中">
+  <svg viewBox="-60 -20 120 112">
+    <defs><polygon id="kbH" points="0,-16 13.86,-8 13.86,8 0,16 -13.86,8 -13.86,-8"/></defs>
+    <use href="#kbH" x="-27.7" y="72" fill="#1c150a"/>
+    <use href="#kbH" x="-41.55" y="48" fill="#1c150a"/>
+    <use href="#kbH" x="-27.7" y="24" fill="#1c150a"/>
+    <use href="#kbH" x="-13.85" y="0" fill="#1c150a"/>
+    <use href="#kbH" x="13.85" y="0" fill="#1c150a"/>
+    <use href="#kbH" x="27.7" y="24" fill="#1c150a"/>
+    <use href="#kbH" x="41.55" y="48" fill="#1c150a"/>
+    <use href="#kbH" x="27.7" y="72" fill="#1c150a"/>
+    <use class="kc" href="#kbH" x="-27.7" y="72" fill="#f4f4f0" style="--i:0"/>
+    <use class="kc" href="#kbH" x="-41.55" y="48" fill="#333" style="--i:1"/>
+    <use class="kc" href="#kbH" x="-27.7" y="24" fill="#d33" style="--i:2"/>
+    <use class="kc" href="#kbH" x="-13.85" y="0" fill="#2f6fd6" style="--i:3"/>
+    <use class="kc" href="#kbH" x="13.85" y="0" fill="#f2c200" style="--i:4"/>
+    <use class="kc" href="#kbH" x="27.7" y="24" fill="#2e9a4a" style="--i:5"/>
+    <use class="kc" href="#kbH" x="41.55" y="48" fill="#f08a1c" style="--i:6"/>
+    <use class="kc" href="#kbH" x="27.7" y="72" fill="#f29ac0" style="--i:7"/>
+    <g transform="translate(-13.5,28) scale(.45)"><g class="kb-b">
+      <ellipse class="kb-w1" cx="13" cy="22" rx="10" ry="7" fill="#dff3ff" opacity=".85"/><ellipse class="kb-w2" cx="47" cy="22" rx="10" ry="7" fill="#dff3ff" opacity=".85"/>
+      <ellipse cx="30" cy="46" rx="13" ry="10.5" fill="#FFC93C"/><path d="M18.5 43 Q30 47 41.5 43 L42.5 46.5 Q30 51 17.5 46.5Z" fill="#4a3112"/>
+      <circle cx="30" cy="27" r="17" fill="#FFD84D"/>
+      <ellipse cx="23" cy="28" rx="4" ry="5" fill="#2a1a08"/><ellipse cx="37" cy="28" rx="4" ry="5" fill="#2a1a08"/>
+      <circle cx="24.4" cy="26" r="1.7" fill="#fff"/><circle cx="38.4" cy="26" r="1.7" fill="#fff"/>
+      <ellipse cx="17.5" cy="34" rx="3.6" ry="2.2" fill="#ff8fa3" opacity=".75"/><ellipse cx="42.5" cy="34" rx="3.6" ry="2.2" fill="#ff8fa3" opacity=".75"/>
+      <path d="M27.5 34 Q30 36.5 32.5 34" stroke="#2a1a08" stroke-width="1.4" fill="none" stroke-linecap="round"/></g></g>
+  </svg>
   <div class="kb-t">HIVE</div>
-  <div class="kb-bee"><svg viewBox="0 0 60 60" width="60" height="60">
-    <g transform="rotate(-20 13 22)"><ellipse class="kb-wl" cx="13" cy="22" rx="10" ry="7.5" fill="#dff3ff" opacity=".85" stroke="#fff" stroke-width=".8"/></g>
-    <g transform="rotate(20 47 22)"><ellipse class="kb-wr" cx="47" cy="22" rx="10" ry="7.5" fill="#dff3ff" opacity=".85" stroke="#fff" stroke-width=".8"/></g>
-    <ellipse cx="30" cy="46" rx="13" ry="10.5" fill="#FFC93C"/>
-    <path d="M18.5 43 Q30 47 41.5 43 L42.5 46.5 Q30 51 17.5 46.5 Z" fill="#4a3112"/>
-    <path d="M20 51 Q30 54.5 40 51 L38 54 Q30 57 22 54 Z" fill="#4a3112"/>
-    <path d="M24 13 Q21 5 16 4.5 M36 13 Q39 5 44 4.5" stroke="#4a3112" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    <circle cx="16" cy="4.5" r="2.8" fill="#4a3112"/><circle cx="44" cy="4.5" r="2.8" fill="#4a3112"/>
-    <circle cx="30" cy="27" r="17" fill="#FFD84D"/>
-    <g class="kb-eo"><ellipse cx="23" cy="27" rx="4" ry="5" fill="#2a1a08"/><ellipse cx="37" cy="27" rx="4" ry="5" fill="#2a1a08"/>
-      <circle cx="24.4" cy="25" r="1.7" fill="#fff"/><circle cx="38.4" cy="25" r="1.7" fill="#fff"/><circle cx="22" cy="29.5" r=".8" fill="#fff"/><circle cx="36" cy="29.5" r=".8" fill="#fff"/></g>
-    <g class="kb-ex" stroke="#2a1a08" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 23.5 L25.5 27 L20 30.5"/><path d="M40 23.5 L34.5 27 L40 30.5"/></g>
-    <ellipse cx="17.5" cy="33" rx="3.6" ry="2.2" fill="#ff8fa3" opacity=".75"/><ellipse cx="42.5" cy="33" rx="3.6" ry="2.2" fill="#ff8fa3" opacity=".75"/>
-    <path d="M27.5 33 Q30 35.5 32.5 33" stroke="#2a1a08" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></div>
-  <svg class="kb-crack" viewBox="0 0 200 380" preserveAspectRatio="none"><g stroke="#fff" stroke-width="1.4" fill="none" opacity=".9" vector-effect="non-scaling-stroke">
-    <path d="M100 190 L60 120 L40 60 L20 0 M60 120 L10 110"/><path d="M100 190 L150 130 L175 70 L200 40 M150 130 L200 140"/>
-    <path d="M100 190 L130 260 L150 330 L160 380 M130 260 L200 280"/><path d="M100 190 L55 250 L30 320 L0 360 M55 250 L0 230"/>
-    <path d="M100 190 L0 185 M100 190 L200 200 M100 190 L95 380 M100 190 L105 0"/>
-    <path d="M85 175 L115 172 L118 205 L84 207 Z"/><path d="M70 160 L132 155 L138 222 L66 226 Z" opacity=".6"/></g></svg>
-  <div class="kb-flash"></div>
 </div>
 <script>
 (function(){
   var box=document.getElementById('kbLoader');
   if(!box)return;
-  /* 読み込み状況の見張り（通信が落ち着いたら、蜂がぶつかって閉じる） */
+  /* 読み込み状況の見張り（通信が落ち着いたら閉じる） */
   var pending=0,loaded=document.readyState==='complete',start=Date.now(),timer,ended=false;
   var of=window.fetch,os=XMLHttpRequest.prototype.send;
   if(of)window.fetch=function(){pending++;return of.apply(this,arguments).finally(function(){pending--;});};
@@ -991,9 +994,9 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
     clearInterval(timer);
     if(window.fetch!==of&&of)window.fetch=of;
     XMLHttpRequest.prototype.send=os;
-    box.classList.add('hit');   /* ゴツン(0.3秒で画面いっぱい→ヒビ) */
-    setTimeout(function(){box.style.opacity='0';},560);
-    setTimeout(function(){box.remove();},760);
+    box.classList.add('done');   /* 残りの枠を一気に染める */
+    setTimeout(function(){box.style.opacity='0';},120);
+    setTimeout(function(){box.remove();},280);
   }
   window.KeibaLoader={done:finish};
   timer=setInterval(function(){if((loaded&&pending<=0)||Date.now()-start>20000)finish();},100);
