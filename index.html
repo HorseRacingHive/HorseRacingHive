@@ -1538,7 +1538,8 @@ function untilText(post) {
 function tick() { if (new Date().getSeconds() === 0) dayNavInfo(); document.querySelectorAll("[data-cd]").forEach(el => { el.textContent = untilText(el.dataset.cd) || el.dataset.fallback || ""; }); }
 
 /* ---------------------------------------------------------------- 描画 */
-function viewDays() { return S.snap.days.filter(d => d.date <= todayStr()); }   // 未来の予想には行けない
+const viewLimit = () => new Date(Date.now() + 12 * 3600e3).toISOString().slice(0, 10);   // 21:00(日本時間)からは翌日まで。★・おすすめは当日の公開時刻まで送られない
+function viewDays() { return S.snap.days.filter(d => d.date <= viewLimit()); }   // それより先の予想には行けない
 
 // 日付の段の下の行: 曜日 ・ 次の発走(当日)/レース数。次のレースにおすすめの馬がいれば金色で光る(2026-10-29)
 
@@ -2041,7 +2042,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${(() => { const [hh, mm] = (r.post || "0:0").split(":").map(Number); return hh * 60 + mm >= 750 ? "12:00" : "9:00"; })()}から公開します</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
