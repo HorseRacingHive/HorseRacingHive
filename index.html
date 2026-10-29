@@ -12,17 +12,17 @@
 #kbLoader{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
 #kbLoader svg{width:200px;height:auto;overflow:visible}
 #kbLoader .kb-hole{fill:#1c150a;stroke:#b8862b;stroke-width:1.6;stroke-linejoin:round}
-#kbLoader .kb-cap{transform:translateY(15px);animation:kbCap 2.6s ease-out infinite}
-#kbLoader .kb-drop{fill:#F7C948;opacity:0;animation:kbDrop 2.6s linear infinite}
-#kbLoader .kb-fly{animation:kbFly 2.6s linear infinite}
+#kbLoader .kb-cap{transform:translateY(15px);animation:kbCap .22s ease-out forwards}
+#kbLoader .kb-drop{fill:#F7C948;opacity:0;animation:kbDrop .18s linear forwards}
+#kbLoader .kb-fly{animation:kbFly 1.65s linear forwards}
 #kbLoader .kb-b{animation:kbBob .3s ease-in-out infinite}
 #kbLoader .kb-w{transform-origin:8px 8px;animation:kbWing .08s linear infinite}
 #kbLoader.done .kb-cap{animation:none;transform:translateY(-1px)}
 #kbLoader.done .kb-drop{animation:none;opacity:0}
 #kbLoader .kb-t{font-family:Georgia,"Times New Roman",serif;font-size:15px;letter-spacing:.45em;color:#D8B25A;margin-left:.45em}
-@keyframes kbCap{0%{transform:translateY(15px)}5%,72%{transform:translateY(-1px)}78%,100%{transform:translateY(15px)}}
-@keyframes kbDrop{0%{opacity:1;transform:translateY(0)}6%{opacity:1;transform:translateY(var(--dy))}7%,100%{opacity:0;transform:translateY(var(--dy))}}
-@keyframes kbFly{0%{transform:translateX(-52px);opacity:1}90%{transform:translateX(52px);opacity:1}91%,100%{transform:translateX(52px);opacity:0}}
+@keyframes kbCap{0%{transform:translateY(15px)}100%{transform:translateY(-1px)}}
+@keyframes kbDrop{0%{opacity:1;transform:translateY(0)}90%{opacity:1;transform:translateY(var(--dy))}100%{opacity:0;transform:translateY(var(--dy))}}
+@keyframes kbFly{0%{transform:translateX(-52px)}100%{transform:translateX(56px)}}
 @keyframes kbBob{50%{transform:translateY(-2px)}}
 @keyframes kbWing{50%{transform:scaleY(.4)}}
 #kbLoader .kb-wm{width:220px;height:205px;margin-top:-2px;opacity:0;transition:opacity .15s}#kbLoader .kb-wm.on{opacity:1}
@@ -47,22 +47,22 @@
     <use href="#kbH" x="12.99" y="7.5" class="kb-hole"/>
     <use href="#kbH" x="21.65" y="-7.5" class="kb-hole"/>
     <use href="#kbH" x="30.31" y="7.5" class="kb-hole"/>
-    <g transform="translate(-30.31,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.658s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f4f4f0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(-21.65,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.853s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#555" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(-12.99,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.048s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#d33" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(-4.33,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.243s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2f6fd6" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(4.33,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.437s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f2c200" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(12.99,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.632s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2e9a4a" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(21.65,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.827s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f08a1c" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(30.31,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:2.022s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f29ac0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <ellipse class="kb-drop" cx="-30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.488s"/>
-    <ellipse class="kb-drop" cx="-21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:0.683s"/>
-    <ellipse class="kb-drop" cx="-12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.878s"/>
-    <ellipse class="kb-drop" cx="-4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.073s"/>
-    <ellipse class="kb-drop" cx="4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:1.267s"/>
-    <ellipse class="kb-drop" cx="12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.462s"/>
-    <ellipse class="kb-drop" cx="21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:1.657s"/>
-    <ellipse class="kb-drop" cx="30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.852s"/>
+    <g transform="translate(-30.31,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.46s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f4f4f0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(-21.65,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.59s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#555" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(-12.99,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.71s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#d33" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(-4.33,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.84s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2f6fd6" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(4.33,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.96s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f2c200" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(12.99,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.09s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2e9a4a" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(21.65,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.21s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f08a1c" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(30.31,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.34s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f29ac0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <ellipse class="kb-drop" cx="-30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.31s"/>
+    <ellipse class="kb-drop" cx="-21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:0.44s"/>
+    <ellipse class="kb-drop" cx="-12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.56s"/>
+    <ellipse class="kb-drop" cx="-4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:0.69s"/>
+    <ellipse class="kb-drop" cx="4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.81s"/>
+    <ellipse class="kb-drop" cx="12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:0.94s"/>
+    <ellipse class="kb-drop" cx="21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:1.06s"/>
+    <ellipse class="kb-drop" cx="30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.19s"/>
     <g class="kb-fly"><g transform="translate(-13,-37)"><g class="kb-b"><ellipse class="kb-w" cx="8" cy="5" rx="5" ry="4" fill="#dff3ff" opacity=".85"/><ellipse cx="13" cy="12" rx="8" ry="6" fill="#F7C948"/><rect x="10" y="6.5" width="2.2" height="11" fill="#1a1205"/><rect x="14.5" y="7" width="2.2" height="10" fill="#1a1205"/><circle cx="20" cy="11" r="2.2" fill="#1a1205"/></g></g></g>
   </svg>
   <img class="kb-wm" src="hive_graffiti.webp?v=1" width="220" height="205" alt="HIVE" loading="lazy" decoding="async" onload="this.classList.add('on')">
@@ -82,27 +82,28 @@
   var iday=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),intro=false,introDone=false;
   try{intro=localStorage.getItem('hive_intro_day')!==iday;}catch(e){}
   if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
-  var fast=!intro;
+  intro=true;var fast=false;   /* 動画が約1.6秒と短いので、毎回ふつうの速さで最後まで見せる(2026-10-29) */
   box.classList.add('intro');
   var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
-  v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('autoplay','');v.poster='hive_intro_poster.webp?v=3';v.src='hive_intro.mp4?v=8';box.insertBefore(v,box.firstChild);
+  v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('autoplay','');v.poster='hive_intro_poster.webp?v=4';v.src='hive_intro.mp4?v=9';box.insertBefore(v,box.firstChild);
   if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
-  var stop=function(){introDone=true;};
+  var vDone=false,cDone=false,stop=function(){vDone=true;introDone=vDone&&cDone;};
+  setTimeout(function(){cDone=true;introDone=vDone&&cDone;},1650);   /* 下の蜂が蜜を配り終わる瞬間 */
   var mark=function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}};
   var gif=function(){
     if(v._g)return;v._g=1;
     var g=new Image();g.className='kb-vid';g.alt='HIVE';
     g.onload=function(){if(v.parentNode)v.parentNode.replaceChild(g,v);mark();setTimeout(stop,fast?500:1700);};
     g.onerror=function(){box.classList.remove('intro');if(v.parentNode)v.remove();stop();};   /* それも無い時は静止のロゴ画像 */
-    g.src='hive_intro.webp?v=2';
+    g.src='hive_intro.webp?v=3';
     setTimeout(stop,3200);
   };
   v.addEventListener('playing',mark);
   v.addEventListener('ended',stop);v.addEventListener('error',gif);
   try{var pr=v.play();if(pr&&pr.catch)pr.catch(gif);}catch(e){gif();}
-  box.addEventListener('click',stop);
+  box.addEventListener('click',function(){vDone=cDone=introDone=true;});
   setTimeout(function(){if(!v.currentTime)gif();},1200);   /* 1.2秒たっても動画が動かない時 */
-  setTimeout(stop,4500);
+  setTimeout(function(){vDone=cDone=introDone=true;},4500);
   function finish(){
     if(ended)return; ended=true;
     clearInterval(timer);
