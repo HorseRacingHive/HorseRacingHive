@@ -933,7 +933,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
 </style>
 <!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
-<!-- 2026-10-29 巣10「帽子がのぞく」+蜂が飛んで蜜を落とす+HIVEはグラフィティのロゴ画像(hive_graffiti.webp 約24KB。別ファイルにして2回目からはキャッシュで通信なし・画面を開く速さを待たせない): 蜂が左から右へ飛び、巣穴に蜜を1滴ずつ落とすと1〜8枠の騎手帽が顔を出す。軽さ・速さ優先(画像なし・SVGとCSSだけ)。読み込みが終わったら8つそろって0.3秒で開く -->
+<!-- 2026-10-29 1日の初回だけロゴ動画(hive_intro.mp4 約127KB・1年キャッシュ)を最後まで再生、2回目からは巣10「帽子がのぞく」+蜂が飛んで蜜を落とす+HIVEはグラフィティのロゴ画像(hive_graffiti.webp 約24KB。別ファイルにして2回目からはキャッシュで通信なし・画面を開く速さを待たせない): 蜂が左から右へ飛び、巣穴に蜜を1滴ずつ落とすと1〜8枠の騎手帽が顔を出す。軽さ・速さ優先(画像なし・SVGとCSSだけ)。読み込みが終わったら8つそろって0.3秒で開く -->
 <style>
 #kbLoader{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
 #kbLoader svg{width:200px;height:auto;overflow:visible}
@@ -957,6 +957,9 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 #kbLoader .kb-sp path+path{animation-delay:.7s}
 @keyframes kbFall{0%{opacity:0;transform:translateY(-8px) scale(.6)}15%{opacity:1;transform:translateY(-2px) scale(1)}60%{opacity:1;transform:translateY(34px)}61%,100%{opacity:0;transform:translateY(34px)}}
 @keyframes kbTw{0%,100%{opacity:.2;transform:scale(.5)}50%{opacity:1;transform:scale(1.1)}}
+#kbLoader.intro .kb-wm{display:none}   /* 初回は動画の中にHIVEがあるので、下のロゴ画像だけ隠す(巣穴の帽子と蜂はそのまま) */
+#kbLoader .kb-vid{width:min(88vw,52vh,380px);height:auto;background:#000;margin-bottom:6px}
+#kbLoader.intro{cursor:pointer}
 @media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
 </style>
 <div id="kbLoader" aria-label="読み込み中">
@@ -1000,17 +1003,35 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
   if(of)window.fetch=function(){pending++;return of.apply(this,arguments).finally(function(){pending--;});};
   XMLHttpRequest.prototype.send=function(){pending++;this.addEventListener('loadend',function(){pending--;},{once:true});return os.apply(this,arguments);};
   window.addEventListener('load',function(){loaded=true;});
+  /* 1日の初回だけ、ロゴ動画(約4.5秒)を最後まで見せる。2回目からは動画を読み込まず最速で閉じる。画面を押すと飛ばせる */
+  var iday=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),intro=false,introDone=true;
+  try{intro=localStorage.getItem('hive_intro_day')!==iday;}catch(e){}
+  if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
+  var fast=!intro;   /* 2回目からは同じ動画を3倍速で流し、読み込みが終われば途中でも閉じる(待ち時間は増やさない) */
+  if(intro||fast){
+    if(intro)introDone=false;box.classList.add('intro');
+    var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
+    v.setAttribute('muted','');v.setAttribute('playsinline','');v.src='hive_intro.mp4?v=2';box.insertBefore(v,box.firstChild);
+    if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
+    var stop=function(){introDone=true;};
+    v.addEventListener('playing',function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}});
+    v.addEventListener('ended',stop);v.addEventListener('error',stop);
+    box.addEventListener('click',stop);
+    setTimeout(function(){if(!v.currentTime)stop();},1500);   /* 動画が始まらない時は待たない */
+    setTimeout(stop,7000);
+  }
   function finish(){
     if(ended)return; ended=true;
     clearInterval(timer);
     if(window.fetch!==of&&of)window.fetch=of;
     XMLHttpRequest.prototype.send=os;
+    if(intro){box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
     box.classList.add('done');   /* 8頭そろって顔を出す */
     setTimeout(function(){box.style.opacity='0';},140);
     setTimeout(function(){box.remove();},300);
   }
   window.KeibaLoader={done:finish};
-  timer=setInterval(function(){if((loaded&&pending<=0)||Date.now()-start>20000)finish();},100);
+  timer=setInterval(function(){if((loaded&&pending<=0&&introDone)||Date.now()-start>20000)finish();},100);
 })();
 </script>
 <!-- ===== 着順掲示板ローディング ここまで ===== -->
