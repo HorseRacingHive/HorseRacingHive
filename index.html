@@ -3,7 +3,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="HIVE">
-<meta name="theme-color" content="#000000"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png">
+<meta name="theme-color" content="#000000"><link rel="apple-touch-icon" href="icon.png?v=2"><link rel="icon" href="icon.png?v=2">
 <style>:root{padding-top:env(safe-area-inset-top,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head><body>
 <!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
@@ -70,6 +70,14 @@ html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(
   </svg>
   <img class="kb-wm" src="hive_graffiti.webp?v=1" width="220" height="205" alt="HIVE" loading="lazy" decoding="async" onload="this.classList.add('on')">
 </div>
+<script>(function(){   /* iPhone: アプリを閉じる瞬間に黒で覆う。次に開いた直後、前の画面が下に一瞬残っても黒に見える(2026-10-29) */
+  var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);if(!ios)return;
+  var cov=null;
+  function on(){if(cov)return;cov=document.createElement('div');cov.id='kbCov';cov.style.cssText='position:fixed;left:0;right:0;top:-300px;bottom:-300px;background:#000;z-index:2147483647;pointer-events:none';(document.body||document.documentElement).appendChild(cov);}
+  function off(){if(!cov)return;var c=cov;cov=null;requestAnimationFrame(function(){requestAnimationFrame(function(){c.remove();});});}
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')on();else off();});
+  window.addEventListener('pagehide',on);window.addEventListener('pageshow',off);
+})();</script>
 <script>
 (function(){
   var box=document.getElementById('kbLoader');
