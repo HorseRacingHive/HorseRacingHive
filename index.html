@@ -9,7 +9,7 @@
 <!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
 <!-- 2026-10-29 1日の初回だけロゴ動画(hive_intro.mp4 約127KB・1年キャッシュ)を最後まで再生、2回目からは巣10「帽子がのぞく」+蜂が飛んで蜜を落とす+HIVEはグラフィティのロゴ画像(hive_graffiti.webp 約24KB。別ファイルにして2回目からはキャッシュで通信なし・画面を開く速さを待たせない): 蜂が左から右へ飛び、巣穴に蜜を1滴ずつ落とすと1〜8枠の騎手帽が顔を出す。軽さ・速さ優先(画像なし・SVGとCSSだけ)。読み込みが終わったら8つそろって0.3秒で開く -->
 <style>
-#kbLoader{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
+html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(#kbLoader) nav.tabs{visibility:hidden}#kbLoader{box-shadow:0 0 0 3000px #000;position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
 #kbLoader svg{width:200px;height:auto;overflow:visible}
 #kbLoader .kb-hole{fill:#1c150a;stroke:#b8862b;stroke-width:1.6;stroke-linejoin:round}
 #kbLoader .kb-cap{transform:translateY(15px);animation:kbCap .22s ease-out forwards}
@@ -87,6 +87,7 @@
   if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
   intro=true;var fast=false;   /* 動画が約1.6秒と短いので、毎回ふつうの速さで最後まで見せる(2026-10-29) */
   box.classList.add('intro');
+  var tcm=document.querySelector('meta[name=theme-color]'),tc0=tcm&&tcm.content;if(tcm)tcm.content='#000000';   /* 開いた直後に画面の下にすき間ができても、黒に見えるように(閉じたら元の色) */
   try{box.style.bottom='auto';box.style.height=(window.innerHeight||document.documentElement.clientHeight)+'px';box.style.boxShadow='0 0 0 3000px #000';}catch(e){}   /* 裏で画面ができて高さが変わっても、ロゴと巣が動かないように高さを固定。下にすき間が出ないよう黒で覆う(2026-10-29) */
   var dbg=/[?&]debug\b/.test(location.search),klog=[],dlog=function(m){klog.push((Date.now()-start)+'ms '+m);if(!dbg)return;var e=document.getElementById('kbDbg');if(!e){e=document.createElement('div');e.id='kbDbg';e.style.cssText='position:absolute;left:4px;bottom:4px;right:4px;color:#7f7;font:11px monospace;white-space:pre-wrap;z-index:9';box.appendChild(e);}e.textContent+=((Date.now()-start)+'ms '+m+'\n');};
   var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -121,7 +122,7 @@
     clearInterval(timer);
     if(window.fetch!==of&&of)window.fetch=of;
     XMLHttpRequest.prototype.send=os;
-    {box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
+    {box.style.opacity='0';setTimeout(function(){box.remove();if(tcm&&tc0)tcm.content=tc0;},180);return;}
     box.classList.add('done');   /* 8頭そろって顔を出す */
     setTimeout(function(){box.style.opacity='0';},140);
     setTimeout(function(){box.remove();},300);
