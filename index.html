@@ -6,10 +6,113 @@
 <meta name="theme-color" content="#16110a"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head><body>
+<!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
+<!-- 2026-10-29 1日の初回だけロゴ動画(hive_intro.mp4 約127KB・1年キャッシュ)を最後まで再生、2回目からは巣10「帽子がのぞく」+蜂が飛んで蜜を落とす+HIVEはグラフィティのロゴ画像(hive_graffiti.webp 約24KB。別ファイルにして2回目からはキャッシュで通信なし・画面を開く速さを待たせない): 蜂が左から右へ飛び、巣穴に蜜を1滴ずつ落とすと1〜8枠の騎手帽が顔を出す。軽さ・速さ優先(画像なし・SVGとCSSだけ)。読み込みが終わったら8つそろって0.3秒で開く -->
+<style>
+#kbLoader{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
+#kbLoader svg{width:200px;height:auto;overflow:visible}
+#kbLoader .kb-hole{fill:#1c150a;stroke:#b8862b;stroke-width:1.6;stroke-linejoin:round}
+#kbLoader .kb-cap{transform:translateY(15px);animation:kbCap 2.6s ease-out infinite}
+#kbLoader .kb-drop{fill:#F7C948;opacity:0;animation:kbDrop 2.6s linear infinite}
+#kbLoader .kb-fly{animation:kbFly 2.6s linear infinite}
+#kbLoader .kb-b{animation:kbBob .3s ease-in-out infinite}
+#kbLoader .kb-w{transform-origin:8px 8px;animation:kbWing .08s linear infinite}
+#kbLoader.done .kb-cap{animation:none;transform:translateY(-1px)}
+#kbLoader.done .kb-drop{animation:none;opacity:0}
+#kbLoader .kb-t{font-family:Georgia,"Times New Roman",serif;font-size:15px;letter-spacing:.45em;color:#D8B25A;margin-left:.45em}
+@keyframes kbCap{0%{transform:translateY(15px)}5%,72%{transform:translateY(-1px)}78%,100%{transform:translateY(15px)}}
+@keyframes kbDrop{0%{opacity:1;transform:translateY(0)}6%{opacity:1;transform:translateY(var(--dy))}7%,100%{opacity:0;transform:translateY(var(--dy))}}
+@keyframes kbFly{0%{transform:translateX(-52px);opacity:1}90%{transform:translateX(52px);opacity:1}91%,100%{transform:translateX(52px);opacity:0}}
+@keyframes kbBob{50%{transform:translateY(-2px)}}
+@keyframes kbWing{50%{transform:scaleY(.4)}}
+#kbLoader .kb-wm{width:220px;height:205px;margin-top:-2px;opacity:0;transition:opacity .15s}#kbLoader .kb-wm.on{opacity:1}
+#kbLoader .kb-fall{opacity:0;animation:kbFall 1.8s ease-in infinite}
+#kbLoader .kb-sp path{transform-box:fill-box;transform-origin:center;animation:kbTw 1.4s ease-in-out infinite}
+#kbLoader .kb-sp path+path{animation-delay:.7s}
+@keyframes kbFall{0%{opacity:0;transform:translateY(-8px) scale(.6)}15%{opacity:1;transform:translateY(-2px) scale(1)}60%{opacity:1;transform:translateY(34px)}61%,100%{opacity:0;transform:translateY(34px)}}
+@keyframes kbTw{0%,100%{opacity:.2;transform:scale(.5)}50%{opacity:1;transform:scale(1.1)}}
+#kbLoader.intro .kb-wm{display:none}   /* 初回は動画の中にHIVEがあるので、下のロゴ画像だけ隠す(巣穴の帽子と蜂はそのまま) */
+#kbLoader .kb-vid{width:min(88vw,52vh,380px);height:auto;background:#000;margin-bottom:6px}
+#kbLoader.intro{cursor:pointer}
+@media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
+</style>
+<div id="kbLoader" aria-label="読み込み中">
+  <svg viewBox="-46 -40 92 60">
+    <defs><polygon id="kbH" points="0,-10 8.66,-5 8.66,5 0,10 -8.66,5 -8.66,-5"/><clipPath id="kbClip"><polygon points="0,-9.2 7.9,-4.6 7.9,4.6 0,9.2 -7.9,4.6 -7.9,-4.6"/></clipPath></defs>
+    <use href="#kbH" x="-30.31" y="-7.5" class="kb-hole"/>
+    <use href="#kbH" x="-21.65" y="7.5" class="kb-hole"/>
+    <use href="#kbH" x="-12.99" y="-7.5" class="kb-hole"/>
+    <use href="#kbH" x="-4.33" y="7.5" class="kb-hole"/>
+    <use href="#kbH" x="4.33" y="-7.5" class="kb-hole"/>
+    <use href="#kbH" x="12.99" y="7.5" class="kb-hole"/>
+    <use href="#kbH" x="21.65" y="-7.5" class="kb-hole"/>
+    <use href="#kbH" x="30.31" y="7.5" class="kb-hole"/>
+    <g transform="translate(-30.31,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.658s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f4f4f0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(-21.65,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.853s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#555" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(-12.99,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.048s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#d33" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(-4.33,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.243s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2f6fd6" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(4.33,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.437s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f2c200" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(12.99,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.632s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2e9a4a" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(21.65,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.827s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f08a1c" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <g transform="translate(30.31,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:2.022s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f29ac0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
+    <ellipse class="kb-drop" cx="-30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.488s"/>
+    <ellipse class="kb-drop" cx="-21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:0.683s"/>
+    <ellipse class="kb-drop" cx="-12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.878s"/>
+    <ellipse class="kb-drop" cx="-4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.073s"/>
+    <ellipse class="kb-drop" cx="4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:1.267s"/>
+    <ellipse class="kb-drop" cx="12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.462s"/>
+    <ellipse class="kb-drop" cx="21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:1.657s"/>
+    <ellipse class="kb-drop" cx="30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.852s"/>
+    <g class="kb-fly"><g transform="translate(-13,-37)"><g class="kb-b"><ellipse class="kb-w" cx="8" cy="5" rx="5" ry="4" fill="#dff3ff" opacity=".85"/><ellipse cx="13" cy="12" rx="8" ry="6" fill="#F7C948"/><rect x="10" y="6.5" width="2.2" height="11" fill="#1a1205"/><rect x="14.5" y="7" width="2.2" height="10" fill="#1a1205"/><circle cx="20" cy="11" r="2.2" fill="#1a1205"/></g></g></g>
+  </svg>
+  <img class="kb-wm" src="hive_graffiti.webp?v=1" width="220" height="205" alt="HIVE" loading="lazy" decoding="async" onload="this.classList.add('on')">
+</div>
+<script>
+(function(){
+  var box=document.getElementById('kbLoader');
+  if(!box)return;
+  /* 読み込み状況の見張り（通信が落ち着いたら閉じる） */
+  var pending=0,loaded=document.readyState==='complete',start=Date.now(),timer,ended=false;
+  var of=window.fetch,os=XMLHttpRequest.prototype.send;
+  if(of)window.fetch=function(){pending++;return of.apply(this,arguments).finally(function(){pending--;});};
+  XMLHttpRequest.prototype.send=function(){pending++;this.addEventListener('loadend',function(){pending--;},{once:true});return os.apply(this,arguments);};
+  window.addEventListener('load',function(){loaded=true;});
+  /* 1日の初回だけ、ロゴ動画(約4.5秒)を最後まで見せる。2回目からは動画を読み込まず最速で閉じる。画面を押すと飛ばせる */
+  var iday=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),intro=false,introDone=true;
+  try{intro=localStorage.getItem('hive_intro_day')!==iday;}catch(e){}
+  if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
+  var fast=!intro;   /* 2回目からは同じ動画を3倍速で流し、読み込みが終われば途中でも閉じる(待ち時間は増やさない) */
+  if(intro||fast){
+    if(intro)introDone=false;box.classList.add('intro');
+    var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
+    v.setAttribute('muted','');v.setAttribute('playsinline','');v.poster='hive_intro_poster.webp?v=1';v.src='hive_intro.mp4?v=5';box.insertBefore(v,box.firstChild);
+    if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
+    var stop=function(){introDone=true;};
+    v.addEventListener('playing',function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}});
+    v.addEventListener('ended',stop);v.addEventListener('error',function(){box.classList.remove('intro');v.remove();stop();});   /* 動画が無い時はロゴ画像に切り替え */
+    box.addEventListener('click',stop);
+    setTimeout(function(){if(!v.currentTime&&v.readyState<2){box.classList.remove('intro');v.remove();}stop();},1500);   /* 動画が始まらない時は待たない */
+    setTimeout(stop,7000);
+  }
+  function finish(){
+    if(ended)return; ended=true;
+    clearInterval(timer);
+    if(window.fetch!==of&&of)window.fetch=of;
+    XMLHttpRequest.prototype.send=os;
+    if(intro){box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
+    box.classList.add('done');   /* 8頭そろって顔を出す */
+    setTimeout(function(){box.style.opacity='0';},140);
+    setTimeout(function(){box.remove();},300);
+  }
+  window.KeibaLoader={done:finish};
+  timer=setInterval(function(){if((loaded&&pending<=0&&introDone)||Date.now()-start>20000)finish();},100);
+})();
+</script>
+<!-- ===== 着順掲示板ローディング ここまで ===== -->
 <title>競馬AI HIVE</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" media="print" onload="this.media=\'all\'">
 <style>
 /* 黒い巣(ヘッダー・タブ)に金の蜜。標準はダーク(黒×蜜色)。html の data-theme="dark" で固定、"light" にするとクリーム色の紙になる */
 :root {
@@ -932,109 +1035,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rtier.t2{background:#FB8C00;color:#fff}
 .rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
 </style>
-<!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
-<!-- 2026-10-29 1日の初回だけロゴ動画(hive_intro.mp4 約127KB・1年キャッシュ)を最後まで再生、2回目からは巣10「帽子がのぞく」+蜂が飛んで蜜を落とす+HIVEはグラフィティのロゴ画像(hive_graffiti.webp 約24KB。別ファイルにして2回目からはキャッシュで通信なし・画面を開く速さを待たせない): 蜂が左から右へ飛び、巣穴に蜜を1滴ずつ落とすと1〜8枠の騎手帽が顔を出す。軽さ・速さ優先(画像なし・SVGとCSSだけ)。読み込みが終わったら8つそろって0.3秒で開く -->
-<style>
-#kbLoader{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
-#kbLoader svg{width:200px;height:auto;overflow:visible}
-#kbLoader .kb-hole{fill:#1c150a;stroke:#b8862b;stroke-width:1.6;stroke-linejoin:round}
-#kbLoader .kb-cap{transform:translateY(15px);animation:kbCap 2.6s ease-out infinite}
-#kbLoader .kb-drop{fill:#F7C948;opacity:0;animation:kbDrop 2.6s linear infinite}
-#kbLoader .kb-fly{animation:kbFly 2.6s linear infinite}
-#kbLoader .kb-b{animation:kbBob .3s ease-in-out infinite}
-#kbLoader .kb-w{transform-origin:8px 8px;animation:kbWing .08s linear infinite}
-#kbLoader.done .kb-cap{animation:none;transform:translateY(-1px)}
-#kbLoader.done .kb-drop{animation:none;opacity:0}
-#kbLoader .kb-t{font-family:Georgia,"Times New Roman",serif;font-size:15px;letter-spacing:.45em;color:#D8B25A;margin-left:.45em}
-@keyframes kbCap{0%{transform:translateY(15px)}5%,72%{transform:translateY(-1px)}78%,100%{transform:translateY(15px)}}
-@keyframes kbDrop{0%{opacity:1;transform:translateY(0)}6%{opacity:1;transform:translateY(var(--dy))}7%,100%{opacity:0;transform:translateY(var(--dy))}}
-@keyframes kbFly{0%{transform:translateX(-52px);opacity:1}90%{transform:translateX(52px);opacity:1}91%,100%{transform:translateX(52px);opacity:0}}
-@keyframes kbBob{50%{transform:translateY(-2px)}}
-@keyframes kbWing{50%{transform:scaleY(.4)}}
-#kbLoader .kb-wm{width:220px;height:205px;margin-top:-2px;opacity:0;transition:opacity .15s}#kbLoader .kb-wm.on{opacity:1}
-#kbLoader .kb-fall{opacity:0;animation:kbFall 1.8s ease-in infinite}
-#kbLoader .kb-sp path{transform-box:fill-box;transform-origin:center;animation:kbTw 1.4s ease-in-out infinite}
-#kbLoader .kb-sp path+path{animation-delay:.7s}
-@keyframes kbFall{0%{opacity:0;transform:translateY(-8px) scale(.6)}15%{opacity:1;transform:translateY(-2px) scale(1)}60%{opacity:1;transform:translateY(34px)}61%,100%{opacity:0;transform:translateY(34px)}}
-@keyframes kbTw{0%,100%{opacity:.2;transform:scale(.5)}50%{opacity:1;transform:scale(1.1)}}
-#kbLoader.intro .kb-wm{display:none}   /* 初回は動画の中にHIVEがあるので、下のロゴ画像だけ隠す(巣穴の帽子と蜂はそのまま) */
-#kbLoader .kb-vid{width:min(88vw,52vh,380px);height:auto;background:#000;margin-bottom:6px}
-#kbLoader.intro{cursor:pointer}
-@media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
-</style>
-<div id="kbLoader" aria-label="読み込み中">
-  <svg viewBox="-46 -40 92 60">
-    <defs><polygon id="kbH" points="0,-10 8.66,-5 8.66,5 0,10 -8.66,5 -8.66,-5"/><clipPath id="kbClip"><polygon points="0,-9.2 7.9,-4.6 7.9,4.6 0,9.2 -7.9,4.6 -7.9,-4.6"/></clipPath></defs>
-    <use href="#kbH" x="-30.31" y="-7.5" class="kb-hole"/>
-    <use href="#kbH" x="-21.65" y="7.5" class="kb-hole"/>
-    <use href="#kbH" x="-12.99" y="-7.5" class="kb-hole"/>
-    <use href="#kbH" x="-4.33" y="7.5" class="kb-hole"/>
-    <use href="#kbH" x="4.33" y="-7.5" class="kb-hole"/>
-    <use href="#kbH" x="12.99" y="7.5" class="kb-hole"/>
-    <use href="#kbH" x="21.65" y="-7.5" class="kb-hole"/>
-    <use href="#kbH" x="30.31" y="7.5" class="kb-hole"/>
-    <g transform="translate(-30.31,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.658s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f4f4f0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(-21.65,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:0.853s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#555" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(-12.99,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.048s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#d33" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(-4.33,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.243s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2f6fd6" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(4.33,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.437s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f2c200" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(12.99,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.632s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#2e9a4a" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(21.65,-7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:1.827s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f08a1c" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <g transform="translate(30.31,7.5)" clip-path="url(#kbClip)"><g class="kb-cap" style="animation-delay:2.022s"><path d="M-6.5 3 Q-6.5 -5.5 0 -5.5 Q6.5 -5.5 6.5 3 Z" fill="#f29ac0" stroke="#0b0b0a" stroke-width=".6"/><path d="M-7.5 3 H7.5" stroke="#0b0b0a" stroke-width="1.2" opacity=".55"/></g></g>
-    <ellipse class="kb-drop" cx="-30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.488s"/>
-    <ellipse class="kb-drop" cx="-21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:0.683s"/>
-    <ellipse class="kb-drop" cx="-12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:0.878s"/>
-    <ellipse class="kb-drop" cx="-4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.073s"/>
-    <ellipse class="kb-drop" cx="4.33" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:1.267s"/>
-    <ellipse class="kb-drop" cx="12.99" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.462s"/>
-    <ellipse class="kb-drop" cx="21.65" cy="-21" rx="1.8" ry="2.6" style="--dy:9.5px;animation-delay:1.657s"/>
-    <ellipse class="kb-drop" cx="30.31" cy="-21" rx="1.8" ry="2.6" style="--dy:24.5px;animation-delay:1.852s"/>
-    <g class="kb-fly"><g transform="translate(-13,-37)"><g class="kb-b"><ellipse class="kb-w" cx="8" cy="5" rx="5" ry="4" fill="#dff3ff" opacity=".85"/><ellipse cx="13" cy="12" rx="8" ry="6" fill="#F7C948"/><rect x="10" y="6.5" width="2.2" height="11" fill="#1a1205"/><rect x="14.5" y="7" width="2.2" height="10" fill="#1a1205"/><circle cx="20" cy="11" r="2.2" fill="#1a1205"/></g></g></g>
-  </svg>
-  <img class="kb-wm" src="hive_graffiti.webp?v=1" width="220" height="205" alt="HIVE" loading="lazy" decoding="async" onload="this.classList.add('on')">
-</div>
-<script>
-(function(){
-  var box=document.getElementById('kbLoader');
-  if(!box)return;
-  /* 読み込み状況の見張り（通信が落ち着いたら閉じる） */
-  var pending=0,loaded=document.readyState==='complete',start=Date.now(),timer,ended=false;
-  var of=window.fetch,os=XMLHttpRequest.prototype.send;
-  if(of)window.fetch=function(){pending++;return of.apply(this,arguments).finally(function(){pending--;});};
-  XMLHttpRequest.prototype.send=function(){pending++;this.addEventListener('loadend',function(){pending--;},{once:true});return os.apply(this,arguments);};
-  window.addEventListener('load',function(){loaded=true;});
-  /* 1日の初回だけ、ロゴ動画(約4.5秒)を最後まで見せる。2回目からは動画を読み込まず最速で閉じる。画面を押すと飛ばせる */
-  var iday=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),intro=false,introDone=true;
-  try{intro=localStorage.getItem('hive_intro_day')!==iday;}catch(e){}
-  if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
-  var fast=!intro;   /* 2回目からは同じ動画を3倍速で流し、読み込みが終われば途中でも閉じる(待ち時間は増やさない) */
-  if(intro||fast){
-    if(intro)introDone=false;box.classList.add('intro');
-    var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
-    v.setAttribute('muted','');v.setAttribute('playsinline','');v.poster='hive_intro_poster.webp?v=1';v.src='hive_intro.mp4?v=5';box.insertBefore(v,box.firstChild);
-    if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
-    var stop=function(){introDone=true;};
-    v.addEventListener('playing',function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}});
-    v.addEventListener('ended',stop);v.addEventListener('error',stop);
-    box.addEventListener('click',stop);
-    setTimeout(function(){if(!v.currentTime)stop();},1500);   /* 動画が始まらない時は待たない */
-    setTimeout(stop,7000);
-  }
-  function finish(){
-    if(ended)return; ended=true;
-    clearInterval(timer);
-    if(window.fetch!==of&&of)window.fetch=of;
-    XMLHttpRequest.prototype.send=os;
-    if(intro){box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
-    box.classList.add('done');   /* 8頭そろって顔を出す */
-    setTimeout(function(){box.style.opacity='0';},140);
-    setTimeout(function(){box.remove();},300);
-  }
-  window.KeibaLoader={done:finish};
-  timer=setInterval(function(){if((loaded&&pending<=0&&introDone)||Date.now()-start>20000)finish();},100);
-})();
-</script>
-<!-- ===== 着順掲示板ローディング ここまで ===== -->
+
 <!-- ===== HIVEカレンダー(電光掲示板を押したときの日付選び) ここから ===== -->
 <style>
 #hvCal{position:fixed;inset:0;z-index:2147482000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit}
