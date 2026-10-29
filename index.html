@@ -1715,6 +1715,7 @@ function viewHome(d) {
     <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
     <button type="button" data-ov="perf" aria-label="成績を見る"><span>回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b><small>${done && act.profit != null ? yenPM(act.profit) : "単勝"}</small></button>
   </section>`;
+  if (d.gate?.msg) h += `<div class="card empty gate-note">🕘 ${esc(d.gate.msg)}</div>`;   // 当日のおすすめの公開時刻(9:00/12:00)
   h += announceBlock(d.announce, d.date === todayStr());
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
@@ -2040,7 +2041,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${(() => { const [hh, mm] = (r.post || "0:0").split(":").map(Number); return hh * 60 + mm >= 750 ? "12:00" : "9:00"; })()}から公開します</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
