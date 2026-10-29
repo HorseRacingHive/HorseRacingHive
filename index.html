@@ -87,7 +87,7 @@
   if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
   intro=true;var fast=false;   /* 動画が約1.6秒と短いので、毎回ふつうの速さで最後まで見せる(2026-10-29) */
   box.classList.add('intro');
-  try{box.style.bottom='auto';box.style.height=(window.innerHeight||document.documentElement.clientHeight)+'px';}catch(e){}   /* 裏で画面ができて高さが変わっても、ロゴと巣が動かないように高さを固定(2026-10-29) */
+  try{box.style.bottom='auto';box.style.height=(window.innerHeight||document.documentElement.clientHeight)+'px';box.style.boxShadow='0 0 0 3000px #000';}catch(e){}   /* 裏で画面ができて高さが変わっても、ロゴと巣が動かないように高さを固定。下にすき間が出ないよう黒で覆う(2026-10-29) */
   var dbg=/[?&]debug\b/.test(location.search),klog=[],dlog=function(m){klog.push((Date.now()-start)+'ms '+m);if(!dbg)return;var e=document.getElementById('kbDbg');if(!e){e=document.createElement('div');e.id='kbDbg';e.style.cssText='position:absolute;left:4px;bottom:4px;right:4px;color:#7f7;font:11px monospace;white-space:pre-wrap;z-index:9';box.appendChild(e);}e.textContent+=((Date.now()-start)+'ms '+m+'\n');};
   var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   var v=document.createElement(ios?'div':'video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
@@ -97,10 +97,10 @@
   setTimeout(function(){cDone=true;introDone=vDone&&cDone;},1650);   /* 下の蜂が蜜を配り終わる瞬間 */
   var mark=function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}};
   var spr=function(el){   /* コマ絵を順に切り替えて動かす(低電力モードでも止まらない・2026-10-29) */
-    var g=new Image();g.onload=function(){dlog('コマ絵 表示');el.style.background="url('hive_intro.webp?v=6') 0 0/400% 600% no-repeat #000";mark();
+    var u='hive_intro.avif?v=1',g=new Image();g.onload=function(){dlog('コマ絵 表示 '+u.split('?')[0]);el.style.background="url('"+u+"') 0 0/400% 600% no-repeat #000";mark();
       var i=0,t0=Date.now(),tk=setInterval(function(){i=Math.min(23,Math.floor((Date.now()-t0)/67));el.style.backgroundPosition=(i%4)*100/3+'% '+Math.floor(i/4)*20+'%';if(i>=23){clearInterval(tk);stop();}},33);};
-    g.onerror=function(){dlog('コマ絵 読めない');box.classList.remove('intro');if(el.parentNode)el.remove();stop();};
-    g.src='hive_intro.webp?v=6';setTimeout(stop,4000);
+    g.onerror=function(){if(u.indexOf('avif')>0){u='hive_intro.webp?v=6';g.src=u;return;}dlog('コマ絵 読めない');box.classList.remove('intro');if(el.parentNode)el.remove();stop();};   /* 軽いAVIF(約150KB)→読めなければWebP */
+    g.src=u;setTimeout(stop,4000);
   };
   var gif=function(){
     if(v._g)return;v._g=1;
