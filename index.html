@@ -1135,10 +1135,10 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .bk-item .r { font-weight: 700; } .bk-item .r.hit { color: #ffd866; } .bk-item .r.miss { color: #a8894a; } .bk-item .r.wait { color: #d9b874; }
 .bk-x { border: 0; background: none; color: #7a6136; font-size: 16px; padding: 2px 6px; }
 .bk-off { opacity: .55; }
-.evm { display: inline-block; font-weight: 800; font-size: 12px; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
-.evm.plus { color: #2a1a02; background: #ffc94a; }
-.evm.minus { color: #ff9aa8; background: rgba(255,125,146,.12); border: 1px solid rgba(255,125,146,.45); letter-spacing: .5px; }
-.evm.minus.m3 { color: #ff7d92; background: rgba(255,125,146,.2); }
+.evm { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 11px; color: #d9b874; white-space: nowrap; vertical-align: middle; }
+.evm svg { display: block; overflow: visible; }
+.evm.plus svg path { fill: #ffc94a; filter: drop-shadow(0 0 2px rgba(255,201,74,.55)); }
+.evm.minus svg path { fill: none; stroke: #ff8a9b; stroke-width: 1.3; }
 .buy-chip { grid-column: 1 / -1; justify-self: end; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 6px 14px; border-radius: 14px; background: #ffc94a; color: #2a1a02; font-size: 13px; font-weight: 800; }
 .buy-chip.done { background: #3a2808; color: #ffd866; border: 1px solid #e8a317; }
 .buy-chip.off { background: #3a2808; color: #a8894a; }
@@ -1308,9 +1308,15 @@ const pct = (p, d = 1) => p == null ? "—" : (p * 100).toFixed(d) + "%";
 const evf = e => e == null ? "—" : e.toFixed(2);
 // 期待値は数字を出さず段階で(2026-10-29。期待値 ÷ 勝率 でオッズを逆算されないように)。eb: 1=プラス / -1〜-3 = 期待値マイナス☆の数
 const evBand = x => x.eb !== undefined ? x.eb : x.ev == null ? null : x.ev >= 1.5 ? 3 : x.ev >= 1.2 ? 2 : x.ev >= 1 ? 1 : x.ev >= .8 ? -1 : x.ev >= .6 ? -2 : -3;
-const EV_NOTE = "※期待値 = AIの勝率から見て、オッズがおいしいか。＋ほどお得、−ほど割高";
-const evMark = x => { const b = evBand(x); return b == null ? "" : b > 0 ? `<span class="evm plus" title="期待値がプラス(1.0以上)">期待値＋</span>`
-  : `<span class="evm minus m${-b}" title="期待値がマイナス(☆が多いほど低い)">期待値−${"☆".repeat(-b)}</span>`; };
+const EV_NOTE = "※期待値は当たりやすさではなく、勝率に対してオッズが割に合うか。金のしずくが多いほどお得、空のしずくは割高";
+// 期待値の印 = 蜜のしずく(案A・2026-10-29)。プラスは金のしずく1〜3、マイナスは空のしずく1〜3(★のおすすめ度とは別の印)
+const EV_DROP = "M6 1c2.6 4 4.2 5.8 4.2 8.2a4.2 4.2 0 0 1-8.4 0C1.8 6.8 3.4 5 6 1z";
+const evMark = x => {
+  const b = evBand(x); if (b == null) return "";
+  const n = Math.abs(b), plus = b > 0;
+  const drops = Array.from({ length: n }, (_, i) => `<path transform="translate(${i * 11} 0)" d="${EV_DROP}"/>`).join("");
+  return `<span class="evm ${plus ? "plus" : "minus"}" title="期待値 ${plus ? "プラス" : "マイナス"}${n}(しずくが多いほど${plus ? "お得" : "割高"})" aria-label="期待値 ${plus ? "プラス" : "マイナス"}${n}">期待値<svg width="${n * 11 + 2}" height="15" viewBox="-0.5 0 ${n * 11 + 1} 15" aria-hidden="true">${drops}</svg></span>`;
+};
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
 // レースの格付け(2026-10-29): おすすめ馬(★2〜5)の一番高い★で決める。★5 → 勝負 / ★4 → 注目 / ★2〜3 → 買い。★の数はそのまま出す(おすすめタブ・Discordとそろえる)
 const RACE_TIER = { 3: "勝負", 2: "注目", 1: "買い" };
@@ -1868,7 +1874,7 @@ function resultsList(d) {
     }).join("")}</div>`;
 }
 
-const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "勝率のわりにオッズがおいしい馬"],
+const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "人気はないが、勝つ見込みが人気以上にある馬"],
   "紐": ["himo", "🪢", "3着内に来やすい穴馬(ワイド・3連系の相手)"], "過剰": ["over", "🔸", "人気のわりに勝率が低く、単勝では割引が必要な馬。3着内率は平均並みなので、相手には残してOK"], "危険": ["danger", "⚠️", "人気ほど勝てていない人気馬(3着も危ない)"] };   // 買い材料 → 消し材料の順(ボタンの並び)
 SIG_INFO["すべて"] = ["all", "", "狙い・妙味・紐・過剰・危険のすべて"];
 // 下の「狙い・危険」タブを押すたびに すべて → 買い側(狙い・妙味・紐) → 消し側(過剰・危険) → すべて… と切り替わる(携帯用と同じ)
@@ -2313,6 +2319,11 @@ function bkAct(k) {
     if (v > BK.unit * 1.5 && cur >= 3 && S.bkConfirm !== "unit" + v) { S.bkConfirm = "unit" + v; toast(`いま<b>${cur}連敗</b>中です。取り返そうと金額を上げるのは危険です。<br>それでも上げるなら、もう一度押してください`); return; }
     S.bkConfirm = null; BK.unit = v; bkSave(); return bkRerender();
   }
+  if (a === "dayset") {   // 今日の予算を自由な金額で(2026-10-29)
+    const n = Math.round(Number($("#bk-day-in")?.value || 0));
+    if (!(n >= 100)) { toast("100円以上で入れてください"); return; }
+    BK.day = n; bkSave(); toast(`今日の予算を <b>${yen(n)}</b> にしました`); return bkRerender();
+  }
   if (a === "fundset") {   // 軍資金の残りを入れた金額にする(はじめの設定・やり直し用)
     const n = Math.round(Number($("#bk-fund-in")?.value || 0));
     if (!(n > 0)) { toast("軍資金の金額を入れてください"); return; }
@@ -2380,8 +2391,9 @@ function viewBank() {
   if (S.bkOpen) {
     const bal = bkBalance(), lo = Math.max(100, Math.ceil(bal * 0.001 / 100) * 100), hi = Math.max(lo, Math.floor(bal * 0.01 / 100) * 100);   // おすすめの1点 = 軍資金の0.1〜1%(2026-10-29 本人の指定)
     h += `<div class="bk-panel">
-      <div class="bk-lab">今日の予算</div>
+      <div class="bk-lab">今日の予算(いま ${yen(BK.day)})</div>
       <div class="bk-row">${[3000, 5000, 10000, 20000].map(v => `<button type="button" class="bk-ch${BK.day === v ? " on" : ""}" data-bk="day" data-v="${v}">${v >= 10000 ? v / 10000 + "万" : v / 1000 + "千"}</button>`).join("")}</div>
+      <div class="bk-fund"><input id="bk-day-in" class="bk-in num" type="number" inputmode="numeric" min="100" step="100" placeholder="自由に入力(例 7000)"><button type="button" class="bk-ch wide" style="padding:8px 14px" data-bk="dayset">決める</button></div>
       <div class="bk-lab" style="margin-top:6px">1点の金額</div>
       <div class="bk-row">${[100, 300, 500, 1000].map(v => `<button type="button" class="bk-ch${BK.unit === v ? " on" : ""}${v >= lo && v <= hi ? " rec" : ""}" data-bk="unit" data-v="${v}">${v.toLocaleString("ja-JP")}</button>`).join("")}</div>
       <div class="bk-sub num">🐝 おすすめの1点 <b style="color:#ffd866">${lo.toLocaleString("ja-JP")}〜${hi.toLocaleString("ja-JP")}円</b>(軍資金の0.1〜1%)</div>
