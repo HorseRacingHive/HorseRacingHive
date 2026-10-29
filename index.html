@@ -463,9 +463,15 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .row .when b { display: block; font-size: 14px; color: var(--ink); }
 .row .main { min-width: 0; }
 .row .main b { font-size: 15px; }
-.row .main b.sig-line { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; white-space: nowrap; min-width: 0; }   /* 狙い・危険: 馬名を折り返さない(2026-10-29) */
-.row .main b.sig-line > * { flex-shrink: 0; }
-.row .main b.sig-line .sig-nm { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: clip; }
+.row b.sig-line { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; white-space: nowrap; min-width: 0; }   /* 狙い・危険: 馬名を折り返さない(2026-10-29) */
+.row b.sig-line > * { flex-shrink: 0; }
+.row b.sig-line .sig-nm { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: clip; }
+.row.sig-row { grid-template-rows: auto auto; row-gap: 4px; }   /* 狙い・危険: 1行目に馬名を横いっぱい(2026-10-29) */
+.row.sig-row > .when { grid-row: 1 / span 2; }
+.row.sig-row > .sig-line { grid-column: 2 / -1; grid-row: 1; font-size: 16px; }
+.row.sig-row > .main, .row.sig-row > .right { grid-row: 2; }
+.row.sig-row .why { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; }
+.row.sig-row .why .sig-badge { display: inline-block; white-space: nowrap; }
 .row .why { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row .right { text-align: right; font-size: 13px; line-height: 1.3; }
 .row .right b { font-family: var(--f-disp); font-size: 16px; }
@@ -1985,10 +1991,10 @@ function viewSig(d) {
   const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
   const rowSgOf = k => ({ "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[k] || "");
   requestAnimationFrame(sigFitNames);
-  return h + `<div class="card list">` + list.map(x => { const k = SIG_GROUP[S.sig] ? (SIG_GROUP[S.sig].find(g => g === "紐" ? x.himo : x.sig === g) || "紐") : S.sig; return `<button class="row ${SIG_GROUP[S.sig] ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}" data-hno="${x.no ?? ""}">
+  return h + `<div class="card list">` + list.map(x => { const k = SIG_GROUP[S.sig] ? (SIG_GROUP[S.sig].find(g => g === "紐" ? x.himo : x.sig === g) || "紐") : S.sig; return `<button class="row sig-row ${SIG_GROUP[S.sig] ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}" data-hno="${x.no ?? ""}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
-    <div class="main"><b class="sig-line"><span class="sig-no">${x.no ?? ""}</span><span class="sig-nm">${esc(x.name)}</span>${x.mark ? `<span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}</b>
-      <span class="why"><span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span>` : ""}${x.st ? ` <span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
+    <b class="sig-line"><span class="sig-no">${x.no ?? ""}</span><span class="sig-nm">${esc(x.name)}</span>${x.mark ? `<span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}</b>
+      <div class="main"><span class="why">${(SIG_GROUP[S.sig] ? SIG_GROUP[S.sig].filter(g => g === "紐" ? x.himo : x.sig === g) : [k]).concat([]).filter((g, i, a) => a.indexOf(g) === i).map(g => `<span class="sig-badge ${SIG_INFO[g][0]}">${SIG_INFO[g][1]} ${esc(g === "紐" ? "紐" : sigLabel(x))}</span>`).join(" ") || `<span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>`}${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span>` : ""}${x.st ? ` <span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
     <div class="right"><span class="num">勝率 ${pct(x.p, 0)}</span><br>${evMark(x)}</div></button>`; }).join("") + `</div>`;
 }
 function sigFitNames() {   // 狙い・危険: 馬名を折り返さず1行に。入りきらない名前だけ文字を少し小さくする(2026-10-29)
