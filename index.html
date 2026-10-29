@@ -32,10 +32,10 @@
 @keyframes kbFall{0%{opacity:0;transform:translateY(-8px) scale(.6)}15%{opacity:1;transform:translateY(-2px) scale(1)}60%{opacity:1;transform:translateY(34px)}61%,100%{opacity:0;transform:translateY(34px)}}
 @keyframes kbTw{0%,100%{opacity:.2;transform:scale(.5)}50%{opacity:1;transform:scale(1.1)}}
 #kbLoader.intro .kb-wm{display:none}   /* 初回は動画の中にHIVEがあるので、下のロゴ画像だけ隠す(巣穴の帽子と蜂はそのまま) */
-#kbLoader .kb-vid{width:min(96vw,60vh,460px);height:auto;background:#000}
+#kbLoader .kb-vid{width:min(84vw,54vh,440px);height:min(84vw,54vh,440px);aspect-ratio:1/1;object-fit:contain;background:#000;display:block}   /* 大きさを最初から決めておき、開いた瞬間にぶれない */
 #kbLoader.intro{cursor:pointer}
 #kbLoader .kb-vid,#kbLoader .kb-wm{order:1}#kbLoader>svg{order:2}   /* ロゴ(動画・画像どちらでも)は必ず上、帽子の巣は下 */
-#kbLoader>svg{position:absolute;left:50%;transform:translateX(-50%);top:calc(50% + min(96vw,60vh,460px) * .43)}   /* ロゴを画面の真ん中に、帽子の巣はロゴのすぐ下(重ならない程度) */
+#kbLoader>svg{position:absolute;left:50%;transform:translateX(-50%);top:calc(50% + min(84vw,54vh,440px) * .47)}   /* ロゴを画面の真ん中に、帽子の巣はロゴのすぐ下(重ならない程度) */
 #kbLoader:not(.intro)>svg{top:calc(50% + 106px)}
 @media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
 </style>
@@ -88,7 +88,7 @@
   intro=true;var fast=false;   /* 動画が約1.6秒と短いので、毎回ふつうの速さで最後まで見せる(2026-10-29) */
   box.classList.add('intro');
   var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
-  v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('autoplay','');v.poster='hive_intro_poster.webp?v=4';v.src='hive_intro.mp4?v=9';box.insertBefore(v,box.firstChild);
+  v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('autoplay','');v.poster='hive_intro_poster.webp?v=5';v.src='hive_intro.mp4?v=10';box.insertBefore(v,box.firstChild);
   if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
   var vDone=false,cDone=false,stop=function(){vDone=true;introDone=vDone&&cDone;};
   setTimeout(function(){cDone=true;introDone=vDone&&cDone;},1650);   /* 下の蜂が蜜を配り終わる瞬間 */
@@ -98,7 +98,7 @@
     var g=new Image();g.className='kb-vid';g.alt='HIVE';
     g.onload=function(){if(v.parentNode)v.parentNode.replaceChild(g,v);mark();setTimeout(stop,fast?500:1700);};
     g.onerror=function(){box.classList.remove('intro');if(v.parentNode)v.remove();stop();};   /* それも無い時は静止のロゴ画像 */
-    g.src='hive_intro.webp?v=3';
+    g.src='hive_intro.webp?v=4';
     setTimeout(stop,3200);
   };
   v.addEventListener('playing',mark);
