@@ -89,27 +89,28 @@
   box.classList.add('intro');
   var dbg=/[?&]debug\b/.test(location.search),klog=[],dlog=function(m){klog.push((Date.now()-start)+'ms '+m);if(!dbg)return;var e=document.getElementById('kbDbg');if(!e){e=document.createElement('div');e.id='kbDbg';e.style.cssText='position:absolute;left:4px;bottom:4px;right:4px;color:#7f7;font:11px monospace;white-space:pre-wrap;z-index:9';box.appendChild(e);}e.textContent+=((Date.now()-start)+'ms '+m+'\n');};
   var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  var v=document.createElement(ios?'img':'video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
+  var v=document.createElement(ios?'div':'video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
   v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('autoplay','');v.poster='hive_intro_poster.webp?v=5';box.insertBefore(v,box.firstChild);
   if(fast&&!ios){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
   var vDone=false,cDone=false,stop=function(){vDone=true;introDone=vDone&&cDone;};
   setTimeout(function(){cDone=true;introDone=vDone&&cDone;},1650);   /* 下の蜂が蜜を配り終わる瞬間 */
   var mark=function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}};
+  var spr=function(el){   /* コマ絵を順に切り替えて動かす(低電力モードでも止まらない・2026-10-29) */
+    var g=new Image();g.onload=function(){dlog('コマ絵 表示');el.style.background="url('hive_intro.webp?v=6') 0 0/400% 600% no-repeat #000";mark();
+      var i=0,t0=Date.now(),tk=setInterval(function(){i=Math.min(23,Math.floor((Date.now()-t0)/67));el.style.backgroundPosition=(i%4)*100/3+'% '+Math.floor(i/4)*20+'%';if(i>=23){clearInterval(tk);stop();}},33);};
+    g.onerror=function(){dlog('コマ絵 読めない');box.classList.remove('intro');if(el.parentNode)el.remove();stop();};
+    g.src='hive_intro.webp?v=6';setTimeout(stop,4000);
+  };
   var gif=function(){
     if(v._g)return;v._g=1;
-    var g=new Image();g.className='kb-vid';g.alt='HIVE';
-    g.onload=function(){dlog('動く画像 表示');if(v.parentNode)v.parentNode.replaceChild(g,v);mark();setTimeout(stop,fast?500:1700);};
-    g.onerror=function(){dlog('動く画像 読めない');box.classList.remove('intro');if(v.parentNode)v.remove();stop();};   /* それも無い時は静止のロゴ画像 */
-    g.src='hive_intro.webp?v=5';
-    setTimeout(stop,4000);
+    var g=document.createElement('div');g.className='kb-vid';g.style.background="url('hive_intro_poster.webp?v=5') center/contain no-repeat #000";
+    if(v.parentNode)v.parentNode.replaceChild(g,v);spr(g);
   };
   if(!ios)v.src='hive_intro.mp4?v=10';
   v.addEventListener('playing',mark);
   v.addEventListener('ended',stop);v.addEventListener('error',gif);
   v.addEventListener('playing',function(){dlog('video playing');});v.addEventListener('error',function(){dlog('video error '+(v.error&&v.error.code));});
-  if(ios){dlog('iOS: 動く画像を使う');v._g=1;v.alt='HIVE';v.style.background="url('hive_intro_poster.webp?v=5') center/contain no-repeat";
-    v.onload=function(){dlog('動く画像 表示');mark();setTimeout(stop,1700);};v.onerror=function(){dlog('動く画像 読めない');box.classList.remove('intro');v.remove();stop();};
-    v.src='hive_intro.webp?v=5';setTimeout(stop,4000);}   /* iPhoneは動画を使わない(低電力モードでも動く・通信も節約) */
+  if(ios){dlog('iOS: コマ絵を使う');v._g=1;v.style.background="url('hive_intro_poster.webp?v=5') center/contain no-repeat #000";spr(v);}   /* iPhoneは動画・動く画像が止められることがあるので使わない */
   else{try{var pr=v.play();if(pr&&pr.catch)pr.catch(function(e){dlog('play拒否 '+e.name);gif();});}catch(e){gif();}}
   box.addEventListener('click',function(){vDone=cDone=introDone=true;});
   if(!ios)setTimeout(function(){if(!v.currentTime)gif();},1200);   /* 1.2秒たっても動画が動かない時 */
