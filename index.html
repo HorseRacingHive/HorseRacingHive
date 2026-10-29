@@ -2020,7 +2020,8 @@ function perfDashboard(d, rp) {
   h += gaugeSvg(per.year?.n ? per.year.roi : null, `今年${per.year?.label ? `(${esc(per.year.label)})` : ""}`, per.year?.n ? `${per.year.hit}/${per.year.n}的中` : "—");
   const rs = S.snap.rec_stats;
   h += gaugeSvg(rs?.roi ?? null, "2013年〜の検証", rs ? `年${rs.per_year}点 ・ プラスの年 ${esc(rs.plus_years || "")}` : "—");
-  h += `</div><div class="card chart-card"><div class="cap">回収率の推移<small>(この90日・累積)</small></div>${lineSvg(pts, { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div></section>`;
+  h += `</div><div class="card chart-card"><div class="cap">回収率の推移<small>(この90日・累積)</small></div>${lineSvg(pts, { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
+    <p class="note">※データの権利の関係で、配布用にはオッズ・払戻・金額を載せていません。1日の回収率も、1レースごとの払戻が分からないよう10%きざみにしています。HIVEは予想がメインです。オッズ・払戻はJRA公式の出馬表・レース結果で確認してください。</p></section>`;
   return h;
 }
 
@@ -2121,7 +2122,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}<div class="note">※オッズ・払戻はJRA公式の出馬表・レース結果で確認してください(データの権利の関係で載せていません)</div>`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
