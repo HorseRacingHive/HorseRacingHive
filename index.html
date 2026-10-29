@@ -32,8 +32,11 @@
 @keyframes kbFall{0%{opacity:0;transform:translateY(-8px) scale(.6)}15%{opacity:1;transform:translateY(-2px) scale(1)}60%{opacity:1;transform:translateY(34px)}61%,100%{opacity:0;transform:translateY(34px)}}
 @keyframes kbTw{0%,100%{opacity:.2;transform:scale(.5)}50%{opacity:1;transform:scale(1.1)}}
 #kbLoader.intro .kb-wm{display:none}   /* 初回は動画の中にHIVEがあるので、下のロゴ画像だけ隠す(巣穴の帽子と蜂はそのまま) */
-#kbLoader .kb-vid{width:min(88vw,52vh,380px);height:auto;background:#000;margin-bottom:6px}
+#kbLoader .kb-vid{width:min(96vw,60vh,460px);height:auto;background:#000}
 #kbLoader.intro{cursor:pointer}
+#kbLoader .kb-vid,#kbLoader .kb-wm{order:1}#kbLoader>svg{order:2}   /* ロゴ(動画・画像どちらでも)は必ず上、帽子の巣は下 */
+#kbLoader>svg{position:absolute;left:50%;transform:translateX(-50%);top:calc(50% + min(96vw,60vh,460px) * .43)}   /* ロゴを画面の真ん中に、帽子の巣はロゴのすぐ下(重ならない程度) */
+#kbLoader:not(.intro)>svg{top:calc(50% + 106px)}
 @media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
 </style>
 <div id="kbLoader" aria-label="読み込み中">
