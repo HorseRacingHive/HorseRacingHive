@@ -1011,7 +1011,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
   if(intro||fast){
     if(intro)introDone=false;box.classList.add('intro');
     var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
-    v.setAttribute('muted','');v.setAttribute('playsinline','');v.src='hive_intro.mp4?v=2';box.insertBefore(v,box.firstChild);
+    v.setAttribute('muted','');v.setAttribute('playsinline','');v.poster='hive_intro_poster.webp?v=1';v.src='hive_intro.mp4?v=5';box.insertBefore(v,box.firstChild);
     if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
     var stop=function(){introDone=true;};
     v.addEventListener('playing',function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}});
