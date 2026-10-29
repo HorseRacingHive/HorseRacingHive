@@ -77,29 +77,38 @@
   if(of)window.fetch=function(){pending++;return of.apply(this,arguments).finally(function(){pending--;});};
   XMLHttpRequest.prototype.send=function(){pending++;this.addEventListener('loadend',function(){pending--;},{once:true});return os.apply(this,arguments);};
   window.addEventListener('load',function(){loaded=true;});
-  /* 1日の初回だけ、ロゴ動画(約4.5秒)を最後まで見せる。2回目からは動画を読み込まず最速で閉じる。画面を押すと飛ばせる */
-  var iday=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),intro=false,introDone=true;
+  /* 1日の初回だけ、ロゴ動画(約1.6秒)を最後まで見せる。2回目からは3倍速で最後まで(約0.5秒)。画面を押すと飛ばせる。
+     動画が自動で再生できない時(iPhoneの低電力モードなど)は、動くロゴ画像(webp)に切り替える */
+  var iday=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),intro=false,introDone=false;
   try{intro=localStorage.getItem('hive_intro_day')!==iday;}catch(e){}
   if(/[?&]intro\b/.test(location.search))intro=true;   /* アドレスの最後に ?intro を付けると何回でも見られる */
-  var fast=!intro;   /* 2回目からは同じ動画を3倍速で流し、読み込みが終われば途中でも閉じる(待ち時間は増やさない) */
-  if(intro||fast){
-    if(intro)introDone=false;box.classList.add('intro');
-    var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
-    v.setAttribute('muted','');v.setAttribute('playsinline','');v.poster='hive_intro_poster.webp?v=1';v.src='hive_intro.mp4?v=5';box.insertBefore(v,box.firstChild);
-    if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
-    var stop=function(){introDone=true;};
-    v.addEventListener('playing',function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}});
-    v.addEventListener('ended',stop);v.addEventListener('error',function(){box.classList.remove('intro');v.remove();stop();});   /* 動画が無い時はロゴ画像に切り替え */
-    box.addEventListener('click',stop);
-    setTimeout(function(){if(!v.currentTime&&v.readyState<2){box.classList.remove('intro');v.remove();}stop();},1500);   /* 動画が始まらない時は待たない */
-    setTimeout(stop,7000);
-  }
+  var fast=!intro;
+  box.classList.add('intro');
+  var v=document.createElement('video');v.className='kb-vid';v.muted=true;v.playsInline=true;v.autoplay=true;v.preload='auto';
+  v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('autoplay','');v.poster='hive_intro_poster.webp?v=3';v.src='hive_intro.mp4?v=8';box.insertBefore(v,box.firstChild);
+  if(fast){v.defaultPlaybackRate=3;v.playbackRate=3;v.addEventListener('loadedmetadata',function(){v.playbackRate=3;});}
+  var stop=function(){introDone=true;};
+  var mark=function(){if(intro){try{localStorage.setItem('hive_intro_day',iday);}catch(e){}}};
+  var gif=function(){
+    if(v._g)return;v._g=1;
+    var g=new Image();g.className='kb-vid';g.alt='HIVE';
+    g.onload=function(){if(v.parentNode)v.parentNode.replaceChild(g,v);mark();setTimeout(stop,fast?500:1700);};
+    g.onerror=function(){box.classList.remove('intro');if(v.parentNode)v.remove();stop();};   /* それも無い時は静止のロゴ画像 */
+    g.src='hive_intro.webp?v=2';
+    setTimeout(stop,3200);
+  };
+  v.addEventListener('playing',mark);
+  v.addEventListener('ended',stop);v.addEventListener('error',gif);
+  try{var pr=v.play();if(pr&&pr.catch)pr.catch(gif);}catch(e){gif();}
+  box.addEventListener('click',stop);
+  setTimeout(function(){if(!v.currentTime)gif();},1200);   /* 1.2秒たっても動画が動かない時 */
+  setTimeout(stop,4500);
   function finish(){
     if(ended)return; ended=true;
     clearInterval(timer);
     if(window.fetch!==of&&of)window.fetch=of;
     XMLHttpRequest.prototype.send=os;
-    if(intro){box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
+    {box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
     box.classList.add('done');   /* 8頭そろって顔を出す */
     setTimeout(function(){box.style.opacity='0';},140);
     setTimeout(function(){box.remove();},300);
