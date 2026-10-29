@@ -265,7 +265,7 @@ header.top::after {
 .day-nav .day-picker { position: static; flex: 1; width: auto; text-align: center; border-radius: 0; box-shadow: none; border-left: 0; border-right: 0; background: #2a2010; font-size: 15px; font-weight: 700; }
 .day-nav .day-arrow { flex: none; width: 52px; min-height: 36px; border: 1px solid rgba(247,201,72,.35); background: rgba(247,201,72,.12); color: var(--honey); font-size: 18px; font-weight: 900; line-height: 1; }
 .day-nav .day-arrow:first-child { border-radius: 999px 0 0 999px; } .day-nav .day-arrow:last-child { border-radius: 0 999px 999px 0; }
-.day-nav .day-arrow:disabled { opacity: .3; }
+.day-nav .day-arrow:disabled, .day-nav .day-arrow.locked { opacity: .3; }
 /* 日付の段: D+F案(金線の間に電光掲示板の光る日付・当日はLIVE点滅・次がおすすめのレースなら金色)(2026-10-29) */
 .day-nav { background: none; border-radius: 0; align-items: center; gap: 6px; min-height: 44px; }   /* 少し小さく(2026-10-29) */
 .day-nav .day-arrow { width: 34px; min-height: 36px; border: 0; background: none; color: var(--honey); font-size: 24px; font-weight: 300; text-shadow: 0 0 8px rgba(247,201,72,.6); }
@@ -1538,7 +1538,7 @@ function untilText(post) {
 function tick() { if (new Date().getSeconds() === 0) dayNavInfo(); document.querySelectorAll("[data-cd]").forEach(el => { el.textContent = untilText(el.dataset.cd) || el.dataset.fallback || ""; }); }
 
 /* ---------------------------------------------------------------- 描画 */
-const viewLimit = () => new Date(Date.now() + 12 * 3600e3).toISOString().slice(0, 10);   // 21:00(日本時間)からは翌日まで。★・おすすめは当日の公開時刻まで送られない
+const viewLimit = () => new Date(Date.now() + (16 * 60 + 40) * 60e3).toISOString().slice(0, 10);   // 16:20(日本時間)からは翌日まで(日本時間+9h ＋ 16:20→24:00の7h40m)。★・おすすめは当日の公開時刻まで送られない
 function viewDays() { return S.snap.days.filter(d => d.date <= viewLimit()); }   // それより先の予想には行けない
 
 // 日付の段の下の行: 曜日 ・ 次の発走(当日)/レース数。次のレースにおすすめの馬がいれば金色で光る(2026-10-29)
@@ -1600,7 +1600,7 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
     + `<div class="dn-mid"><div class="dn-date"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden>LIVE</span></div><div class="dn-w"></div>`
     + `<input class="day-picker" type="date" aria-label="開催日を選択" data-days="${esc(days.map(x => x.date).join(","))}" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}"></div>`
     + `<div class="dn-baba"></div><div class="dn-tick" hidden><span class="in"></span></div></div>`
-    + `<span class="dn-line r"></span><button class="day-arrow" data-day-step="1" aria-label="次の開催日" ${i >= days.length - 1 ? "disabled" : ""}>›</button></div>`;
+    + `<span class="dn-line r"></span><button class="day-arrow${i >= days.length - 1 ? " locked" : ""}" data-day-step="1" aria-label="次の開催日">›</button></div>`;   // 先が無くても押せる(押すと公開時刻を知らせる)
   dayNavInfo();
   renderWeather();
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
@@ -2169,6 +2169,7 @@ document.addEventListener("click", e => {
   if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
     const days = viewDays(), i = days.findIndex(d => d.date === S.date), j = i + Number(t.dataset.dayStep);
     if (days[j]) { S.date = days[j].date; renderDays(); render(); }
+    else if (Number(t.dataset.dayStep) > 0) toast("🕘 次の開催日の予想は、前日の<b>16:20</b>から見られます<br>★・おすすめは当日<b>8:21</b>〜(午後<b>12:00</b>〜)");
     return;
   }
   if (t.dataset.sig) {   // 種類を切り替えても横スクロールと画面の位置を動かさない(「紐」など右端のボタンが左に戻らないように)
