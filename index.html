@@ -7,9 +7,16 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head><body>
 <!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
+<!-- ★★★ 変更禁止(2026-10-29 ユーザー確認済み・「完璧」) ★★★
+  この「ここから〜ここまで」の起動ローディングは、iPhoneで何度も直してやっと完成した形です。
+  ・ユーザーがはっきり頼んだとき以外は、中身を書き換えない・消さない・場所を動かさない(m.html/p.html は必ずファイルの一番上)。
+  ・ほかの直しでこのファイルを書き換えるときも、このブロックは今のまま残すこと(古い控えで上書きしない)。
+  ・大事な仕組み: iPhoneはコマ絵(hive_intro.avif/webp)をページで切り替えて動かす(動画・動く画像は低電力モードで止まるため)/
+    高さ固定+黒の覆い/ローディング中は中身(body>*)を隠す(開いた直後に下20ptはみ出して見えるため)/閉じる時に黒で覆う(#kbCov)。
+  ・説明: プロジェクト資料「起動ローディング(変更禁止).md」 -->
 <!-- 2026-10-29 1日の初回だけロゴ動画(hive_intro.mp4 約127KB・1年キャッシュ)を最後まで再生、2回目からは巣10「帽子がのぞく」+蜂が飛んで蜜を落とす+HIVEはグラフィティのロゴ画像(hive_graffiti.webp 約24KB。別ファイルにして2回目からはキャッシュで通信なし・画面を開く速さを待たせない): 蜂が左から右へ飛び、巣穴に蜜を1滴ずつ落とすと1〜8枠の騎手帽が顔を出す。軽さ・速さ優先(画像なし・SVGとCSSだけ)。読み込みが終わったら8つそろって0.3秒で開く -->
 <style>
-html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(#kbLoader) nav.tabs{visibility:hidden}#kbLoader{box-shadow:0 0 0 3000px #000;position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
+html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(#kbLoader) nav.tabs{visibility:hidden}html:has(#kbLoader:not(.out)) body>:not(#kbLoader):not(#kbCov){visibility:hidden!important}#kbLoader{box-shadow:0 0 0 3000px #000;position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
 #kbLoader svg{width:200px;height:auto;overflow:visible}
 #kbLoader .kb-hole{fill:#1c150a;stroke:#b8862b;stroke-width:1.6;stroke-linejoin:round}
 #kbLoader .kb-cap{transform:translateY(15px);animation:kbCap .22s ease-out forwards}
@@ -130,7 +137,7 @@ html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(
     clearInterval(timer);
     if(window.fetch!==of&&of)window.fetch=of;
     XMLHttpRequest.prototype.send=os;
-    {box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
+    {box.classList.add('out');box.style.opacity='0';setTimeout(function(){box.remove();},180);return;}
     box.classList.add('done');   /* 8頭そろって顔を出す */
     setTimeout(function(){box.style.opacity='0';},140);
     setTimeout(function(){box.remove();},300);
