@@ -266,6 +266,10 @@ header.top::after {
 .day-nav .day-arrow { flex: none; width: 52px; min-height: 36px; border: 1px solid rgba(247,201,72,.35); background: rgba(247,201,72,.12); color: var(--honey); font-size: 18px; font-weight: 900; line-height: 1; }
 .day-nav .day-arrow:first-child { border-radius: 999px 0 0 999px; } .day-nav .day-arrow:last-child { border-radius: 0 999px 999px 0; }
 .day-nav .day-arrow:disabled, .day-nav .day-arrow.locked { opacity: .3; }
+.open-left { display: inline-block; margin-top: 4px; color: var(--accent); font-size: 1.15em; letter-spacing: .02em; }
+.open-left.soon { color: #e0533d; animation: openPulse 1s ease-in-out infinite; }   /* 1時間を切ったら赤く脈打つ(ドキドキ) */
+@keyframes openPulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .open-left.soon { animation: none; } }
 /* 日付の段: D+F案(金線の間に電光掲示板の光る日付・当日はLIVE点滅・次がおすすめのレースなら金色)(2026-10-29) */
 .day-nav { background: none; border-radius: 0; align-items: center; gap: 6px; min-height: 44px; }   /* 少し小さく(2026-10-29) */
 .day-nav .day-arrow { width: 34px; min-height: 36px; border: 0; background: none; color: var(--honey); font-size: 24px; font-weight: 300; text-shadow: 0 0 8px rgba(247,201,72,.6); }
@@ -1535,7 +1539,20 @@ function untilText(post) {
   const m = Math.floor(s / 60);
   return m >= 60 ? `${Math.floor(m / 60)}時間${m % 60}分` : `${m}分${String(s % 60).padStart(2, "0")}秒`;
 }
-function tick() { if (new Date().getSeconds() === 0) dayNavInfo(); document.querySelectorAll("[data-cd]").forEach(el => { el.textContent = untilText(el.dataset.cd) || el.dataset.fallback || ""; }); }
+// 公開までの残り時間(2026-10-29): 「8:21から公開(あと1時間12分)」。1時間を切ると秒まで動く
+function jstAt(date, hm) {
+  const [h, m] = String(hm || "").split(":").map(Number);
+  return Number.isFinite(h) ? new Date(new Date(date + "T00:00:00+09:00").getTime() + (h * 60 + (m || 0)) * 60000) : null;
+}
+function openLeft(ms) {
+  const s = Math.round(ms / 1000);
+  if (s <= 0) return "まもなく表示されます";
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+  return h ? `あと${h}時間${m}分` : `あと${m}分${String(s % 60).padStart(2, "0")}秒`;
+}
+const openTag = (date, hm) => hm ? `<b class="open-left num${jstAt(date, hm) - Date.now() < 3600e3 ? " soon" : ""}" data-open="${esc(date)}|${esc(hm)}">${esc(openLeft(jstAt(date, hm) - Date.now()))}</b>` : "";
+function tick() { if (new Date().getSeconds() === 0) dayNavInfo(); document.querySelectorAll("[data-cd]").forEach(el => { el.textContent = untilText(el.dataset.cd) || el.dataset.fallback || ""; });
+  document.querySelectorAll("[data-open]").forEach(el => { const [dt, hm] = el.dataset.open.split("|"), left = jstAt(dt, hm) - Date.now(); el.textContent = openLeft(left); el.classList.toggle("soon", left < 3600e3); }); }
 
 /* ---------------------------------------------------------------- 描画 */
 const viewLimit = () => new Date(Date.now() + (16 * 60 + 40) * 60e3).toISOString().slice(0, 10);   // 16:20(日本時間)からは翌日まで(日本時間+9h ＋ 16:20→24:00の7h40m)。★・おすすめは当日の公開時刻まで送られない
@@ -1716,7 +1733,7 @@ function viewHome(d) {
     <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
     <button type="button" data-ov="perf" aria-label="成績を見る"><span>回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b><small>${done && act.profit != null ? yenPM(act.profit) : "単勝"}</small></button>
   </section>`;
-  if (d.gate?.msg) h += `<div class="card empty gate-note">🕘 ${esc(d.gate.msg)}</div>`;   // 当日のおすすめの公開時刻(9:00/12:00)
+  if (d.gate?.msg) h += `<div class="card empty gate-note">🕘 ${esc(d.gate.msg)}${d.gate.at ? `<br>${openTag(d.date, d.gate.at)}` : ""}</div>`;   // 当日のおすすめの公開時刻(9:00/12:00)
   h += announceBlock(d.announce, d.date === todayStr());
   // おすすめ(★2〜5)を★ごとに
   const card = x => `
@@ -2042,7 +2059,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;
   h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
@@ -2169,7 +2186,10 @@ document.addEventListener("click", e => {
   if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
     const days = viewDays(), i = days.findIndex(d => d.date === S.date), j = i + Number(t.dataset.dayStep);
     if (days[j]) { S.date = days[j].date; renderDays(); render(); }
-    else if (Number(t.dataset.dayStep) > 0) toast("🕘 次の開催日の予想は、前日の<b>16:20</b>から見られます<br>★・おすすめは当日<b>8:21</b>〜(午後<b>12:00</b>〜)");
+    else if (Number(t.dataset.dayStep) > 0) {   // 16:20まで「あと◯分」も出す(16:20を過ぎて翌日が無いなら、翌日は開催なし)
+      const left = jstAt(todayStr(), "16:20") - Date.now();
+      toast(`🕘 次の開催日の予想は前日の<b>16:20</b>から${left > 0 ? `<br>公開まで <b>${openLeft(left)}</b>` : ""}<br>★・おすすめは当日<b>8:21</b>〜(午後<b>12:00</b>〜)`);
+    }
     return;
   }
   if (t.dataset.sig) {   // 種類を切り替えても横スクロールと画面の位置を動かさない(「紐」など右端のボタンが左に戻らないように)
