@@ -1078,6 +1078,64 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rtier.t3{background:#E53935;color:#fff}
 .rtier.t2{background:#FB8C00;color:#fff}
 .rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
+/* ---------- 資金管理(2026-10-29) 蜜壺・巣穴の連敗メーター。記録はこの端末の中だけ */
+nav.tabs { grid-template-columns: repeat(5, 1fr); }
+nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-tab="bank"] svg { filter: drop-shadow(0 0 6px rgba(255,201,74,.65)); }
+.bk { display: grid; gap: 10px; color: #f6e7bf; }
+.bk-drip { display: block; width: 100%; height: 34px; margin: -22px 0 -8px; }
+.bk-head { display: flex; justify-content: space-between; align-items: baseline; }
+.bk-head b { font-family: var(--f-disp); font-weight: 900; font-size: 18px; color: #ffc94a; letter-spacing: 1px; }
+.bk-head span { font-size: 12px; color: #d9b874; }
+.bk-card { background: #2a1d06; border: 1px solid #8a5f10; border-radius: 18px; padding: 12px; }
+.bk-card.gold { border-color: #e8a317; }
+.bk-lab { font-size: 12px; color: #d9b874; }
+.bk-sub { font-size: 11px; color: #a8894a; line-height: 1.6; }
+.bk-jarbtn { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; background: #2a1d06; border: 1px solid #e8a317; border-radius: 18px; padding: 10px 12px; color: inherit; }
+.bk-jarbtn.open { border-radius: 18px 18px 0 0; }
+.bk-jarbtn .bk-big { font-size: 28px; font-weight: 900; color: #ffd866; line-height: 1.2; }
+.bk-jarbtn .bk-tap { margin-left: auto; color: #ffc94a; font-size: 11px; display: grid; justify-items: center; gap: 2px; }
+.bk-jarbtn.closed .bk-big { color: #c9a35a; }
+.bk-honey { transition: y .5s ease, height .5s ease; }
+.bk-panel { background: #2a1d06; border: 1px solid #8a5f10; border-top: 0; border-radius: 0 0 18px 18px; margin: -10px 8px 0; padding: 12px; display: grid; gap: 6px; }
+.bk-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.bk-ch { border: 0; background: #3a2808; color: #f6e7bf; border-radius: 14px; padding: 8px 0; font-size: 13px; font-weight: 700; }
+.bk-ch.on { background: #ffc94a; color: #2a1a02; }
+.bk-ch.warn { background: #5a2a14; color: #f6c4a8; }
+.bk-ch.wide { padding: 9px 0; }
+.bk-fund { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.bk-in { width: 100%; min-width: 0; border: 1px solid #8a5f10; background: #1a1206; color: #ffd866; border-radius: 12px; padding: 8px 10px; font-size: 16px; font-weight: 700; }
+.bk-in::placeholder { color: #7a6136; font-weight: 500; }
+.bk-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bk-mini { background: #3a2808; border-radius: 14px; padding: 8px 10px; }
+.bk-mini b { display: block; font-size: 18px; font-weight: 900; color: #f6e7bf; }
+.bk-two .bk-ret { background: #e8a317; border-radius: 18px; padding: 8px 12px; color: #2a1a02; }
+.bk-two .bk-ret .bk-lab { color: #4a2f04; }
+.bk-two .bk-ret b { color: #2a1a02; }
+.bk-two .bk-inv { background: #2a1d06; border: 1px solid #8a5f10; border-radius: 18px; padding: 8px 12px; }
+.bk-two .bk-inv b, .bk-two .bk-ret b { display: block; font-size: 19px; font-weight: 900; }
+.bk-hex { display: block; width: 100%; height: 28px; margin: 6px 0 4px; }
+.bk-state { font-weight: 700; }
+.bk-state.ok { color: #9ee08a; } .bk-state.long { color: #ffc94a; } .bk-state.over { color: #f08a5d; }
+.bk-note b { color: #ffc94a; font-weight: 700; }
+.bk-cmp .bk-line { display: flex; justify-content: space-between; margin-top: 4px; }
+.bk-cmp .bk-line b { color: #ffd866; }
+.bk-bar { display: block; width: 100%; height: 18px; }
+.bk-seg { display: flex; gap: 6px; }
+.bk-seg .bk-ch { flex: 1; }
+.bk-jars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); justify-items: center; text-align: center; gap: 4px; margin-top: 6px; }
+.bk-jars .bk-lab { margin-top: 2px; } .bk-jars .best { color: #ffd866; font-weight: 700; }
+.bk-pay { border-color: #ffc94a; box-shadow: 0 0 0 2px rgba(255,201,74,.18); }
+.bk-payrow { display: grid; grid-template-columns: 1fr 110px auto; gap: 6px; align-items: center; margin-top: 8px; font-size: 13px; }
+.bk-list { display: grid; gap: 6px; margin-top: 8px; }
+.bk-item { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed #4a3510; }
+.bk-item:last-child { border-bottom: 0; }
+.bk-item small { display: block; font-size: 11px; color: #a8894a; }
+.bk-item .r { font-weight: 700; } .bk-item .r.hit { color: #ffd866; } .bk-item .r.miss { color: #a8894a; } .bk-item .r.wait { color: #d9b874; }
+.bk-x { border: 0; background: none; color: #7a6136; font-size: 16px; padding: 2px 6px; }
+.bk-off { opacity: .55; }
+.buy-chip { grid-column: 1 / -1; justify-self: end; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 6px 14px; border-radius: 14px; background: #ffc94a; color: #2a1a02; font-size: 13px; font-weight: 800; }
+.buy-chip.done { background: #3a2808; color: #ffd866; border: 1px solid #e8a317; }
+.buy-chip.off { background: #3a2808; color: #a8894a; }
 </style>
 
 <!-- ===== HIVEカレンダー(電光掲示板を押したときの日付選び) ここから ===== -->
@@ -1214,6 +1272,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
   <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>狙い・危険</button>
   <button data-tab="race"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4 2.5 4H5"/></svg>レース・結果</button>
   <button data-tab="perf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l6-7 4 4 8-9"/><path d="M15 7h6v6"/></svg>成績</button>
+  <button data-tab="bank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10v2.5c2.3 1.5 3 3.6 3 6.5 0 4.2-3.4 7-8 7s-8-2.8-8-7c0-2.9.7-5 3-6.5z"/><path d="M5.5 13.5h13" /><path d="M9 3h6"/></svg>資金</button>
 </nav>
 </div>
 <div class="sheet" id="sheet" hidden></div>
@@ -1687,8 +1746,8 @@ function render() {
   }
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
-  if (!d) { v.innerHTML = h + `<div class="card empty">まだ予想がありません。出馬表が出たら表示されます。</div>`; return; }
-  h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf }[S.tab] || viewHome)(d);
+  if (!d && S.tab !== "bank") { v.innerHTML = h + `<div class="card empty">まだ予想がありません。出馬表が出たら表示されます。</div>`; return; }
+  h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf, bank: viewBank }[S.tab] || viewHome)(d);
   const scrolls = [...v.querySelectorAll(".seg, .horse-sort")].map(e => e.scrollLeft);   // 横スクロールの位置を描き直しても保つ(右端のボタンが左に戻らないように)
   v.innerHTML = h; tick();
   [...v.querySelectorAll(".seg, .horse-sort")].forEach((e, i) => { if (scrolls[i]) e.scrollLeft = scrolls[i]; });
@@ -1742,7 +1801,7 @@ function viewHome(d) {
         <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>AI勝率 ${pct(x.p)}</small></div>
-      <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>${x.fin != null ? fzBlock(x.fin) : ""}
+      <div class="fig num"><div class="e">期待値</div><div class="o">${evf(x.ev)}</div></div>${x.fin != null ? fzBlock(x.fin) : ""}${bkChip(x)}
     </button>`;
   h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5${(() => { const left = os.filter(x => x.fin == null).length; return `<span class="sub os-count"><span class="osc-n"><b>${os.length}</b>頭</span><span class="osc-split"><span>残り <b class="left">${left}</b></span><span>確定 <b>${os.length - left}</b></span></span></span>`; })()}</h2>`;
   if (os.length) {
@@ -2132,6 +2191,241 @@ function updateDetailFloat() {
   try { new MutationObserver(() => requestAnimationFrame(updateDetailFloat)).observe(sh, { childList: true }); } catch {}
 })();
 
+
+/* ---------------------------------------------------------------- 資金管理(2026-10-29)
+   記録はこの端末の中(localStorage)だけ。サーバーには送らない。公開データにはオッズ・払戻が無いので、的中した時だけ払戻を入れてもらう */
+const BK_KEY = "hivep_bank";
+const BK = (() => { try { const o = JSON.parse(store.get(BK_KEY) || "null"); if (o && o.v === 1 && Array.isArray(o.bets)) return o; } catch {} return { v: 1, fund: 30000, day: 5000, unit: 500, bets: [], stop: null }; })();
+const bkSave = () => store.set(BK_KEY, JSON.stringify(BK));
+const yen = n => "¥" + Math.round(n || 0).toLocaleString("ja-JP");
+const bkFind = (id, hno) => BK.bets.find(b => b.id === id && String(b.hno) === String(hno));
+function bkSync() {   // 公開データから着順を拾う。はずれは払戻0円にする
+  if (!S.snap) return;
+  let dirty = false;
+  for (const b of BK.bets) {
+    if (b.fin != null) continue;
+    const day = (S.snap.days || []).find(x => x.date === b.d); if (!day) continue;
+    let f = null;
+    const o = (day.osusume || []).concat(day.skipped || []).find(x => x.id === b.id && String(x.hno) === String(b.hno));
+    if (o && o.fin != null) f = o.fin;
+    if (f == null) for (const v of day.venues || []) {
+      const r = (v.races || []).find(r => r.id === b.id), h = r && (r.horses || []).find(h => String(h.no) === String(b.hno));
+      if (h && h.fin != null) { f = h.fin; break; }
+    }
+    if (f != null) { b.fin = f; if (f !== 1) b.pay = 0; dirty = true; }
+  }
+  if (dirty) bkSave();
+}
+const bkOrd = b => `${b.d} ${String(b.post || "").padStart(5, "0")} ${String(b.at || 0).padStart(14, "0")}`;
+const bkSorted = list => [...list].sort((a, b) => bkOrd(a).localeCompare(bkOrd(b)));
+function bkStreaks(list) { let cur = 0, max = 0; for (const b of bkSorted(list)) { if (b.fin == null) continue; cur = b.fin === 1 ? 0 : cur + 1; if (cur > max) max = cur; } return { cur, max }; }
+function bkSum(list) {
+  const s = list.filter(b => b.fin != null && b.pay != null);
+  const invest = s.reduce((a, b) => a + b.amt, 0), payout = s.reduce((a, b) => a + (b.pay || 0), 0);
+  return { n: s.length, hit: s.filter(b => b.fin === 1).length, invest, payout, roi: invest ? payout / invest : null };
+}
+function bkIn(p) { const t = todayStr(); return p === "m" ? BK.bets.filter(b => b.d.slice(0, 7) === t.slice(0, 7)) : p === "y" ? BK.bets.filter(b => b.d.slice(0, 4) === t.slice(0, 4)) : BK.bets; }
+function bkRecords(list) {
+  const best = list.filter(b => (b.pay || 0) > 0).sort((a, b) => b.pay - a.pay)[0];
+  const byDay = {}; list.forEach(b => (byDay[b.d] = byDay[b.d] || []).push(b));
+  let bd = null;
+  for (const [d, xs] of Object.entries(byDay)) { if (xs.some(b => b.fin == null || b.pay == null)) continue; const s = bkSum(xs); if (s.invest && (!bd || s.roi > bd.roi)) bd = { d, roi: s.roi }; }
+  return { streak: bkStreaks(list).max, best, bd };
+}
+function bkStarLimits() {   // ★ごとの今年の最大連敗(推奨・公開データ)。古いデータの時は2013年〜の検証の最大連敗
+  const ys = S.snap?.period?.year?.star_streak;
+  if (ys && Object.keys(ys).length) return { lim: ys, lab: "今年の最大連敗" };
+  const g = S.snap?.star_guide || {}, lim = {};
+  Object.keys(g).forEach(k => { if (g[k].streak != null) lim[k] = g[k].streak; });
+  return { lim, lab: "過去の最大連敗(2013年〜)" };
+}
+function bkLimit() {   // 「想定内」の目安 = 自分が今年買っている★の最大連敗のうち一番長いもの
+  const { lim } = bkStarLimits();
+  const sts = [...new Set(bkIn("y").map(b => String(b.st)))].filter(s => lim[s] != null);
+  const all = Object.values(lim).filter(v => v != null);
+  const v = sts.length ? Math.max(...sts.map(s => lim[s])) : (S.snap?.period?.year?.streak || (all.length ? Math.max(...all) : 10));
+  return Math.max(3, v);
+}
+const bkSpent = () => BK.bets.filter(b => b.d === todayStr()).reduce((a, b) => a + b.amt, 0);
+const bkStopped = () => BK.stop === todayStr();
+const bkR100 = n => Math.max(100, Math.round(n / 100) * 100);
+function bkBalance() { const inv = BK.bets.reduce((a, b) => a + b.amt, 0), pay = BK.bets.reduce((a, b) => a + (b.pay || 0), 0); return BK.fund - inv + pay; }
+
+let bkJid = 0;
+function bkJar(fr, o = {}) {   // 蜜壺。fr = 蜜の量(0〜1)
+  const id = "bkj" + (++bkJid), w = o.w || 72, y = Math.round(93 - Math.max(0, Math.min(1, fr)) * 65);
+  const body = "M16 22 h46 v6 c9 6 11 16 11 30 c0 21-15 35-34 35 S5 79 5 58 c0-14 2-24 11-30z";
+  return `<svg width="${w}" height="${Math.round(w * 96 / 78)}" viewBox="0 0 78 96" aria-hidden="true">
+    <defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs>
+    <path d="${body}" fill="#3a2808" stroke="${o.rim || "#e8a317"}" stroke-width="${o.rim ? 2.5 : 2}"/>
+    <g clip-path="url(#${id})"><rect class="bk-honey" x="0" y="${y}" width="78" height="${96 - y}" fill="${o.col || "#e8a317"}"/><rect class="bk-honey" x="0" y="${y}" width="78" height="4" fill="#ffc94a"/></g>
+    <rect x="10" y="${o.closed ? 17 : 13}" width="58" height="9" rx="3" fill="${o.lid || "#b97a0e"}"/>
+    ${o.plain || o.closed ? "" : `<path d="M14 22 h50 c0 6-4 6-5 12 c-1 4-5 4-5 0 c0-6-10-6-14-6 c-6 0-6 4-7 10 c-1 4-5 4-5 0 c0-6-4-10-14-10z" fill="#ffc94a"/><path d="M39 2 L66 12" stroke="#c98b2b" stroke-width="3" stroke-linecap="round"/><ellipse cx="66" cy="13" rx="5" ry="4" fill="#c98b2b"/>`}
+    ${o.txt != null ? `<text x="39" y="72" text-anchor="middle" font-size="20" font-weight="900" fill="${y <= 56 ? "#2a1a02" : "#ffd866"}">${o.txt}</text>` : ""}
+  </svg>`;
+}
+const BK_DRIP = `<svg class="bk-drip" viewBox="0 0 340 44" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 H340 V14 C330 14 328 22 322 30 C318 36 312 36 310 28 C306 16 290 16 280 16 C262 16 258 20 254 34 C251 42 243 42 241 32 C238 18 220 16 200 16 C176 16 168 18 164 26 C161 32 155 32 153 24 C150 16 130 16 110 16 C90 16 84 20 80 38 C78 44 70 44 68 36 C64 18 40 16 26 16 C14 16 8 18 6 22 C4 26 0 24 0 20 Z" fill="#e8a317"/><path d="M0 0 H340 V8 C300 10 200 6 120 9 C70 11 20 8 0 9 Z" fill="#ffc94a"/></svg>`;
+
+// おすすめの札の「買った」ボタン
+function bkChip(x) {
+  const b = bkFind(x.id, x.hno);
+  if (b) return `<span class="buy-chip done" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}">✓ 買った ${yen(b.amt)}</span>`;
+  if (x.fin != null) return "";
+  const d = curDay(), today = d && d.date === todayStr();
+  if (today && bkStopped()) return `<span class="buy-chip off" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}">今日はここまで</span>`;
+  if (today && BK.day - bkSpent() < BK.unit) return `<span class="buy-chip off" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}">今日の予算は使い切り</span>`;
+  return `<span class="buy-chip" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}">買った ${yen(BK.unit)}</span>`;
+}
+function bkRerender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
+function bkBuy(c) {
+  const id = c.dataset.buy, hno = c.dataset.bhno, d = curDay(); if (!d) return;
+  const b = bkFind(id, hno);
+  if (b) {
+    if (b.fin != null) { toast("結果が出た記録は「資金」タブで直せます"); return; }
+    if (S.bkConfirm !== "undo" + id + hno) { S.bkConfirm = "undo" + id + hno; toast("もう一度押すと <b>取り消し</b> ます"); return; }
+    S.bkConfirm = null; BK.bets.splice(BK.bets.indexOf(b), 1); bkSave(); toast("取り消しました"); bkRerender(); return;
+  }
+  const today = d.date === todayStr();
+  if (today && bkStopped()) { toast("今日は「ここまで」にしています。また次の開催日に🐝"); return; }
+  if (today && BK.day - bkSpent() < BK.unit) { toast(`今日の予算 <b>${yen(BK.day)}</b> を使い切りました`); return; }
+  const x = (d.osusume || []).find(o => o.id === id && String(o.hno) === String(hno)); if (!x) return;
+  BK.bets.push({ d: d.date, id, hno: x.hno, name: x.name, venue: x.venue, no: x.no, post: x.post, st: x.st, amt: BK.unit,
+    fin: x.fin ?? null, pay: x.fin != null && x.fin !== 1 ? 0 : null, at: Date.now() });
+  bkSave();
+  toast(`記録しました <b>${yen(BK.unit)}</b>${today ? `・今日の残り <b>${yen(Math.max(0, BK.day - bkSpent()))}</b>` : ""}`);
+  bkRerender();
+}
+function bkAct(k) {
+  const a = k.dataset.bk, v = Number(k.dataset.v);
+  if (a !== "unit" && a !== "stop" && a !== "del") S.bkConfirm = null;
+  if (a === "jar") { S.bkOpen = !S.bkOpen; return bkRerender(); }
+  if (a === "day") { BK.day = v; bkSave(); return bkRerender(); }
+  if (a === "unit") {   // 連敗中に金額を大きく上げる時は、もう一度押してもらう(追い上げ防止)
+    const cur = bkStreaks(BK.bets).cur;
+    if (v > BK.unit * 1.5 && cur >= 3 && S.bkConfirm !== "unit" + v) { S.bkConfirm = "unit" + v; toast(`いま<b>${cur}連敗</b>中です。取り返そうと金額を上げるのは危険です。<br>それでも上げるなら、もう一度押してください`); return; }
+    S.bkConfirm = null; BK.unit = v; bkSave(); return bkRerender();
+  }
+  if (a === "fund") {
+    const n = Math.round(Number($("#bk-fund-in")?.value || 0));
+    if (!(n > 0)) { toast("足す金額を入れてください"); return; }
+    BK.fund += n; bkSave(); toast(`軍資金に <b>${yen(n)}</b> 足しました`); return bkRerender();
+  }
+  if (a === "stop") {
+    if (bkStopped()) return;
+    if (S.bkConfirm !== "stop") { S.bkConfirm = "stop"; toast("もう一度押すと、今日はここまでにします<br>(今日はもう戻せません)"); return; }
+    S.bkConfirm = null; BK.stop = todayStr(); S.bkOpen = false; bkSave(); toast("おつかれさまでした。また次の開催日に🐝"); return bkRerender();
+  }
+  if (a === "pay") {
+    const b = BK.bets[+k.dataset.i], n = Math.round(Number(document.getElementById("bk-pay-" + k.dataset.i)?.value || 0));
+    if (!b || !(n > 0)) { toast("払戻の金額を入れてください"); return; }
+    b.pay = n; bkSave(); toast(`🎉 払戻 <b>${yen(n)}</b> を記録しました`); return bkRerender();
+  }
+  if (a === "del") {
+    const i = +k.dataset.i;
+    if (S.bkConfirm !== "del" + i) { S.bkConfirm = "del" + i; toast("もう一度押すと、この記録を消します"); return; }
+    S.bkConfirm = null; BK.bets.splice(i, 1); bkSave(); return bkRerender();
+  }
+  if (a === "per") { S.bkPer = k.dataset.v; return bkRerender(); }
+  if (a === "export") {
+    try {
+      const u = URL.createObjectURL(new Blob([JSON.stringify(BK)], { type: "application/json" })), an = document.createElement("a");
+      an.href = u; an.download = `hive_shikin_${todayStr()}.json`; document.body.appendChild(an); an.click(); an.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+    } catch { toast("書き出せませんでした"); }
+    return;
+  }
+  if (a === "import") { $("#bk-file")?.click(); return; }
+}
+document.addEventListener("click", e => {   // 札(ボタン)の中の「買った」を先に拾う
+  const c = e.target.closest && e.target.closest("[data-buy]");
+  if (c) { e.preventDefault(); e.stopPropagation(); bkBuy(c); return; }
+  const k = e.target.closest && e.target.closest("[data-bk]");
+  if (k) { e.preventDefault(); e.stopPropagation(); bkAct(k); }
+}, true);
+document.addEventListener("change", async e => {
+  if (e.target.id !== "bk-file") return;
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  try {
+    const o = JSON.parse(await f.text());
+    if (!o || o.v !== 1 || !Array.isArray(o.bets)) throw new Error("bad");
+    Object.keys(BK).forEach(k => delete BK[k]); Object.assign(BK, o); bkSave();
+    toast(`記録を読み込みました(<b>${o.bets.length}</b>件)`); bkRerender();
+  } catch { toast("読み込めませんでした。HIVEで書き出したファイルを選んでください"); }
+});
+
+function viewBank() {
+  bkSync();
+  const today = todayStr(), stopped = bkStopped(), spent = bkSpent(), left = Math.max(0, BK.day - spent);
+  const md = today.slice(5).split("-").map(Number), W = "日月火水木金土"[new Date(today + "T00:00:00+09:00").getDay()];
+  let h = `<section class="bk">${BK_DRIP}<div class="bk-head"><b>資金管理</b><span class="num">${md[0]}/${md[1]} ${W}</span></div>`;
+  // 蜜壺(今日の残り)。押すと予算・1点の金額・軍資金を決めるパネル
+  h += `<button type="button" class="bk-jarbtn${S.bkOpen ? " open" : ""}${stopped ? " closed" : ""}" data-bk="jar" aria-expanded="${S.bkOpen ? "true" : "false"}">
+    ${bkJar(BK.day ? left / BK.day : 0, { closed: stopped })}
+    <div><div class="bk-lab">${stopped ? "今日はここまで" : "今日の残りの蜜"}</div><div class="bk-big num">${yen(left)}</div>
+      <div class="bk-lab num">/ ${yen(BK.day)}・1点${yen(BK.unit)}で${stopped ? "おしまい" : `あと${Math.floor(left / BK.unit)}点`}</div></div>
+    <span class="bk-tap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="${S.bkOpen ? "M6 15l6-6 6 6" : "M6 9l6 6 6-6"}"/></svg>${S.bkOpen ? "閉じる" : "設定"}</span></button>`;
+  if (S.bkOpen) {
+    const bal = bkBalance(), lo = bkR100(bal * 0.01), hi = bkR100(bal * 0.02);
+    h += `<div class="bk-panel">
+      <div class="bk-lab">今日の予算</div>
+      <div class="bk-row">${[3000, 5000, 10000, 20000].map(v => `<button type="button" class="bk-ch${BK.day === v ? " on" : ""}" data-bk="day" data-v="${v}">${v >= 10000 ? v / 10000 + "万" : v / 1000 + "千"}</button>`).join("")}</div>
+      <div class="bk-lab" style="margin-top:6px">1点の金額</div>
+      <div class="bk-row">${[100, 300, 500, 1000].map(v => `<button type="button" class="bk-ch${BK.unit === v ? " on" : ""}" data-bk="unit" data-v="${v}">${v.toLocaleString("ja-JP")}</button>`).join("")}</div>
+      <div class="bk-sub num">軍資金の残り ${yen(bal)} の1〜2%がおすすめ(${lo.toLocaleString("ja-JP")}〜${hi.toLocaleString("ja-JP")}円)</div>
+      <div class="bk-lab" style="margin-top:6px">軍資金を足す</div>
+      <div class="bk-fund"><input id="bk-fund-in" class="bk-in num" type="number" inputmode="numeric" min="0" step="1000" placeholder="10000"><button type="button" class="bk-ch wide" style="padding:8px 14px" data-bk="fund">＋ 足す</button></div>
+      <button type="button" class="bk-ch warn wide" style="margin-top:6px" data-bk="stop"${stopped ? " disabled" : ""}>🌙 今日はここまで</button>
+    </div>`;
+  }
+  // 払戻の入力待ち(的中した記録)
+  const needPay = BK.bets.map((b, i) => ({ b, i })).filter(({ b }) => b.fin === 1 && b.pay == null);
+  if (needPay.length) h += `<div class="bk-card bk-pay"><div class="bk-lab" style="color:#ffd866;font-weight:700">🎉 的中！払戻を入れてください</div>${needPay.map(({ b, i }) => `
+    <div class="bk-payrow"><span>${esc(b.venue)}${b.no}R ${esc(b.name)}<small class="bk-sub" style="display:block">${yen(b.amt)}・単勝</small></span>
+      <input id="bk-pay-${i}" class="bk-in num" type="number" inputmode="numeric" min="0" placeholder="払戻(円)"><button type="button" class="bk-ch" style="padding:8px 12px" data-bk="pay" data-i="${i}">記録</button></div>`).join("")}</div>`;
+  // 連敗(巣穴メーター)
+  const lim = bkLimit(), sk = bkStreaks(BK.bets), nH = Math.min(20, Math.max(10, lim)), { lim: sl, lab: slLab } = bkStarLimits();
+  const st = sk.cur <= lim * 0.7 ? ["ok", "想定内", "#e8a317"] : sk.cur <= lim ? ["long", "長めの連敗・まだ想定内", "#f0a030"] : ["over", "推奨の最大を超えています", "#f08a5d"];
+  const hx = i => { const x = i * 30 + 2, on = i < sk.cur; return `<polygon points="${x + 6},2 ${x + 18},2 ${x + 24},13 ${x + 18},24 ${x + 6},24 ${x},13" ${on ? `fill="${st[2]}"` : `fill="none" stroke="#6b4a0c" stroke-width="1.5"`}/>`; };
+  const starNote = ["5", "4", "3", "2"].filter(k => sl[k] != null).map(k => `<b>★${k}</b> ${sl[k]}`).join("・");
+  h += `<div class="bk-card"><div class="bk-head"><span class="bk-lab" style="font-size:13px">連敗</span><span class="bk-state ${st[0]}">${sk.cur}連敗・${st[1]}</span></div>
+    <svg class="bk-hex" viewBox="0 0 ${nH * 30} 26" preserveAspectRatio="xMinYMid meet" aria-hidden="true">${Array.from({ length: nH }, (_, i) => hx(i)).join("")}</svg>
+    <div class="bk-sub">巣穴が蜜で埋まるほど連敗。${lim}連敗までは推奨でも起きた範囲です</div>
+    ${starNote ? `<div class="bk-sub bk-note num" style="margin-top:2px">※${slLab} ${starNote}</div>` : ""}
+    ${st[0] === "over" ? `<div class="bk-sub" style="color:#f6c4a8;margin-top:6px">一度休んで、予算と1点の金額を見直しましょう</div>` : ""}</div>`;
+  // 今月の投資と払戻
+  const me = bkSum(bkIn("m"));
+  h += `<div class="bk-two num"><div class="bk-inv"><div class="bk-lab">今月の投資</div><b>${yen(me.invest)}</b></div><div class="bk-ret"><div class="bk-lab">今月の払戻</div><b>${yen(me.payout)}</b></div></div>`;
+  // 自分とHIVE推奨どおりの回収率
+  const hv = S.snap?.period?.month, hvRoi = hv?.n ? hv.roi : null;
+  const scale = Math.max(1.5, me.roi || 0, hvRoi || 0), bw = r => r == null ? 0 : Math.max(2, Math.min(300, r / scale * 300));
+  const bar = (r, c) => `<svg class="bk-bar" viewBox="0 0 300 18" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="2" width="300" height="10" rx="5" fill="#3a2808"/>${r == null ? "" : `<rect x="0" y="2" width="${bw(r)}" height="10" rx="5" fill="${c}"/><path d="M${bw(r) - 6} 10 c0 4 2 6 2 7 c0 2-4 2-4 0 c0-1 2-3 2-7z" fill="${c}"/>`}</svg>`;
+  const first = bkSorted(bkIn("m"))[0];
+  let miss = 0;
+  if (first) for (const day of S.snap?.days || []) { if (day.date < first.d || day.date > today || day.date.slice(0, 7) !== today.slice(0, 7)) continue; miss += (day.osusume || []).filter(x => x.fin != null && !bkFind(x.id, x.hno)).length; }
+  h += `<div class="bk-card bk-cmp"><div class="bk-line"><span>あなた</span><b class="num">${me.roi == null ? "—" : Math.round(me.roi * 100) + "%"}</b></div>${bar(me.roi, "#ffc94a")}
+    <div class="bk-line"><span>HIVE推奨どおり</span><b class="num">${hvRoi == null ? "—" : Math.round(hvRoi * 100) + "%"}</b></div>${bar(hvRoi, "#e8a317")}
+    <div class="bk-sub" style="font-size:12px;color:#d9b874">${me.roi == null || hvRoi == null ? "今月の記録がたまると比べられます" : `差 ${me.roi >= hvRoi ? "+" : "−"}${Math.abs(Math.round((me.roi - hvRoi) * 100))}%${miss ? `:買い漏れ${miss}頭` : ""}`}</div></div>`;
+  // 記録: 最大連敗を今月・今年・過去最高の3つの蜜壺で
+  const rm = bkRecords(bkIn("m")), ry = bkRecords(bkIn("y")), ra = bkRecords(BK.bets), cap = Math.max(lim, 1);
+  const jar = (r, lab, best) => `<div>${bkJar(r.streak / cap, { w: 64, plain: true, txt: r.streak, col: r.streak > lim ? "#f08a5d" : "#e8a317", rim: best ? "#ffc94a" : null, lid: best ? "#ffc94a" : null })}<div class="bk-lab${best ? " best" : ""}">${lab}</div></div>`;
+  h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最大連敗の記録</span><span class="bk-sub">瓶いっぱい = ${lim}連敗</span></div>
+    <div class="bk-jars">${jar(rm, "今月")}${jar(ry, "今年")}${jar(ra, "過去最高", true)}</div>
+    <div class="bk-sub" style="text-align:center;margin-top:4px;color:${ra.streak > lim ? "#f08a5d" : "#9ee08a"}">${ra.streak > lim ? "推奨の最大より長い連敗がありました。金額を見直しましょう" : "どれも推奨の最大の範囲内です"}</div></div>`;
+  const per = S.bkPer || "m", rp = { m: rm, y: ry, a: ra }[per];
+  h += `<div class="bk-card"><div class="bk-seg">${[["m", "今月"], ["y", "今年"], ["a", "過去最高"]].map(([k, l]) => `<button type="button" class="bk-ch${per === k ? " on" : ""}" data-bk="per" data-v="${k}">${l}</button>`).join("")}</div>
+    <div class="bk-two num" style="margin-top:10px"><div class="bk-mini"><div class="bk-lab">最高払戻(1点)</div><b style="color:#ffd866">${rp.best ? yen(rp.best.pay) : "—"}</b><div class="bk-sub">${rp.best ? `${esc(rp.best.venue)}${rp.best.no}R ${fmtMD(rp.best.d)}` : "まだ的中なし"}</div></div>
+      <div class="bk-mini"><div class="bk-lab">1日の最高回収率</div><b style="color:#ffd866">${rp.bd ? Math.round(rp.bd.roi * 100) + "%" : "—"}</b><div class="bk-sub">${rp.bd ? fmtMD(rp.bd.d) : "—"}</div></div></div></div>`;
+  // 最近の記録
+  const recent = BK.bets.map((b, i) => ({ b, i })).sort((x, y) => bkOrd(y.b).localeCompare(bkOrd(x.b))).slice(0, 10);
+  h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最近の記録</span><span class="bk-sub">おすすめの「買った」で記録</span></div>`;
+  h += recent.length ? `<div class="bk-list">${recent.map(({ b, i }) => `<div class="bk-item num"><span>${esc(b.venue)}${b.no}R ${esc(b.name)}<small><span style="color:#ffc94a">${"★".repeat(b.st || 0)}</span> ${fmtMD(b.d)}・${yen(b.amt)}</small></span>
+      <span class="r ${b.fin == null ? "wait" : b.fin === 1 ? "hit" : "miss"}">${b.fin == null ? "結果待ち" : b.fin === 1 ? (b.pay != null ? `的中 ${yen(b.pay)}` : "的中") : `${b.fin}着`}</span>
+      <button type="button" class="bk-x" data-bk="del" data-i="${i}" aria-label="この記録を消す">×</button></div>`).join("")}</div>`
+    : `<div class="bk-sub" style="margin-top:6px">おすすめタブの札にある「買った」を押すと、ここに記録されます</div>`;
+  h += `</div><div class="bk-two"><button type="button" class="bk-ch wide" data-bk="export">記録を書き出す</button><button type="button" class="bk-ch wide" data-bk="import">記録を読み込む</button></div>
+    <input id="bk-file" type="file" accept="application/json,.json" hidden>
+    <p class="note">記録はこの端末の中だけに保存され、どこにも送られません。機種変更の時は書き出して、新しい端末で読み込んでください。<br>馬券は20歳から。余裕資金の範囲で楽しみましょう。のめり込みが心配な時は、お住まいの地域の精神保健福祉センターに相談できます。</p></section>`;
+  return h;
+}
 
 /* ---------------------------------------------------------------- 操作 */
 $("#lockForm").addEventListener("submit", e => { e.preventDefault(); unlock($("#pw").value.trim(), $("#remember").checked); });
