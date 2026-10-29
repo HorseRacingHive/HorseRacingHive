@@ -100,7 +100,7 @@
     var g=new Image();g.className='kb-vid';g.alt='HIVE';
     g.onload=function(){dlog('動く画像 表示');if(v.parentNode)v.parentNode.replaceChild(g,v);mark();setTimeout(stop,fast?500:1700);};
     g.onerror=function(){dlog('動く画像 読めない');box.classList.remove('intro');if(v.parentNode)v.remove();stop();};   /* それも無い時は静止のロゴ画像 */
-    g.src='hive_intro.webp?v=4';
+    g.src='hive_intro.webp?v=5';
     setTimeout(stop,4000);
   };
   if(!ios)v.src='hive_intro.mp4?v=10';
@@ -109,7 +109,7 @@
   v.addEventListener('playing',function(){dlog('video playing');});v.addEventListener('error',function(){dlog('video error '+(v.error&&v.error.code));});
   if(ios){dlog('iOS: 動く画像を使う');v._g=1;v.alt='HIVE';v.style.background="url('hive_intro_poster.webp?v=5') center/contain no-repeat";
     v.onload=function(){dlog('動く画像 表示');mark();setTimeout(stop,1700);};v.onerror=function(){dlog('動く画像 読めない');box.classList.remove('intro');v.remove();stop();};
-    v.src='hive_intro.webp?v=4';setTimeout(stop,4000);}   /* iPhoneは動画を使わない(低電力モードでも動く・通信も節約) */
+    v.src='hive_intro.webp?v=5';setTimeout(stop,4000);}   /* iPhoneは動画を使わない(低電力モードでも動く・通信も節約) */
   else{try{var pr=v.play();if(pr&&pr.catch)pr.catch(function(e){dlog('play拒否 '+e.name);gif();});}catch(e){gif();}}
   box.addEventListener('click',function(){vDone=cDone=introDone=true;});
   if(!ios)setTimeout(function(){if(!v.currentTime)gif();},1200);   /* 1.2秒たっても動画が動かない時 */
