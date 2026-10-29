@@ -1103,6 +1103,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .bk-ch.warn { background: #5a2a14; color: #f6c4a8; }
 .bk-ch.wide { padding: 9px 0; }
 .bk-fund { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.bk-fund3 { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; }
 .bk-in { width: 100%; min-width: 0; border: 1px solid #8a5f10; background: #1a1206; color: #ffd866; border-radius: 12px; padding: 8px 10px; font-size: 16px; font-weight: 700; }
 .bk-in::placeholder { color: #7a6136; font-weight: 500; }
 .bk-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -2021,7 +2022,7 @@ function perfDashboard(d, rp) {
   const rs = S.snap.rec_stats;
   h += gaugeSvg(rs?.roi ?? null, "2013年〜の検証", rs ? `年${rs.per_year}点 ・ プラスの年 ${esc(rs.plus_years || "")}` : "—");
   h += `</div><div class="card chart-card"><div class="cap">回収率の推移<small>(この90日・累積)</small></div>${lineSvg(pts, { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
-    <p class="note">※データの権利の関係で、配布用にはオッズ・払戻・金額を載せていません。1日の回収率も、1レースごとの払戻が分からないよう10%きざみにしています。HIVEは予想がメインです。オッズ・払戻はJRA公式の出馬表・レース結果で確認してください。</p></section>`;
+    <p class="note">※データの権利の関係で、配布用にはオッズ・払戻・金額を載せていません。1日の回収率も、1レースごとの払戻が分からないよう10%きざみにしています。オッズ・払戻はJRA公式の出馬表・レース結果で確認してください。</p></section>`;
   return h;
 }
 
@@ -2309,6 +2310,12 @@ function bkAct(k) {
     if (v > BK.unit * 1.5 && cur >= 3 && S.bkConfirm !== "unit" + v) { S.bkConfirm = "unit" + v; toast(`いま<b>${cur}連敗</b>中です。取り返そうと金額を上げるのは危険です。<br>それでも上げるなら、もう一度押してください`); return; }
     S.bkConfirm = null; BK.unit = v; bkSave(); return bkRerender();
   }
+  if (a === "fundset") {   // 軍資金の残りを入れた金額にする(はじめの設定・やり直し用)
+    const n = Math.round(Number($("#bk-fund-in")?.value || 0));
+    if (!(n > 0)) { toast("軍資金の金額を入れてください"); return; }
+    const inv = BK.bets.reduce((x, b) => x + b.amt, 0), pay = BK.bets.reduce((x, b) => x + (b.pay || 0), 0);
+    BK.fund = n + inv - pay; bkSave(); toast(`軍資金を <b>${yen(n)}</b> にしました`); return bkRerender();
+  }
   if (a === "fund") {
     const n = Math.round(Number($("#bk-fund-in")?.value || 0));
     if (!(n > 0)) { toast("足す金額を入れてください"); return; }
@@ -2375,8 +2382,9 @@ function viewBank() {
       <div class="bk-lab" style="margin-top:6px">1点の金額</div>
       <div class="bk-row">${[100, 300, 500, 1000].map(v => `<button type="button" class="bk-ch${BK.unit === v ? " on" : ""}" data-bk="unit" data-v="${v}">${v.toLocaleString("ja-JP")}</button>`).join("")}</div>
       <div class="bk-sub num">軍資金の残り ${yen(bal)} の1〜2%がおすすめ(${lo.toLocaleString("ja-JP")}〜${hi.toLocaleString("ja-JP")}円)</div>
-      <div class="bk-lab" style="margin-top:6px">軍資金を足す</div>
-      <div class="bk-fund"><input id="bk-fund-in" class="bk-in num" type="number" inputmode="numeric" min="0" step="1000" placeholder="10000"><button type="button" class="bk-ch wide" style="padding:8px 14px" data-bk="fund">＋ 足す</button></div>
+      <div class="bk-lab" style="margin-top:6px">軍資金(いま ${yen(bal)})</div>
+      <div class="bk-fund3"><input id="bk-fund-in" class="bk-in num" type="number" inputmode="numeric" min="0" step="1000" placeholder="30000"><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fundset">この額にする</button><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fund">＋ 足す</button></div>
+      <div class="bk-sub">はじめは金額を入れて「この額にする」。入金した時は「＋ 足す」</div>
       <button type="button" class="bk-ch warn wide" style="margin-top:6px" data-bk="stop"${stopped ? " disabled" : ""}>🌙 今日はここまで</button>
     </div>`;
   }
