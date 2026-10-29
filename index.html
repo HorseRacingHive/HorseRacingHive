@@ -1677,6 +1677,7 @@ function openLeft(ms) {
   const s = Math.round(ms / 1000);
   if (s <= 0) return "まもなく表示されます";
   const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+  if (h >= 24) return `あと${Math.floor(h / 24)}日${h % 24}時間${m}分`;
   return h ? `あと${h}時間${m}分` : `あと${m}分${String(s % 60).padStart(2, "0")}秒`;
 }
 const openTag = (date, hm) => hm ? `<b class="open-left num${jstAt(date, hm) - Date.now() < 3600e3 ? " soon" : ""}" data-open="${esc(date)}|${esc(hm)}">${esc(openLeft(jstAt(date, hm) - Date.now()))}</b>` : "";
@@ -2658,8 +2659,11 @@ document.addEventListener("click", e => {
     const days = viewDays(), i = days.findIndex(d => d.date === S.date), j = i + Number(t.dataset.dayStep);
     if (days[j]) { S.date = days[j].date; renderDays(); render(); }
     else if (Number(t.dataset.dayStep) > 0) {   // 16:20まで「あと◯分」も出す(16:20を過ぎて翌日が無いなら、翌日は開催なし)
-      const left = jstAt(todayStr(), "16:20") - Date.now();
-      toast(`🕘 次の開催日の予想は前日の<b>16:20</b>から${left > 0 ? `<br>公開まで <b>${openLeft(left)}</b>` : ""}<br>★・おすすめは当日<b>8:21</b>〜(午後<b>12:00</b>〜)`);
+      const no = S.snap?.next_open;   // 次の開催日と公開日時(PC側で計算して送ってくる・2026-10-29)
+      const left = no ? jstAt(no.open_date, no.open_at) - Date.now() : 0;
+      toast(no
+        ? `🕘 次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は<br><b>${esc(no.open_label)} ${esc(no.open_at)}</b> から${left > 0 ? `<br>公開まで <b>${openLeft(left)}</b>` : ""}<br>★・おすすめは当日<b>8:21</b>〜(午後<b>12:00</b>〜)`
+        : `🕘 次の開催日の予想は前日の<b>16:20</b>から<br>★・おすすめは当日<b>8:21</b>〜(午後<b>12:00</b>〜)`);
     }
     return;
   }
