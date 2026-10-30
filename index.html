@@ -749,6 +749,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .spark-line .line { fill: none; stroke: var(--c); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawLine 1.3s ease-out .1s forwards; }
 .spark-line .dot { fill: var(--c); stroke: var(--panel); stroke-width: 2; }
 .spark-line .val { font-family: var(--f-disp); font-weight: 800; font-size: 13px; fill: var(--c); }
+.hv-line .hv-bee, .hv-line .hv-drip { animation: beeIn .4s ease-out 1.3s both; }
 .spark-line .ax { font-size: 9px; fill: var(--muted); }
 .chart-card { padding: 10px 10px 6px; }
 .chart-card .cap { margin-bottom: 4px; }
@@ -1457,7 +1458,7 @@ function gaugeSvg(roi, label, sub) {
     const t = Math.PI * (1 - i / (N - 1)), x = cx + r * Math.cos(t), y = cy - r * Math.sin(t), on = i <= lit;
     cells += `<polygon points="${hex(x, y, hr)}" class="g-hc${on ? " on" : ""}" style="${on ? `fill:url(#${plus ? "hcGold" : "hcDull"});animation-delay:${(.1 + i * .045).toFixed(2)}s` : ""}"/>`;
   }
-  const bt = Math.PI * (1 - Math.max(0, lit) / (N - 1)), bx = cx + (r + 1) * Math.cos(bt), by = cy - (r + 1) * Math.sin(bt) - 7;
+  const bt = Math.PI * (1 - Math.max(0, lit) / (N - 1)), bx = cx + (r + 11) * Math.cos(bt), by = cy - (r + 11) * Math.sin(bt);
   const bee = roi == null ? "" : `<g class="g-bee" style="animation-delay:${(.15 + Math.max(0, lit) * .045).toFixed(2)}s" transform="translate(${bx.toFixed(1)},${by.toFixed(1)})">
     <ellipse cx="-2" cy="-3.2" rx="3" ry="2" fill="#fff" opacity=".85"/><ellipse cx="1.6" cy="-3.4" rx="2.6" ry="1.8" fill="#fff" opacity=".7"/>
     <ellipse cx="0" cy="0" rx="4.4" ry="3.1" fill="#ffc21a"/><path d="M-1.4,-2.9v5.8M1.4,-2.9v5.8" stroke="#2a1d08" stroke-width="1.2"/>
@@ -1471,20 +1472,30 @@ function gaugeSvg(roi, label, sub) {
     <div class="g-cap">${label}${sub ? `<small>${sub}</small>` : ""}</div></div>`;
 }
 // 収支の推移(累積)。points = [{date, value}]
+let _hvLineId = 0;
 function lineSvg(points, opt = {}) {
   if (!points || points.length < 2) return `<div class="note">まだ推移を描けるだけのデータがありません(2日以上の結果が出ると表示されます)</div>`;
-  const W = 340, H = 150, L = 8, R = 8, T = 20, B = 20;
+  const W = 340, H = 150, L = 8, R = 8, T = 20, B = 20, id = "hvl" + (++_hvLineId);
   const vals = points.map(p => p.value), max = Math.max(0, ...vals), min = Math.min(0, ...vals);
   const x = i => L + i / (points.length - 1) * (W - L - R), y = v => T + (max - v) / ((max - min) || 1) * (H - T - B);
   const d = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join("");
-  const area = `${d}L${x(points.length - 1).toFixed(1)},${y(0).toFixed(1)}L${x(0).toFixed(1)},${y(0).toFixed(1)}Z`;
-  const last = vals[vals.length - 1], col = last >= 0 ? "var(--good)" : "var(--bad)", fv = opt.fmtV || yenPM;
+  const z = y(0).toFixed(1), area = `${d}L${x(points.length - 1).toFixed(1)},${z}L${x(0).toFixed(1)},${z}Z`;
+  const last = vals[vals.length - 1], plus = last >= 0, col = plus ? "#eba400" : "var(--muted)", fv = opt.fmtV || yenPM;
   const lab = i => opt.fmt ? opt.fmt(points[i].date) : points[i].date;
   const mid = Math.floor((points.length - 1) / 2);
-  return `<svg viewBox="0 0 ${W} ${H}" class="spark-line" style="--c:${col}" aria-label="${esc(opt.label || "推移")}">
-    <line x1="${L}" x2="${W - R}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" class="zero"/>
-    <path d="${area}" class="area"/><path d="${d}" class="line" pathLength="100"/>
-    <circle cx="${x(points.length - 1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="4" class="dot"/>
+  const lx = x(points.length - 1), ly = y(last);
+  const hx = (cx, cy, s) => [0, 1, 2, 3, 4, 5].map(i => { const a = Math.PI / 3 * i + Math.PI / 6; return (cx + s * Math.cos(a)).toFixed(1) + "," + (cy + s * Math.sin(a)).toFixed(1); }).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}" class="spark-line hv-line" style="--c:${col}" aria-label="${esc(opt.label || "収支の推移")}">
+    <defs><clipPath id="${id}u"><rect x="0" y="0" width="${W}" height="${z}"/></clipPath><clipPath id="${id}d"><rect x="0" y="${z}" width="${W}" height="${H}"/></clipPath>
+    <linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc93c" stop-opacity=".5"/><stop offset="1" stop-color="#ffc93c" stop-opacity=".06"/></linearGradient>
+    <pattern id="${id}p" width="10.4" height="18" patternUnits="userSpaceOnUse"><polygon points="${hx(5.2, 6, 6)}" fill="none" stroke="#ffc93c" stroke-opacity=".16" stroke-width=".8"/></pattern></defs>
+    <path d="${area}" fill="url(#${id}g)" clip-path="url(#${id}u)"/><path d="${area}" fill="url(#${id}p)" clip-path="url(#${id}u)"/>
+    <path d="${area}" fill="#8a7b60" opacity=".28" clip-path="url(#${id}d)"/>
+    <line x1="${L}" x2="${W - R}" y1="${z}" y2="${z}" class="zero"/>
+    <path d="${d}" class="line" pathLength="100" style="stroke:#f5a800" clip-path="url(#${id}u)"/><path d="${d}" class="line" pathLength="100" style="stroke:#9c8c70" clip-path="url(#${id}d)"/>
+    ${plus ? `<path d="M${lx.toFixed(1)} ${(ly + 2).toFixed(1)}q3 7 0 11q-3 -4 0 -11z" fill="#f5a800" class="hv-drip"/>` : ""}
+    <g class="hv-bee" transform="translate(${(lx - 11).toFixed(1)},${(ly < T + 14 ? ly + 11 : ly - 9).toFixed(1)}) scale(1.25)"><ellipse cx="-2" cy="-3.2" rx="3" ry="2" fill="#fff" opacity=".85"/><ellipse cx="1.6" cy="-3.4" rx="2.6" ry="1.8" fill="#fff" opacity=".7"/>
+    <ellipse cx="0" cy="0" rx="4.4" ry="3.1" fill="#ffc21a"/><path d="M-1.4,-2.9v5.8M1.4,-2.9v5.8" stroke="#2a1d08" stroke-width="1.2"/><circle cx="4.6" cy="-.4" r="1.9" fill="#2a1d08"/></g>
     <text x="${L}" y="${T - 7}" class="ax">最高 ${fv(max)} ・ 最低 ${fv(min)}</text>
     <text x="${W - R}" y="${T - 7}" text-anchor="end" class="val">${fv(last)}</text>
     <text x="${L}" y="${H - 5}" class="ax">${esc(lab(0))}</text><text x="${(W / 2).toFixed(0)}" y="${H - 5}" text-anchor="middle" class="ax">${esc(lab(mid))}</text><text x="${W - R}" y="${H - 5}" text-anchor="end" class="ax">${esc(lab(points.length - 1))}</text></svg>`;
