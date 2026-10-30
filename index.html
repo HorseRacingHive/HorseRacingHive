@@ -2940,4 +2940,27 @@ const Demo = (() => {
 })();
 </script>
 
+<!-- ===== アクセス記録(Cloudflare hive-log) ここから ===== -->
+<script>
+(function () {
+  try {
+    var WORKER_URL = "https://hive-log.hkskkit.workers.dev/b";
+    var key = "hive_did", id = null;
+    try { id = localStorage.getItem(key); } catch (e) {}
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+         : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+             var r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16);
+           });
+      try { localStorage.setItem(key, id); } catch (e) {}
+    }
+    if (location.hostname !== "horseracinghive.github.io") return;
+    var data = JSON.stringify({ d: id, p: location.pathname });
+    if (navigator.sendBeacon) navigator.sendBeacon(WORKER_URL, data);
+    else fetch(WORKER_URL, { method: "POST", body: data, keepalive: true });
+  } catch (e) {}
+})();
+</script>
+<!-- ===== アクセス記録 ここまで ===== -->
+
 </body></html>
