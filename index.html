@@ -1731,17 +1731,61 @@ async function decrypt(enc, pw) {
   const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(enc.iv) }, key, b64(enc.ct));
   return JSON.parse(new TextDecoder().decode(plain));
 }
+/* メンバーごとの合言葉(2026-10-31): 予想は「データの鍵」で暗号、その鍵を1人ひとりの合言葉で包んである。
+   合言葉の頭の番号(A01など)で自分の包みを選ぶ。共通の合言葉は "_" の包み。合言葉から作った鍵は覚えておき、3分ごとの更新で作り直さない */
+const kekCache = new Map();
+const normCode = pw => {
+  const t = (pw || "").normalize("NFKC").toUpperCase().replace(/[\s\u30FC\u2010-\u2015\u2212]/g, "-").replace(/\s/g, "");
+  const m = t.replace(/-/g, "").match(/^([A-Z][0-9]{2})([A-Z0-9]{4})([A-Z0-9]{4})$/);
+  return m ? { slot: m[1], code: `${m[1]}-${m[2]}-${m[3]}` } : null;
+};
+async function unwrapKey(entry, secret, iter) {
+  const ck = entry.salt + "|" + secret;
+  let kek = kekCache.get(ck);
+  if (!kek) {
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), "PBKDF2", false, ["deriveKey"]);
+    kek = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(entry.salt), iterations: iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    kekCache.set(ck, kek);
+  }
+  const raw = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(entry.iv) }, kek, b64(entry.w));
+  return crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+}
+async function decrypt2(enc, pw) {
+  const nc = normCode(pw);
+  if (nc && enc.keys && enc.keys[nc.slot]) {
+    try {
+      const dk = await unwrapKey(enc.keys[nc.slot], nc.code, enc.iter);
+      const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(enc.iv) }, dk, b64(enc.ct));
+      S.slot = nc.slot;
+      return JSON.parse(new TextDecoder().decode(plain));
+    } catch {}
+  }
+  if (enc.salt) {   // 共通の合言葉(切り替え期間だけ)
+    const ck = "_" + enc.salt + "|" + pw;
+    let key = kekCache.get(ck);
+    if (!key) {
+      const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+      key = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(enc.salt), iterations: enc.iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+      kekCache.clear(); kekCache.set(ck, key);   // salt は送るたびに変わるので、古いのは捨てる
+    }
+    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(enc.iv) }, key, b64(enc.ct));
+    S.slot = "_";
+    return JSON.parse(new TextDecoder().decode(plain));
+  }
+  throw new Error("bad");
+}
 async function open(pw, quiet) {
   if (S.demo) { if (pw !== "hive") throw new Error("bad"); return Demo.snap; }
   const enc = await fetchEnc();
-  try { return await decrypt(enc, pw); } catch { throw new Error("bad"); }
+  try { return enc.v === 2 ? await decrypt2(enc, pw) : await decrypt(enc, pw); } catch { throw new Error("bad"); }
 }
-async function unlock(pw, remember) {
+async function unlock(pw, remember, manual) {
   const err = $("#lockErr"), btn = $("#unlockBtn");
   err.textContent = ""; btn.disabled = true; btn.textContent = "ひらいています…";
   try {
     S.snap = await open(pw); S.pw = pw;
     if (remember && !S.demo) store.set("hivep_pw", pw);
+    if (manual && !S.demo && window.hiveBeacon) window.hiveBeacon(S.slot);   // アクセス記録に合言葉の番号だけ送る(合言葉そのものは送らない)
     $("#lock").hidden = true; $("#app").hidden = false;
     pickDate(); renderDays(); render();
   } catch (e) {
@@ -1973,6 +2017,12 @@ function hvNextJudge(date, races) {
     if (!r || r.has_result || r.done || !r.post) continue;
     const p = hvJst(date, r.post); if (!p) continue;
     for (const m of [30, 10]) { const t = p - m * 60000; if (t > now && (best == null || t < best)) best = t; }
+  }
+  // 狙い馬の見直し(朝7:00から30分ごと。server.py の MAIN_FROM・MAIN_EVERY と同じ・2026-10-31)
+  const ps = (races || []).map(r => r && r.post ? hvJst(date, r.post) : null).filter(Boolean);
+  if (ps.length) {
+    const last = Math.max(...ps) - 5 * 60000;
+    for (let t = hvJst(date, "7:00"); t <= last; t += 30 * 60000) { if (t > now) { if (best == null || t < best) best = t; break; } }
   }
   return best;
 }
@@ -2901,7 +2951,7 @@ function viewBank() {
 }
 
 /* ---------------------------------------------------------------- 操作 */
-$("#lockForm").addEventListener("submit", e => { e.preventDefault(); unlock($("#pw").value.trim(), $("#remember").checked); });
+$("#lockForm").addEventListener("submit", e => { e.preventDefault(); unlock($("#pw").value.trim(), $("#remember").checked, true); });
 document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || t.closest("form")) return;
   if (t.id === "back") { try { history.back(); } catch {} closeSheet(); return; }
@@ -3092,9 +3142,20 @@ const Demo = (() => {
       try { localStorage.setItem(key, id); } catch (e) {}
     }
     if (location.hostname !== "horseracinghive.github.io") return;
-    var data = JSON.stringify({ d: id, p: location.pathname });
-    if (navigator.sendBeacon) navigator.sendBeacon(WORKER_URL, data);
-    else fetch(WORKER_URL, { method: "POST", body: data, keepalive: true });
+    var send = function (k) {
+      var data = JSON.stringify({ d: id, p: location.pathname, k: k || "" });
+      if (navigator.sendBeacon) navigator.sendBeacon(WORKER_URL, data);
+      else fetch(WORKER_URL, { method: "POST", body: data, keepalive: true });
+    };
+    window.hiveBeacon = send;
+    // 開いたときに1回。覚えている合言葉があれば、その番号(A01 など)だけ添える
+    var saved = null, k = "";
+    try { saved = localStorage.getItem("hivep_pw"); } catch (e) {}
+    if (saved) {
+      var t = saved.normalize("NFKC").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      k = /^[A-Z][0-9]{2}[A-Z0-9]{8}$/.test(t) ? t.slice(0, 3) : "_";
+    }
+    send(k);
   } catch (e) {}
 })();
 </script>
