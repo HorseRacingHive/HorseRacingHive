@@ -1283,6 +1283,16 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .hv-empty .hv-empty-nx > span { color: #9a6200; background: rgba(232,150,43,.12); border-color: rgba(185,124,18,.4); } }
 @keyframes hvNxBlink { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .hv-empty .hv-empty-nx > span::before { animation: none; } }
+/* ===== 複数条件の並べ替え ①②③ と ▲▼ / 左右スワイプ(2026-10-31) ===== */
+.horse-sort button .hms, .sort-head button .hms { font-style: normal; font-size: 10px; font-weight: 900; margin-left: 2px; letter-spacing: -.3px; }
+.horse-sort.hm button.on::after, .sort-head.hm button.on::after { content: none !important; }
+.horse-sort button.on2, .sort-head button.on2 { color: var(--accent); opacity: .78; border-bottom: 2px dashed currentColor; }
+.hms-note { margin: 2px 0 0 !important; font-size: 11px !important; }
+@keyframes hvSwL { from { transform: translateX(26px); opacity: .55; } to { transform: none; opacity: 1; } }
+@keyframes hvSwR { from { transform: translateX(-26px); opacity: .55; } to { transform: none; opacity: 1; } }
+.hv-sw-l { animation: hvSwL .15s ease-out; }
+.hv-sw-r { animation: hvSwR .15s ease-out; }
+@media (prefers-reduced-motion: reduce) { .hv-sw-l, .hv-sw-r { animation: none; } }
 
 </style>
 
@@ -1716,9 +1726,129 @@ function announceBlock(list, showEmpty) {
   return h + `</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
-const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: { key: "post", dir: "asc" }, venue: null, resVenue: null, venuePicked: false, resPicked: false,
+/* ===== 複数条件の並べ替え(2026-10-31): 押した順に①②③(最大3つ)。1番目をもう一度押すと昇順⇄降順。並びは保存して次も同じ。長押しで元に戻す ===== */
+const HMS = {
+  num(v) { if (v == null || v === "") return null; const n = Number(v); return Number.isFinite(n) ? n : null; },
+  list(s) { return [{ k: s.key, d: s.dir }, ...((s && s.then) || [])]; },
+  // 押したとき: 1番目をもう一度 → 向きだけ反転 / 馬番・着順・発走順など「それだけで決まる項目」→ それだけに / ほか → 1番目にして前の条件は②③へ
+  tap(s, k, defDir, base) {
+    const cur = HMS.list(s);
+    if (cur[0].k === k) return { key: k, dir: cur[0].d === "asc" ? "desc" : "asc", then: (s.then || []).slice(0, 2) };
+    if (base.includes(k)) return { key: k, dir: defDir, then: [] };
+    const old = cur.find(x => x.k === k);
+    return { key: k, dir: old ? old.d : defDir, then: cur.filter(x => x.k !== k && !base.includes(x.k)).slice(0, 2) };
+  },
+  // スワイプ: 1番目の条件だけ入れ替える(②③はそのまま)
+  swap(s, k, defDir, base) {
+    if (base.includes(k)) return { key: k, dir: defDir, then: [] };
+    const old = HMS.list(s).find(x => x.k === k);
+    return { key: k, dir: old ? old.d : defDir, then: (s.then || []).filter(x => x.k !== k && !base.includes(x.k)).slice(0, 2) };
+  },
+  // このレース(この日)に無い項目は外して使う(保存はそのまま)
+  fit(s, keys, def) {
+    if (!s || !keys.includes(s.key)) return { key: def.key, dir: def.dir, then: [] };
+    return { key: s.key, dir: s.dir, then: (s.then || []).filter(x => keys.includes(x.k) && x.k !== s.key) };
+  },
+  // 並べる: ①→②→③の順に比べ、値が無い馬(「—」)は向きに関係なく下へ。最後は tie(馬番など)で必ず順番を固定
+  cmp(s, val, tie) {
+    const L = HMS.list(s);
+    return (a, b) => {
+      for (const { k, d } of L) {
+        const av = HMS.num(val(a, k)), bv = HMS.num(val(b, k));
+        if (av == null || bv == null) { if (av == null && bv == null) continue; return av == null ? 1 : -1; }
+        if (av !== bv) return d === "asc" ? av - bv : bv - av;
+      }
+      return tie(a, b);
+    };
+  },
+  // タブに付ける ①▼ ②▲ など(条件が1つだけの時は今まで通りの表示)
+  mark(s, k) {
+    const L = HMS.list(s); if (L.length < 2) return "";
+    const i = L.findIndex(x => x.k === k); if (i < 0) return "";
+    return `<i class="hms">${"①②③"[i]}${L[i].d === "asc" ? "▲" : "▼"}</i>`;
+  },
+  cls(s, k) { const L = HMS.list(s); return L.length > 1 && L.slice(1).some(x => x.k === k) ? " on2" : ""; },
+  multi(s) { return HMS.list(s).length > 1; },
+  load(name) {
+    try {
+      const v = JSON.parse(localStorage.getItem(name) || "null");
+      if (!v || typeof v.key !== "string") return null;
+      const dir = (v.dir || v.direction) === "asc" ? "asc" : "desc";
+      const then = Array.isArray(v.then) ? v.then.filter(x => x && typeof x.k === "string").map(x => ({ k: x.k, d: x.d === "asc" ? "asc" : "desc" })).slice(0, 2) : [];
+      return { key: v.key, dir, then };
+    } catch { return null; }
+  },
+  save(name, s) { try { if (s) localStorage.setItem(name, JSON.stringify({ key: s.key, dir: s.dir, then: s.then || [] })); else localStorage.removeItem(name); } catch {} },
+};
+/* 並べ替えタブの長押し(0.6秒)で元に戻す。長押しのあとのタップは捨てる */
+function hvSortHold(selector, onHold) {
+  let h = null, firedAt = 0;
+  const cancel = () => { if (h) { clearTimeout(h.timer); h = null; } };
+  document.addEventListener("pointerdown", e => {
+    const b = e.target.closest && e.target.closest(selector);
+    if (!b || (e.pointerType === "mouse" && e.button !== 0)) return;
+    cancel();
+    h = { x: e.clientX, y: e.clientY, timer: setTimeout(() => { h = null; if (!b.isConnected) return; firedAt = Date.now(); try { navigator.vibrate && navigator.vibrate(15); } catch {} onHold(b); }, 600) };
+  }, { passive: true });
+  document.addEventListener("pointermove", e => { if (h && Math.hypot(e.clientX - h.x, e.clientY - h.y) > 10) cancel(); }, { passive: true });
+  ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, cancel, true));
+  document.addEventListener("click", e => { if (firedAt && Date.now() - firedAt < 1500 && e.target.closest && e.target.closest(selector)) { e.preventDefault(); e.stopPropagation(); firedAt = 0; } }, true);
+  document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest(selector)) e.preventDefault(); });
+}
+/* ===== 左右スワイプでタブ移動(2026-10-31) 横に大きく払った時だけ。縦スクロール・横スクロールする表・画面の左端(戻る操作)では反応しない ===== */
+function hvSwipeInit(cfg) {
+  if (!("ontouchstart" in window) && !(navigator.maxTouchPoints > 0)) return;   // マウスだけのPCでは使わない
+  let s = null;
+  const blocked = (el, root) => {
+    for (let n = el; n && n !== root && n !== document.body; n = n.parentElement) {
+      if (n.nodeType !== 1) continue;
+      if (n.hasAttribute("data-noswipe") || /^(INPUT|TEXTAREA|SELECT|CANVAS)$/.test(n.tagName)) return true;
+      const cs = getComputedStyle(n);
+      if (cs.position === "fixed") return true;   // 中に浮いている画面(ワンタッチ画面など)の上では動かさない
+      if (n.scrollWidth > n.clientWidth + 2 && (cs.overflowX === "auto" || cs.overflowX === "scroll")) return true;   // 横スクロールする段・表
+    }
+    return false;
+  };
+  document.addEventListener("touchstart", e => {
+    s = null;
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    if (t.clientX < 20) return;   // 左端はiPhoneの「戻る」操作に任せる
+    const z = cfg.zone(e.target); if (!z) return;
+    if (blocked(e.target, z.root)) return;
+    s = { x: t.clientX, y: t.clientY, t: Date.now(), z, lock: 0 };
+  }, { passive: true });
+  document.addEventListener("touchmove", e => {
+    if (!s) return;
+    const t = e.touches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (!s.lock && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) s.lock = Math.abs(dx) > Math.abs(dy) * 1.5 ? 1 : 2;
+    if (s.lock === 2) s = null;   // 縦スクロールが始まったら何もしない
+  }, { passive: true });
+  document.addEventListener("touchend", e => {
+    if (!s) return;
+    const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y, dt = Date.now() - s.t, z = s.z; s = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || dt > 600) return;
+    try { if (String(window.getSelection() || "").length) return; } catch {}
+    cfg.go(z.name, dx < 0 ? 1 : -1);
+  }, { passive: true });
+  document.addEventListener("touchcancel", () => { s = null; }, { passive: true });
+}
+function hvSwipeAnim(el, step) {
+  if (!el) return;
+  el.classList.remove("hv-sw-l", "hv-sw-r"); void el.offsetWidth;
+  el.classList.add(step > 0 ? "hv-sw-l" : "hv-sw-r");
+  setTimeout(() => el.classList.remove("hv-sw-l", "hv-sw-r"), 220);
+}
+/* 下のタブを見た目の並び順(左→右)で取り出す */
+function hvTabOrder(sel) {
+  return [...document.querySelectorAll(sel)].filter(b => b.offsetParent !== null && getComputedStyle(b).display !== "none")
+    .map((b, i) => ({ b, o: Number(getComputedStyle(b).order) || 0, i })).sort((a, c) => a.o - c.o || a.i - c.i).map(x => x.b);
+}
+const HMS_SIG_BASE = ["post", "fin"], HMS_DET_BASE = ["no", "fin"];   // それだけで並びが決まる項目(押すとその項目だけに戻る)
+const hmsDef = k => k === "post" || k === "fin" || k === "no" ? "asc" : "desc";   // 最初の向き: 発走順・着順・馬番は小さい方から、ほかは高い方から
+const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.load("hivep_sigsort") || { key: "post", dir: "asc", then: [] }, venue: null, resVenue: null, venuePicked: false, resPicked: false,
   raceOrder: store.get("hivep_race_order") || "asc", raceView: store.get("hivep_race_view") || "order", raceSeq: [],   // レース一覧: レース順・発走順・★あり(携帯と同じ)
-  detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: { key: "no", direction: "asc" } };
+  detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: HMS.load("hivep_dsort") || { key: "no", dir: "asc", then: [] } };
 
 /* ---------------------------------------------------------------- 合言葉で開く */
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -2240,16 +2370,18 @@ function viewSig(d) {
   // 並べ替え: 発走順(標準)・勝率・期待値・＋ファクター・−ファクター(全レースの表と同じ。馬番はなし)
   const sortKeys = [["p", "勝率"], ["eb", "期待値"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (list.some(x => x.fin != null)) sortKeys.push(["fin", "着順"]);   // 結果が出ていれば着順でも並べ替え
-  const { key: sk, dir: sd } = S.sigSort;
+  const ss = HMS.fit(S.sigSort, ["post", ...sortKeys.map(([k]) => k)], { key: "post", dir: "asc" });   // 複数条件(①②③)。この日に無い項目は外す
+  const { key: sk, dir: sd } = ss;
   const dirLabel = k => k === "post" ? (sd === "asc" ? "早い順" : "遅い順") : k === "fin" ? (sd === "asc" ? "1着から" : "下から") : (sd === "desc" ? "高い順" : "低い順");
-  h += `<div class="horse-sort" aria-label="並べ替え(もう一度押すと昇順・降順が入れ替わります)"><button data-sig-sort="post" class="${sk === "post" ? "on" : ""}" data-direction="${dirLabel("post")}">発走順</button>${
-    sortKeys.map(([k, label]) => `<button data-sig-sort="${k}" class="${sk === k ? "on" : ""}" data-direction="${dirLabel(k)}">${label.endsWith("順") ? label : label + "順"}</button>`).join("")}</div>`;
+  const sBtn = (k, text) => `<button data-sig-sort="${k}" class="${sk === k ? "on" : ""}${HMS.cls(ss, k)}" data-direction="${sk === k ? dirLabel(k) : ""}">${text}${HMS.mark(ss, k)}</button>`;
+  h += `<div class="horse-sort${HMS.multi(ss) ? " hm" : ""}" aria-label="並べ替え(押した順に①②③。もう一度押すと昇順・降順が入れ替わります。長押しで元に戻す)">${sBtn("post", "発走順")}${
+    sortKeys.map(([k, label]) => sBtn(k, label.endsWith("順") ? label : label + "順")).join("")}</div>`;
+  if (HMS.multi(ss)) h += `<p class="note hms-note">①が同じ馬は②、②も同じなら③の順に並べています(長押しで元に戻す)</p>`;
   if (sk === "eb") h += `<p class="note" style="margin:0">${EV_NOTE}</p>`;
-  if (sk === "post") { if (sd === "desc") list.reverse(); }
-  else {
-    const val = x => sk === "fplus" || sk === "fminus" ? (x.kp == null ? null : factorSum(x, sk)) : sk === "eb" ? evBand(x) : x[sk];
-    list.sort((a, b) => { const av = val(a), bv = val(b); if (av == null || bv == null) return av == null ? (bv == null ? byPost(a, b) : 1) : -1;   // 値が無い馬は最後
-      return ((Number(av) - Number(bv)) * (sd === "asc" ? 1 : -1)) || byPost(a, b); });
+  {
+    const postMin = x => { const m = /(\d+):(\d+)/.exec(x.post || ""); return m ? +m[1] * 60 + +m[2] : null; };
+    const val = (x, k) => k === "post" ? postMin(x) : k === "fplus" || k === "fminus" ? (x.kp == null ? null : factorSum(x, k)) : k === "eb" ? evBand(x) : x[k];
+    list.sort(HMS.cmp(ss, val, byPost));   // 同じ値なら次の条件、最後は発走順・馬番で固定
   }
   const rowSg = { "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[S.sig] || "";
   const rowSgOf = k => ({ "狙い": "sg-aim", "危険": "sg-danger", "過剰": "sg-over", "妙味": "sg-ev", "紐": "sg-himo" }[k] || "");
@@ -2463,29 +2595,25 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     S.detailNavGroup = group;
     S.detailNav = publicRaceSequence(group);
     if (!S.detailNav.includes(id)) S.detailNav = [id];
-    S.detailSort = group === "results" ? { key: "fin", direction: "asc" } : { key: "no", direction: "asc" };   // 「結果」から開いた時は最初から着順の順
+    S.detailSort = group === "results" ? { key: "fin", dir: "asc", then: [] } : (HMS.load("hivep_dsort") || { key: "no", dir: "asc", then: [] });   // 「結果」から開いた時は最初から着順の順。ほかは前回の並べ方のまま
   }
   const sh = $("#sheet"); sh.hidden = false; document.body.style.overflow = "hidden";
   if (!isStep) { try { history.pushState({ sheet: 1 }, ""); } catch {} }
   const sortKeys = [["no", "馬番"], ["p", "勝率"], ["eb", "期待値"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (r.done) sortKeys.push(["fin", "着順"]);
-  const { key, direction } = S.detailSort;
+  const ds = HMS.fit(S.detailSort, sortKeys.map(([k]) => k), { key: "no", dir: "asc" });   // 複数条件(①②③)。このレースに無い項目(着順など)は外す
+  const { key, dir: direction } = ds;
   const val = (x, k) => k === "fplus" || k === "fminus" ? (x.kp == null ? null : factorSum(x, k)) : k === "eb" ? evBand(x) : x[k];
-  const sortedHorses = [...r.horses].sort((a, b) => {
-    const av = val(a, key), bv = val(b, key);
-    if (av == null || bv == null) return av == null ? (bv == null ? 0 : 1) : -1;
-    const delta = Number(av) - Number(bv);
-    return (delta * (direction === "asc" ? 1 : -1)) || Number(a.no) - Number(b.no);
-  });
+  const sortedHorses = [...r.horses].sort(HMS.cmp(ds, val, (a, b) => Number(a.no) - Number(b.no)));   // 同じ値なら次の条件、最後は馬番で固定
   const maxP = Math.max(...r.horses.map(x => x.p || 0), 0.01);
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
     <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}<div class="note">※オッズ・払戻はJRA公式の出馬表・レース結果で確認してください(データの権利の関係で載せていません)</div>`;
-  h += `<div class="horse-sort">${sortKeys.map(([sortKey, label]) => {
+  h += `<div class="horse-sort${HMS.multi(ds) ? " hm" : ""}" aria-label="並べ替え(押した順に①②③。もう一度押すと昇順・降順。長押しで馬番順に戻す)">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
-    return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}</button>`;
-  }).join("")}</div>${key === "eb" ? `<p class="note" style="margin:4px 0 0">${EV_NOTE}</p>` : ""}`;
+    return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${HMS.cls(ds, sortKey)}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? (direction === "asc" ? "昇順" : "降順") : ""}">${label}${HMS.mark(ds, sortKey)}</button>`;
+  }).join("")}</div>${HMS.multi(ds) ? `<p class="note hms-note">①が同じ馬は②、②も同じなら③の順に並べています(長押しで馬番順に戻す)</p>` : ""}${key === "eb" ? `<p class="note" style="margin:4px 0 0">${EV_NOTE}</p>` : ""}`;
   for (const x of sortedHorses) {
     const tags = [];
     if (x.st) tags.push(`<span class="stars t${x.st}">${starStr(x.st)}</span>`);
@@ -3026,7 +3154,7 @@ document.addEventListener("click", e => {
   if (t.dataset.sigSort) {   // 狙い・危険の並べ替え(勝率・期待値・＋ファクター・−ファクター)
     const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, y = window.scrollY;
     const k = t.dataset.sigSort;   // 同じボタンをもう一度押すと昇順⇄降順(先頭には戻らない)
-    S.sigSort = S.sigSort.key === k ? { key: k, dir: S.sigSort.dir === "desc" ? "asc" : "desc" } : { key: k, dir: k === "post" || k === "fin" ? "asc" : "desc" };
+    S.sigSort = HMS.tap(S.sigSort, k, hmsDef(k), HMS_SIG_BASE); HMS.save("hivep_sigsort", S.sigSort);   // 押した順に①②③。並べ方は保存
     render();
     const nb = document.querySelector(".horse-sort button[data-sig-sort]")?.parentElement; if (nb) nb.scrollLeft = left;
     window.scrollTo(0, y); return;
@@ -3045,7 +3173,7 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.publicSort) {
     const key = t.dataset.publicSort;
-    S.detailSort = { key, direction: S.detailSort.key === key ? (S.detailSort.direction === "asc" ? "desc" : "asc") : (key === "no" || key === "fin" ? "asc" : "desc") };   // ＋/−ファクターは多い順から
+    S.detailSort = HMS.tap(S.detailSort, key, hmsDef(key), HMS_DET_BASE); HMS.save("hivep_dsort", S.detailSort);   // 押した順に①②③。並べ方は保存して次のレースでも同じ
     const currentId = S.detailRaceId;
     const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, top = $("#sheet").scrollTop;   // 並べ替えで画面の位置を動かさない
     if (currentId) openRace(currentId, S.detailNavGroup, true);
@@ -3121,6 +3249,40 @@ const Demo = (() => {
   return { snap };
 })();
 
+/* ===== 並べ替えの長押しリセット・左右スワイプ(2026-10-31) ===== */
+function hvSortReset(btn) {
+  if (btn.dataset.publicSort != null) {
+    S.detailSort = { key: "no", dir: "asc", then: [] }; HMS.save("hivep_dsort", null);
+    const top = $("#sheet").scrollTop; if (S.detailRaceId) openRace(S.detailRaceId, S.detailNavGroup, true); $("#sheet").scrollTop = top;
+  } else {
+    S.sigSort = { key: "post", dir: "asc", then: [] }; HMS.save("hivep_sigsort", null);
+    const y = window.scrollY; render(); window.scrollTo(0, y);
+  }
+  toast("並べ替えを元に戻しました");
+}
+hvSortHold(".horse-sort button[data-public-sort], .horse-sort button[data-sig-sort]", hvSortReset);
+hvSwipeInit({
+  zone(el) {
+    const sh = $("#sheet");
+    if (sh && !sh.hidden) return sh.contains(el) && !el.closest(".detail-float") ? { name: "sheet", root: sh } : null;
+    if (document.getElementById("kbLoader") || document.querySelector("#hvCal:not([hidden])") || $("#lock") && !$("#lock").hidden) return null;
+    const v = $("#view"); return v && v.contains(el) ? { name: "main", root: v } : null;
+  },
+  go(zone, step) {
+    if (zone === "sheet") {   // レース画面: 並べ替えのタブ(馬番・勝率・期待値…)を左右へ。②③の条件はそのまま
+      const btns = [...document.querySelectorAll("#sheet .horse-sort button[data-public-sort]")];
+      const i = btns.findIndex(b => b.classList.contains("on")), nb = btns[i + step]; if (i < 0 || !nb) return;
+      const k = nb.dataset.publicSort;
+      S.detailSort = HMS.swap(S.detailSort, k, hmsDef(k), HMS_DET_BASE); HMS.save("hivep_dsort", S.detailSort);
+      const top = $("#sheet").scrollTop; openRace(S.detailRaceId, S.detailNavGroup, true); $("#sheet").scrollTop = top;
+      $("#sheet .horse-sort button.on")?.scrollIntoView({ inline: "nearest", block: "nearest" });
+      hvSwipeAnim($("#sheet .horses"), step); return;
+    }
+    const tabs = hvTabOrder("#tabs button[data-tab]");
+    const i = tabs.findIndex(b => b.dataset.tab === S.tab), nb = tabs[i + step]; if (i < 0 || !nb) return;   // 端では止まる
+    nb.click(); hvSwipeAnim($("#view"), step);   // タブを押したのと同じ動き
+  },
+});
 /* ---------------------------------------------------------------- 起動 */
 (async () => {
   try { await fetchEnc(); } catch { S.demo = true; $("#lockNote").innerHTML = "いまは見本を表示できます。合言葉 <b>hive</b> で開いてください。"; }
