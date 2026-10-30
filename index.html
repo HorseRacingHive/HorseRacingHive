@@ -1253,6 +1253,35 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .buy-chip { grid-column: 1 / -1; justify-self: end; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 6px 14px; border-radius: 14px; background: #ffc94a; color: #2a1a02; font-size: 13px; font-weight: 800; }
 .buy-chip.done { background: #3a2808; color: #ffd866; border: 1px solid #e8a317; }
 .buy-chip.off { background: #3a2808; color: #a8894a; }
+/* ===== HIVE 空表示(共通部品 2026-10-30) =====
+   空のときだけ、中身エリアをヘッダーの下〜下のタブバーの上の高さいっぱい(100dvh基準・safe-area込み)にして、空メッセージの箱を上下の中央に置く。
+   --hv-top / --hv-bot は JS がヘッダーとタブバー(または body の下余白)を測って入れる。測る前は下の初期値。中身がある時は何も変わらない。 */
+:root { --hv-top: 112px; --hv-bot: calc(76px + env(safe-area-inset-bottom, 0px)); }
+#view:has(.hv-fill) {
+  box-sizing: border-box; display: flex; flex-direction: column;
+  min-height: calc(100vh - var(--hv-top) - var(--hv-bot));
+  min-height: calc(100dvh - var(--hv-top) - var(--hv-bot));
+}
+#view :has(.hv-fill) { flex: 1 0 auto; display: flex; flex-direction: column; min-width: 0; }
+#view .hv-fill { margin-top: auto !important; }
+#view .hv-fill:last-child, #view .hv-fill ~ :last-child { margin-bottom: auto !important; }   /* 箱(とすぐ下の注意書き)をひとかたまりで上下中央に */
+.hv-empty .hv-empty-sub { margin-top: 4px; }
+.hv-empty .hv-empty-nx { margin-top: 10px; line-height: 1; }
+.hv-empty .hv-empty-nx > span {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; letter-spacing: .02em; font-variant-numeric: tabular-nums; white-space: nowrap;
+  color: var(--honey, #f7c948); background: rgba(247,201,72,.1); border: 1px solid rgba(247,201,72,.32);
+}
+.hv-empty .hv-empty-nx > span::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none; background: currentColor; box-shadow: 0 0 6px currentColor;
+  animation: hvNxBlink 2s ease-in-out infinite;
+}
+.hv-empty .hv-empty-nx:has(> span:empty) { display: none; }
+:root[data-theme="light"] .hv-empty .hv-empty-nx > span { color: #9a6200; background: rgba(232,150,43,.12); border-color: rgba(185,124,18,.4); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .hv-empty .hv-empty-nx > span { color: #9a6200; background: rgba(232,150,43,.12); border-color: rgba(185,124,18,.4); } }
+@keyframes hvNxBlink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .hv-empty .hv-empty-nx > span::before { animation: none; } }
+
 </style>
 
 <!-- ===== HIVEカレンダー(電光掲示板を押したときの日付選び) ここから ===== -->
@@ -1637,12 +1666,12 @@ function biasNote(b) {
 }
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
-  if (!rows.length) return upcoming ? `<div class="card empty race-ann-empty">※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div>` : "";
+  if (!rows.length) return upcoming ? `${hvEmpty(`※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます`, { fill: false, next: false, cls: "race-ann-empty" })}` : "";
   return `<div class="card announce race-ann"><div class="cap">このレースの直前のお知らせ<span class="sub">${rows.length}件・新しい順</span></div>${rows.map(a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div><div class="tx">${esc(a.text || "")}</div></div>`).join("")}</div>`;
 }
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
-    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2><div class="card empty" style="font-size:12px">※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>` : "";
+    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2>${hvEmpty(`※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます`, { fill: false, next: false, style: "font-size:12px" })}<p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
@@ -1900,6 +1929,100 @@ function allHorses(day) {
   for (const v of day.venues) for (const r of v.races) for (const h of r.horses) out.push({ ...h, venue: v.venue, rno: r.no, post: r.post, id: r.id, done: r.done });
   return out;
 }
+/* ===== HIVE 空表示(共通部品 2026-10-30) =====
+   hvEmpty(メッセージ, { sub, next, fill, card, cls, style }) で全タブ共通の空表示を作る。
+   fill(初期値 true): 画面いっぱいの上下中央に置く / next(初期値 true): 「次の判定 ○:○○」「公開まで残り○分」「次の開催 ○/○(土)」を1行添える
+   card(初期値 true): いつもの .card の箱 / cls・style: 今までの見た目を保つための追加クラス・スタイル */
+function hvEmpty(msg, o = {}) {
+  const fill = o.fill !== false, next = o.next !== false, card = o.card !== false;
+  let nx = "";
+  if (next) { try { nx = hvNextText(); } catch (e) { nx = ""; } }
+  return `<div class="${card ? "card " : ""}empty hv-empty${fill ? " hv-fill" : ""}${o.cls ? " " + o.cls : ""}"${o.style ? ` style="${o.style}"` : ""}>`
+    + `<div class="hv-empty-msg">${msg}</div>`
+    + (o.sub ? `<div class="hv-empty-sub note">${o.sub}</div>` : "")
+    + (next ? `<div class="hv-empty-nx"><span data-hv-next>${hvEsc(nx)}</span></div>` : "")
+    + `</div>`;
+}
+function hvEsc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+// 時刻・日付の書き方(日本時間)
+function hvHM(t) { const d = new Date(t + 9 * 3600e3); return `${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2, "0")}`; }
+function hvLeft(ms) {
+  const m = Math.max(0, Math.ceil(ms / 60000));
+  if (m >= 24 * 60) return `${Math.floor(m / 1440)}日${Math.floor(m % 1440 / 60)}時間`;
+  return m >= 60 ? `${Math.floor(m / 60)}時間${m % 60}分` : `${m}分`;
+}
+function hvMDW(date) {
+  const t = new Date(date + "T00:00:00+09:00"), j = new Date(t.getTime() + 9 * 3600e3);
+  return `${j.getUTCMonth() + 1}/${j.getUTCDate()}(${"日月火水木金土"[j.getUTCDay()]})`;
+}
+function hvJst(date, hm) {
+  const [h, m] = String(hm || "").split(":").map(Number);
+  return Number.isFinite(h) ? new Date(date + "T00:00:00+09:00").getTime() + (h * 60 + (m || 0)) * 60000 : null;
+}
+function hvToday() { return new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); }
+function hvNextWeekend(date) {
+  const t = new Date(date + "T12:00:00+09:00");
+  do { t.setTime(t.getTime() + 86400e3); } while (![0, 6].includes(new Date(t.getTime() + 9 * 3600e3).getUTCDay()));
+  return new Date(t.getTime() + 9 * 3600e3).toISOString().slice(0, 10);
+}
+// 次の判定: 当日の残りのレースごとに、発走約30分前・約10分前の見直し(直前の判定)。いちばん近いもの
+function hvNextJudge(date, races) {
+  if (!date || date !== hvToday()) return null;
+  const now = Date.now(); let best = null;
+  for (const r of races || []) {
+    if (!r || r.has_result || r.done || !r.post) continue;
+    const p = hvJst(date, r.post); if (!p) continue;
+    for (const m of [30, 10]) { const t = p - m * 60000; if (t > now && (best == null || t < best)) best = t; }
+  }
+  return best;
+}
+// 次の開催日(今日より後。今日がまだ終わっていない開催日なら今日)
+function hvNextDay(dates, todayDone) {
+  const today = hvToday();
+  const list = (dates || []).filter(x => todayDone ? x > today : x >= today).sort();
+  return list[0] || hvNextWeekend(today);
+}
+function hvNextDayText(dates, todayDone) {
+  const nd = hvNextDay(dates, todayDone);
+  return `次の開催 ${nd === hvToday() ? "今日 " : ""}${hvMDW(nd)}`;
+}
+function hvJudgeText(t) { return `次の判定 ${hvHM(t)}(あと${hvLeft(t - Date.now())})`; }
+// 空表示の「次の…」を毎秒書き換える(空表示が無い時は何もしない)
+setInterval(() => {
+  const els = document.querySelectorAll("[data-hv-next]"); if (!els.length) return;
+  let t = ""; try { t = hvNextText(); } catch (e) { t = ""; }
+  els.forEach(el => { if (el.textContent !== t) el.textContent = t; });
+}, 1000);
+// ヘッダーと下のタブバー(または body の下余白)の高さを測って、空表示の高さに使う
+(function hvEmptyFit() {
+  const root = document.documentElement;
+  const hdr = () => document.querySelector("header.top, header.topbar");
+  const fit = () => {
+    const h = hdr(), tabs = document.querySelector("nav.tabs");
+    let bot = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    if (tabs && getComputedStyle(tabs).position === "fixed") bot = Math.max(bot, tabs.offsetHeight);
+    root.style.setProperty("--hv-top", (h ? h.offsetHeight : 0) + "px");
+    root.style.setProperty("--hv-bot", bot + "px");
+  };
+  const start = () => {
+    fit(); addEventListener("resize", fit); addEventListener("orientationchange", fit);
+    if (window.ResizeObserver) { const ro = new ResizeObserver(fit); const h = hdr(), tabs = document.querySelector("nav.tabs"); if (h) ro.observe(h); if (tabs) ro.observe(tabs); }
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+// 共有用の「次の…」: 公開待ちなら「公開まで残り○分」、当日は次の判定(締切約30分前・約10分前の見直し)、それ以外は次の開催日
+function hvNextText() {
+  const now = Date.now(), today = hvToday(), d = curDay(), no = S.snap && S.snap.next_open;
+  if (d && d.gate && d.gate.at) { const t = hvJst(d.date, d.gate.at); if (t && t > now) return `公開まで残り${hvLeft(t - now)}`; }
+  if (d && d.date === today) { const t = hvNextJudge(today, (d.venues || []).flatMap(v => v.races || [])); if (t) return hvJudgeText(t); }
+  if (no && no.date && no.date > today) {
+    const t = no.open_date && no.open_at ? hvJst(no.open_date, no.open_at) : null;
+    return `次の開催 ${no.label || hvMDW(no.date)}${t && t > now ? `(公開まで残り${hvLeft(t - now)})` : ""}`;
+  }
+  const dates = (S.snap?.days || []).map(x => x.date).filter(x => x <= viewLimit());
+  return hvNextDayText(dates, S.date === today || new Date(now + 9 * 3600e3).getUTCHours() >= 17);
+}
+
 function render() {
   if (S.snap) { renderWeather(); dayNavInfo(); }   // 選択中の会場名の色を合わせる
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
@@ -1927,7 +2050,7 @@ function render() {
   }
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
-  if (!d && S.tab !== "bank") { v.innerHTML = h + `<div class="card empty">まだ予想がありません。出馬表が出たら表示されます。</div>`; return; }
+  if (!d && S.tab !== "bank") { v.innerHTML = h + `${hvEmpty(`まだ予想がありません。出馬表が出たら表示されます。`)}`; return; }
   h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf, bank: viewBank }[S.tab] || viewHome)(d);
   const scrolls = [...v.querySelectorAll(".seg, .horse-sort")].map(e => e.scrollLeft);   // 横スクロールの位置を描き直しても保つ(右端のボタンが左に戻らないように)
   v.innerHTML = h; tick();
@@ -1994,7 +2117,7 @@ function viewHome(d) {
         <div class="picks">${xs.map(card).join("")}</div>`;
     }
   } else {
-    h += `<div class="card empty">${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}</div>`;
+    h += `${hvEmpty(`${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}`)}`;
   }
   if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから、直前のオッズで新しく おすすめ に入った馬。</p>`;
   if (os.some(x => x.back)) h += `<p class="note">✅やっぱり買い = 直前の見直しで一度見送りにしたが、最後の判断で買いに戻った馬。</p>`;
@@ -2023,7 +2146,7 @@ const resTop3 = arr => arr.map(x => `<span class="result-mark ${rmCls(x.mark)}">
 function resultRaces(d) { return (d.venues || []).flatMap(v => (v.races || []).filter(r => r.done).map(r => ({ ...r, venue: v.venue }))); }
 function resultsList(d) {
   const all = resultRaces(d);
-  if (!all.length) return `<div class="card empty">この日の確定結果はまだありません</div>`;
+  if (!all.length) return `${hvEmpty(`この日の確定結果はまだありません`)}`;
   const vs = [...new Set(all.map(r => r.venue))];
   if (!vs.includes(S.resVenue)) { S.resVenue = vs[0]; S.resPicked = false; }
   const list = all.filter(r => r.venue === S.resVenue);
@@ -2059,7 +2182,7 @@ function viewSig(d) {
   let h = `<div class="seg">${kinds.map(k => `<button data-sig="${k}" class="${S.sig === k ? "on" : ""} sig-${SIG_INFO[k][0]}">${SIG_INFO[k][1] ? SIG_INFO[k][1] + " " : ""}${SIG_GROUP[k] ? "すべて" : k}<span class="c">${pick(k).length}</span></button>`).join("")}</div>
     <p class="note" style="margin:0">※${SIG_INFO[S.sig][2]}</p>`;
   const list = pick(S.sig);
-  if (!list.length) return h + `<div class="card empty">この日の「${esc(S.sig)}」はありません</div>`;
+  if (!list.length) return h + `${hvEmpty(`この日の「${esc(S.sig)}」はありません`)}`;
   // 並べ替え: 発走順(標準)・勝率・期待値・＋ファクター・−ファクター(全レースの表と同じ。馬番はなし)
   const sortKeys = [["p", "勝率"], ["eb", "期待値"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (list.some(x => x.fin != null)) sortKeys.push(["fin", "着順"]);   // 結果が出ていれば着順でも並べ替え
@@ -2145,7 +2268,7 @@ function raceTimeline(list, order, isToday, byPost, cmp) {
 function viewRaces(d) {
   if (S.raceMode === "result") return `<section id="res-sec"><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section><p class="note">もう一度「結果」タブを押すと、レースの一覧に戻ります</p>`;
   const vs = d.venues;
-  if (!vs.length) return `<div class="card empty">レースがありません</div>`;
+  if (!vs.length) return `${hvEmpty(`レースがありません`)}`;
   if (!vs.some(v => v.venue === S.venue)) { S.venue = vs[0].venue; S.venuePicked = false; }   // 一覧の表示用に先頭を出すだけ(選んだことにはしない)
   const view = ["order", "post", "os"].includes(S.raceView) ? S.raceView : "order";   // 携帯と同じ: レース順・発走順(全会場)・★あり(2026-10-29)
   let h = `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${view === "order" && S.venuePicked && x.venue === S.venue ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
@@ -2170,7 +2293,7 @@ function viewRaces(d) {
   const cmp = (a, b) => view === "order" ? a.no - b.no : view === "os" ? ((b.osSt || (b.lowN ? 1 : 0)) - (a.osSt || (a.lowN ? 1 : 0))) || (b.osN - a.osN) || (b.lowN - a.lowN) || (a.post || "").localeCompare(b.post || "") : (a.post || "").localeCompare(b.post || "") || a.no - b.no;
   S.raceSeq = [...list].sort(cmp).map(r => r.id);
   if (S.raceOrder === "desc") S.raceSeq.reverse();
-  if (!list.length) h += `<div class="card empty">${view === "os" ? "この日は★の馬がいるレースがありません" : "レースがありません"}</div>`;
+  if (!list.length) h += `${hvEmpty(`${view === "os" ? "この日は★の馬がいるレースがありません" : "レースがありません"}`)}`;
   else h += raceTimeline(list, S.raceOrder, d.date === todayStr(), view !== "order", view === "os" ? cmp : null);
   return h + `<p class="note">もう一度「レース」タブを押すと、この日の全レース結果(1着〜3着)に切り替わります</p>`;
 }
@@ -2210,7 +2333,7 @@ function perfDashboard(d, rp) {
 function viewPerf(d) {
   const p0 = d.perf || {};
   const rp = d.rec_perf || (p0.n ? { source: "app", actual: { n: p0.n, hit: p0.hit, hit_rate: p0.hit / p0.n, roi: p0.roi, profit: p0.roi == null ? null : (p0.roi - 1) * p0.n * 1000 } } : null);
-  let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2><div class="card empty">${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}</div></section>`);
+  let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2>${hvEmpty(`${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}`, { fill: false, next: false })}</section>`);
   const per = S.snap.period;
   if (per) {
     h += `<section><h2>今月・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${periodCard("今月", per.month)}${periodCard("今年", per.year)}
