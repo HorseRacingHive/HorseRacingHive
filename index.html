@@ -1153,6 +1153,10 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .bk-card.gold { border-color: #e8a317; }
 .bk-lab { font-size: 12px; color: #d9b874; }
 .bk-sub { font-size: 11px; color: #a8894a; line-height: 1.6; }
+.bk-avg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(201,163,90,.35); font-size: 12px; color: #d9b874; }
+.bk-avg .bk-avg-h { flex-basis: 100%; text-align: center; font-size: 11px; color: #a98d55; }
+.bk-avg span { white-space: nowrap; }
+.bk-avg b { color: #ffd866; font-size: 15px; margin: 0 1px 0 3px; }
 .bk-jarbtn { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; background: #2a1d06; border: 1px solid #e8a317; border-radius: 18px; padding: 10px 12px; color: inherit; }
 .bk-jarbtn.open { border-radius: 18px 18px 0 0; }
 .bk-jarbtn .bk-big { font-size: 28px; font-weight: 900; color: #ffd866; line-height: 1.2; }
@@ -2856,7 +2860,13 @@ function bkStarLimits() {   // ★ごとの今年の最大連敗(推奨・公開
   Object.keys(g).forEach(k => { if (g[k].streak != null) lim[k] = g[k].streak; });
   return { lim, lab: "過去の最大連敗(2013年〜)" };
 }
-function bkLimit() {   // 「想定内」の目安 = 自分が今年買っている★の最大連敗のうち一番長いもの
+// HIVE推奨(今のルール・締切4分前オッズ)を2014年からさかのぼった最大連敗(2026-10-31 検証。2024年の76連敗。ほかに2020年71・2015年66・2022年64)
+// 今年の最大だけを目安にすると、過去に何度も起きている60〜70台の連敗で「推奨の最大より長い」と出てしまうため、目安はこれ以上にする
+const HIVE_MAX_STREAK = 76, HIVE_MAX_STREAK_YEAR = 2024;
+// はまりの平均(同じ検証・2014〜25年): 当たりと当たりの間は平均13連敗(真ん中9)・1か月で一番長いはまりの平均23・1年で一番長いはまりの平均52
+const HIVE_STREAK_AVG = { run: 13, month: 23, year: 52 };
+function bkLimit() { return Math.max(bkYearLimit(), HIVE_MAX_STREAK); }   // 「想定内」の目安 = 過去最大と今年の最大の長い方
+function bkYearLimit() {   // 自分が今年買っている★の今年の最大連敗のうち一番長いもの
   const { lim } = bkStarLimits();
   const sts = [...new Set(bkIn("y").map(b => String(b.st)))].filter(s => lim[s] != null);
   const all = Object.values(lim).filter(v => v != null);
@@ -3091,7 +3101,7 @@ function bkGlasses(items, lim) {
       <text x="${x}" y="114" text-anchor="middle" font-size="11" fill="${best ? "#ffd866" : "#d9b874"}">${lab}</text>
       ${best ? `<path d="M${x - 8} 2 l2.5-7 4 4.5 1.5-6.5 1.5 6.5 4-4.5 2.5 7z" fill="#ffd866"/>` : ""}`;
   };
-  return `<svg width="100%" viewBox="0 -12 300 132" aria-hidden="true">${items.map(one).join("")}</svg>`;
+  return `<svg width="100%" viewBox="0 -12 ${Math.max(300, items.length * 96 + 12)} 132" aria-hidden="true">${items.map(one).join("")}</svg>`;   // 4つ(HIVE過去最大を足した時)は少し小さく並べる
 }
 // 連敗メーター = 巣から雨雲へ(2026-10-29)。連敗するほど蜂が巣(左)から離れて雨雲(目安)に近づく。
 // 連敗が止まったら、蜂がにっこり顔で蜜を持って巣に帰る(動くのは1回だけ・約2.5秒)
@@ -3194,9 +3204,10 @@ function viewBank() {
     <div class="bk-sub" style="font-size:12px;color:#d9b874">${me.roi == null || hvRoi == null ? "今月の記録がたまると比べられます" : `差 ${me.roi >= hvRoi ? "+" : "−"}${Math.abs(Math.round((me.roi - hvRoi) * 100))}%${miss ? `:買い漏れ${miss}頭` : ""}`}</div></div>`;
   // 記録: 最大連敗を今月・今年・過去最高の3つの蜜壺で
   const rm = bkRecords(bkIn("m")), ry = bkRecords(bkIn("y")), ra = bkRecords(BK.bets), cap = Math.max(lim, 1);
-  h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最大連敗の記録</span><span class="bk-sub">下までたまる = ${lim}連敗</span></div>
-    ${bkGlasses([["今月", rm.streak, false], ["今年", ry.streak, false], ["過去最高", ra.streak, true]], cap)}
-    <div class="bk-sub" style="text-align:center;margin-top:4px;color:${ra.streak > lim ? "#f08a5d" : "#9ee08a"}">${ra.streak > lim ? "推奨の最大より長い連敗がありました。金額を見直しましょう" : "どれも推奨の最大の範囲内です"}</div></div>`;
+  h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最大連敗の記録</span><span class="bk-sub">下までたまる = ${lim}連敗(過去最大)</span></div>
+    ${bkGlasses([["今月", rm.streak, false], ["今年", ry.streak, false], ["過去最高", ra.streak, true], ["HIVE最大", HIVE_MAX_STREAK, false]], cap)}
+    <div class="bk-sub" style="text-align:center;margin-top:4px;color:${ra.streak > lim ? "#f08a5d" : "#9ee08a"}">${ra.streak > lim ? "HIVE推奨の過去最大(" + lim + "連敗)より長い連敗がありました。金額を見直しましょう" : "どれも起きうる範囲内です。HIVE推奨の過去最大は" + HIVE_MAX_STREAK + "連敗(" + HIVE_MAX_STREAK_YEAR + "年)・今年は最大" + bkYearLimit() + "連敗"}</div>
+    <div class="bk-avg num"><span class="bk-avg-h">はまりの平均(HIVE推奨)</span><span>ふだん<b>${HIVE_STREAK_AVG.run}</b>連敗</span><span>1か月の最長<b>${HIVE_STREAK_AVG.month}</b></span><span>1年の最長<b>${HIVE_STREAK_AVG.year}</b></span></div></div>`;
   const per = S.bkPer || "m", rp = { m: rm, y: ry, a: ra }[per];
   h += `<div class="bk-card"><div class="bk-seg">${[["m", "今月"], ["y", "今年"], ["a", "過去最高"]].map(([k, l]) => `<button type="button" class="bk-ch${per === k ? " on" : ""}" data-bk="per" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="bk-two num" style="margin-top:10px"><div class="bk-mini"><div class="bk-lab">最高払戻(1点)</div><b style="color:#ffd866">${rp.best ? yen(rp.best.pay) : "—"}</b><div class="bk-sub">${rp.best ? `${esc(rp.best.venue)}${rp.best.no}R ${fmtMD(rp.best.d)}` : "まだ的中なし"}</div></div>
