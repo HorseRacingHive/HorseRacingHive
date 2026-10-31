@@ -1491,14 +1491,14 @@ const pct = (p, d = 1) => p == null ? "—" : (p * 100).toFixed(d) + "%";
 const evf = e => e == null ? "—" : e.toFixed(2);
 // 期待値は数字を出さず段階で(2026-10-29。期待値 ÷ 勝率 でオッズを逆算されないように)。eb: 1=プラス / -1〜-3 = 期待値マイナス☆の数
 const evBand = x => x.eb !== undefined ? x.eb : x.ev == null ? null : x.ev >= 1.5 ? 3 : x.ev >= 1.2 ? 2 : x.ev >= 1 ? 1 : x.ev >= .8 ? -1 : x.ev >= .6 ? -2 : -3;
-const EV_NOTE = "※蜜度は当たりやすさではなく、勝率に対してオッズが割に合うか。金のしずくが多いほどお得、空のしずくは割高";
+const EV_NOTE = "※妙蜜は当たりやすさではなく、勝率に対してオッズが割に合うか。金のしずくが多いほどお得、空のしずくは割高";
 // 期待値の印 = 蜜のしずく(案A・2026-10-29)。プラスは金のしずく1〜3、マイナスは空のしずく1〜3(★のおすすめ度とは別の印)
 const EV_DROP = "M6 1c2.6 4 4.2 5.8 4.2 8.2a4.2 4.2 0 0 1-8.4 0C1.8 6.8 3.4 5 6 1z";
 const evMark = x => {
   const b = evBand(x); if (b == null) return "";
   const n = Math.abs(b), plus = b > 0;
   const drops = Array.from({ length: n }, (_, i) => `<path transform="translate(${i * 11} 0)" d="${EV_DROP}"/>`).join("");
-  return `<span class="evm ${plus ? "plus" : "minus"}" title="蜜度 ${(plus ? "🍯" : "🫙").repeat(n)}" aria-label="蜜度 ${plus ? "プラス" : "マイナス"}${n}">蜜度<svg width="${n * 11 + 2}" height="15" viewBox="-0.5 0 ${n * 11 + 1} 15" aria-hidden="true">${drops}</svg></span>`;
+  return `<span class="evm ${plus ? "plus" : "minus"}" title="妙蜜 ${(plus ? "🍯" : "🫙").repeat(n)}" aria-label="妙蜜 ${plus ? "プラス" : "マイナス"}${n}">妙蜜<svg width="${n * 11 + 2}" height="15" viewBox="-0.5 0 ${n * 11 + 1} 15" aria-hidden="true">${drops}</svg></span>`;
 };
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
 // レースの格付け(2026-10-29): おすすめ馬(★2〜5)の一番高い★で決める。★5 → 勝負 / ★4 → 注目 / ★2〜3 → 買い。★の数はそのまま出す(おすすめタブ・Discordとそろえる)
@@ -2367,7 +2367,7 @@ function viewHome(d) {
       <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}${x.back ? `<span class="urg-badge back">✅やっぱり買い</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
-      <div class="ph"><b>${esc(x.name)}</b><small>蜜度はプラス🍯</small></div>
+      <div class="ph"><b>${esc(x.name)}</b><small>妙蜜はプラス🍯</small></div>
       <div class="fig num"><div class="e">AI勝率</div><div class="o">${pct(x.p, 0)}</div></div>${x.fin != null ? fzBlock(x.fin) : ""}${bkChip(x)}
     </button>`;
   h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5${(() => { const left = os.filter(x => x.fin == null).length; return `<span class="sub os-count"><span class="osc-n"><b>${os.length}</b>頭</span><span class="osc-split"><span>残り <b class="left">${left}</b></span><span>確定 <b>${os.length - left}</b></span></span></span>`; })()}</h2>`;
@@ -2455,7 +2455,7 @@ function viewSig(d) {
   const list = pick(S.sig);
   if (!list.length) return h + `${hvEmpty(`この日の「${esc(S.sig)}」はありません`)}`;
   // 並べ替え: 発走順(標準)・勝率・期待値・＋ファクター・−ファクター(全レースの表と同じ。馬番はなし)
-  const sortKeys = [["p", "勝率"], ["eb", "蜜度"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
+  const sortKeys = [["p", "勝率"], ["eb", "妙蜜"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (list.some(x => x.fin != null)) sortKeys.push(["fin", "着順"]);   // 結果が出ていれば着順でも並べ替え
   const ss = HMS.fit(S.sigSort, ["post", ...sortKeys.map(([k]) => k)], { key: "post", dir: "asc" });   // 複数条件(①②③)。この日に無い項目は外す
   const { key: sk, dir: sd } = ss;
@@ -2577,7 +2577,7 @@ function allHorseList(d) {
   const vn = S.allVenue && d.venues.some(v => v.venue === S.allVenue) ? S.allVenue : "";
   let list = allHorses(d); if (vn) list = list.filter(x => x.venue === vn);
   if (!list.length) return hvEmpty("馬がいません");
-  const sortKeys = [["p", "勝率"], ["eb", "蜜度"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
+  const sortKeys = [["p", "勝率"], ["eb", "妙蜜"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (list.some(x => x.fin != null)) sortKeys.push(["fin", "着順"]);
   const ss = HMS.fit(S.allSort, ["post", ...sortKeys.map(([k]) => k)], { key: "post", dir: "asc" });
   const { key: sk, dir: sd } = ss;
@@ -2718,7 +2718,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   }
   const sh = $("#sheet"); sh.hidden = false; document.body.style.overflow = "hidden";
   if (!isStep) { try { history.pushState({ sheet: 1 }, ""); } catch {} }
-  const sortKeys = [["no", "馬番"], ["p", "勝率"], ["eb", "蜜度"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
+  const sortKeys = [["no", "馬番"], ["p", "勝率"], ["eb", "妙蜜"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
   if (r.done) sortKeys.push(["fin", "着順"]);
   const ds = HMS.fit(S.detailSort, sortKeys.map(([k]) => k), { key: "no", dir: "asc" });   // 複数条件(①②③)。このレースに無い項目(着順など)は外す
   const { key, dir: direction } = ds;
