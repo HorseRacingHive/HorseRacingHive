@@ -207,6 +207,9 @@ header.top {
   border-bottom: 3px solid var(--honey); transition: transform .18s ease;
 }
 header.top.scroll-hidden { transform: translateY(calc(-100% - 12px)); }
+nav.tabs { transition: transform .2s ease; will-change: transform; }
+nav.tabs.scroll-hidden { transform: translateY(calc(100% + 34px)); }   /* 下へスクロール中は下のタブをしまう(真ん中の六角の出っぱり分も隠す) */
+@media (prefers-reduced-motion: reduce) { nav.tabs { transition: none; } }
 header.top::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -11px; height: 9px; pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='10'%3E%3Cpath d='M0 0H160V1C150 1 149 9 145 9S141 1 134 1H86C80 1 80 6 77 6S74 1 68 1H34C28 1 28 8 24 8S20 1 14 1H0Z' fill='%23f7c948'/%3E%3C/svg%3E") 0 0 / 160px 10px repeat-x;
@@ -1457,6 +1460,13 @@ let lastHeaderScrollY = window.scrollY;
 window.addEventListener("scroll", () => {
   const header = $("header.top");
   const y = Math.max(0, window.scrollY);
+  // 下のタブ: 下へスクロール中はしまい、上へ戻す・一番上/一番下ではまた出す(2026-10-31)
+  const tabs = document.querySelector("nav.tabs");
+  if (tabs) {
+    const atBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 40;
+    if (y <= 32 || atBottom || y < lastHeaderScrollY - 4) tabs.classList.remove("scroll-hidden");
+    else if (y > lastHeaderScrollY + 4) tabs.classList.add("scroll-hidden");
+  }
   if (!header) return;
   if (y > 32 && y > lastHeaderScrollY) {
     header.classList.add("scroll-hidden");
