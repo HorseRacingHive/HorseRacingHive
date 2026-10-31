@@ -1502,7 +1502,7 @@ const raceTier = st => st >= 5 ? 3 : st >= 4 ? 2 : st >= 2 ? 1 : 0;
 const tierHtml = st => st >= 2 ? `<span class="stars t${st}">${starStr(st)}</span>` : "";   // 札はおすすめタブと同じ★表示(2026-10-29)
 
 const yenPM = n => n == null ? "—" : (n >= 0 ? "+" : "−") + Math.abs(Math.round(n)).toLocaleString("ja-JP") + "円";
-// 収支(案A)(2026-10-29・10-31): 金額は出さず、収支は「何点分」・回収率を横にを投資と払戻の棒で並べる。periods = { key: { lab, roi, n, hit } }
+// 収支(案A)(2026-10-29・10-31): 金額は出さず、収支は「何点分」・回収率を横に。periods = { key: { lab, roi, n, hit } }
 // 回収率の絵: 巣が満タン(100%)になると蜜がしたたり、下の蜜だまりが広がって蜂が集まる
 let _hpId = 0;
 function hpBadge(roi) {
@@ -1548,6 +1548,7 @@ function moneyA(periods, cur, attr) {
     <div class="hero"><span class="lab">${esc(a.lab)}の収支</span><span class="big ${has ? (pts >= 0 ? "plus" : "minus") : ""}">${has ? (pts > 0 ? "+" : pts < 0 ? "−" : "±") + Math.abs(pts).toLocaleString("ja-JP") + "点" : "—"}</span></div>
     ${has ? `<div class="hp-wrap">${honeyPool(a.roi)}<div class="hp-side">${hpBadge(a.roi)}
       <span>回収率 <b class="big2 ${ret >= 100 ? "plus" : "minus"}">${ret}%</b></span>
+      <span>1点1,000円なら <b class="${pts >= 0 ? "plus" : "minus"}">${(() => { const y = pts * 1000, sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + (v >= 10000 ? (Math.round(v / 1000) / 10).toLocaleString("ja-JP") + "万円" : v.toLocaleString("ja-JP") + "円"); })()}</b></span>
       <span>的中 <b>${a.hit}/${a.n}</b></span><span>単勝 ・ 1点買うのを1として</span></div></div>`
     : `<div class="note">${a.loading ? "集計しています…" : a.empty || "まだ結果が出ていません"}</div>`}</div>`;
 }
