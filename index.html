@@ -366,7 +366,7 @@ nav.tabs button.on { color: var(--honey); }
 nav.tabs button.on svg { filter: drop-shadow(0 0 6px rgba(247,201,72,.5)); }
 /* 下のタブ: まん中に大きな巣ボタン(おすすめ)+選んだタブに蜜がたれる */
 nav.tabs button { position: relative; }
-nav.tabs button[data-tab="sig"] { order: 1; } nav.tabs button[data-tab="race"] { order: 2; } nav.tabs button[data-tab="home"] { order: 3; } nav.tabs button[data-tab="perf"] { order: 4; } nav.tabs button[data-tab="kanri"], nav.tabs button[data-tab="bank"] { order: 5; }
+nav.tabs button[data-tab="race"] { order: 1; } nav.tabs button[data-tab="sig"] { order: 2; }   /* 2026-10-31 本人の指定でレースを左に(前の並びに戻す) */ nav.tabs button[data-tab="home"] { order: 3; } nav.tabs button[data-tab="perf"] { order: 4; } nav.tabs button[data-tab="kanri"], nav.tabs button[data-tab="bank"] { order: 5; }
 nav.tabs button[data-tab="home"] { margin-top: -28px; padding-top: 0; color: var(--honey); }
 nav.tabs button[data-tab="home"]::before, nav.tabs button[data-tab="home"]::after { content: ""; position: absolute; left: 50%; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
 nav.tabs button[data-tab="home"]::before { top: 0; width: 54px; height: 60px; margin-left: -27px; background: #7a5310; }
