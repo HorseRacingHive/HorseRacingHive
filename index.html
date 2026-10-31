@@ -1153,6 +1153,8 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .bk-card.gold { border-color: #e8a317; }
 .bk-lab { font-size: 12px; color: #d9b874; }
 .bk-sub { font-size: 11px; color: #a8894a; line-height: 1.6; }
+.dg-w { font-size: 10.5px; font-weight: 700; color: var(--dang); }
+.dg-p { font-size: 10.5px; opacity: .7; }
 .bk-avg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(201,163,90,.35); font-size: 12px; color: #d9b874; }
 .bk-avg .bk-avg-h { flex-basis: 100%; text-align: center; font-size: 11px; color: #a98d55; }
 .bk-avg span { white-space: nowrap; }
@@ -2454,7 +2456,7 @@ const SIG_CYCLE = ["all", "buy", "danger"];
 const sigKindOf = x => x.sig && SIG_INFO[x.sig] ? x.sig : (x.himo ? "紐" : "");
 const sigPick = (all, k) => all.filter(x => (SIG_GROUP[k] || [k]).some(g => g === "紐" ? x.himo : x.sig === g));
 const sigName = k => k === "妙味" ? "妙蜜" : k;   // 💎の段階の表示名(2026-10-31 本人指定。データのキーは「妙味」のまま)
-const sigLabel = x => x.sig === "妙味" ? "妙蜜" : x.sig === "過剰" ? "過剰人気" : x.sig === "危険" && x.lv >= 2 ? "かなり危険" : x.sig;
+const sigLabel = x => x.sig === "妙味" ? "妙蜜" : x.sig === "過剰" ? "過剰人気" : x.sig;   // 「かなり危険」はやめて⚠️危険に一本化(度合いは空のしずく・2026-10-31)
 function viewSig(d) {
   const all = allHorses(d);
   const byPost = (a, b) => (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }) || (a.rno - b.rno);
@@ -2487,7 +2489,7 @@ function viewSig(d) {
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
     <b class="sig-line"><span class="sig-no">${x.no ?? ""}</span><span class="sig-nm">${esc(x.name)}</span>${x.mark ? `<span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:11px">${esc(x.mark)}</span>` : ""}</b>
       <div class="main"><span class="why">${(SIG_GROUP[S.sig] ? SIG_GROUP[S.sig].filter(g => g === "紐" ? x.himo : x.sig === g) : [k]).concat([]).filter((g, i, a) => a.indexOf(g) === i).map(g => `<span class="sig-badge ${SIG_INFO[g][0]}">${SIG_INFO[g][1]} ${esc(g === "紐" ? "紐" : sigLabel(x))}</span>`).join(" ") || `<span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>`}${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span>` : ""}${x.st ? ` <span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
-    <div class="right"><span class="num">勝率 ${pct(x.p, 0)}</span><br>${evMark(x)}</div></button>`; }).join("") + `</div>`;
+    <div class="right">${["危険", "過剰"].includes(k) ? `${evMark(x)}${(() => { const b = evBand(x); return b != null && b < 0 ? `<br><span class="dg-w">${["", "やや割高", "割高", "買われすぎ"][-b]}</span>` : ""; })()}<br><span class="num dg-p">勝率 ${pct(x.p, 0)}</span>` : `<span class="num">勝率 ${pct(x.p, 0)}</span><br>${evMark(x)}`}</div></button>`; }).join("") + `</div>`;
 }
 function sigFitNames() {   // 狙い・危険: 馬名を折り返さず1行に。入りきらない名前だけ文字を少し小さくする(2026-10-29)
   document.querySelectorAll(".sig-nm").forEach(el => {
@@ -2749,7 +2751,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     if (x.st) tags.push(`<span class="stars t${x.st}">${starStr(x.st)}</span>`);
     if (x.sig === "狙い") tags.push(`<span class="sig-badge aim">🎯 狙い</span>`);
     if (x.sig === "妙味") tags.push(`<span class="sig-badge ev">💎 妙蜜</span>`);
-    if (x.sig === "危険") tags.push(`<span class="sig-badge danger">⚠️ ${x.lv >= 2 ? "かなり危険な人気馬" : "危険な人気馬"}</span>`);
+    if (x.sig === "危険") tags.push(`<span class="sig-badge danger">⚠️ 危険な人気馬</span>`);
     if (x.sig === "過剰") tags.push(`<span class="sig-badge over">🔸 過剰人気(相手には残してOK)</span>`);
     if (x.himo) tags.push(`<span class="sig-badge himo">🪢 紐</span>`);
     if (x.buy) tags.push(`<span class="sig-badge buy">💰 おすすめ</span>`);
