@@ -1158,7 +1158,10 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .bk-avg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(201,163,90,.35); font-size: 12px; color: #d9b874; }
 .bk-avg .bk-avg-h { flex-basis: 100%; text-align: center; font-size: 11px; color: #a98d55; }
 .bk-avg span { white-space: nowrap; }
-.bk-avg b { color: #ffd866; font-size: 15px; margin: 0 1px 0 3px; }
+.bk-avg b { color: #ffd866; font-size: 13px; margin: 0 1px 0 3px; }
+.bk-avg .bk-avg-r { flex-basis: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 2px 10px; font-size: 11px; }
+.bk-avg .bk-avg-k { font-size: 10px; font-weight: 800; padding: 0 6px; border-radius: 6px; }
+.bk-avg .bk-avg-k.lose { background: rgba(251,113,133,.15); color: #fb7185; } .bk-avg .bk-avg-k.win { background: rgba(255,216,102,.15); color: #ffd866; }
 .bk-jarbtn { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; background: #2a1d06; border: 1px solid #e8a317; border-radius: 18px; padding: 10px 12px; color: inherit; }
 .bk-jarbtn.open { border-radius: 18px 18px 0 0; }
 .bk-jarbtn .bk-big { font-size: 28px; font-weight: 900; color: #ffd866; line-height: 1.2; }
@@ -2867,6 +2870,8 @@ function bkStarLimits() {   // ★ごとの今年の最大連敗(推奨・公開
 const HIVE_MAX_STREAK = 76, HIVE_MAX_STREAK_YEAR = 2024;
 // はまりの平均(同じ検証・2014〜25年): 当たりと当たりの間は平均13連敗(真ん中9)・1か月で一番長いはまりの平均23・1年で一番長いはまりの平均52
 const HIVE_STREAK_AVG = { run: 13, month: 23, year: 52 };
+// 連勝(同じ検証・2014〜26年・的中514本): ほとんどが1本ずつ。2連勝29回・3連勝5回(最長3)。1年で一番長い連勝は2〜3(2026-11-01)
+const HIVE_WIN_STREAK = { max: 3, maxTimes: 5, twoPerYear: 2 };
 function bkLimit() { return Math.max(bkYearLimit(), HIVE_MAX_STREAK); }   // 「想定内」の目安 = 過去最大と今年の最大の長い方
 function bkYearLimit() {   // 自分が今年買っている★の今年の最大連敗のうち一番長いもの
   const { lim } = bkStarLimits();
@@ -3209,7 +3214,7 @@ function viewBank() {
   h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最大連敗の記録</span><span class="bk-sub">下までたまる = ${lim}連敗(過去最大)</span></div>
     ${bkGlasses([["今月", rm.streak, false], ["今年", ry.streak, false], ["過去最高", ra.streak, true], ["HIVE最大", HIVE_MAX_STREAK, false]], cap)}
     <div class="bk-sub" style="text-align:center;margin-top:4px;color:${ra.streak > lim ? "#f08a5d" : "#9ee08a"}">${ra.streak > lim ? "HIVE推奨の過去最大(" + lim + "連敗)より長い連敗がありました。金額を見直しましょう" : "どれも起きうる範囲内です。HIVE推奨の過去最大は" + HIVE_MAX_STREAK + "連敗(" + HIVE_MAX_STREAK_YEAR + "年)・今年は最大" + bkYearLimit() + "連敗"}</div>
-    <div class="bk-avg num"><span class="bk-avg-h">はまりの平均(HIVE推奨)</span><span>平均<b>${HIVE_STREAK_AVG.run}</b>連敗</span><span>1か月の最長<b>${HIVE_STREAK_AVG.month}</b></span><span>1年の最長<b>${HIVE_STREAK_AVG.year}</b></span></div></div>`;
+    <div class="bk-avg num"><span class="bk-avg-h">連敗・連勝の目安(HIVE推奨・2014年〜)</span><div class="bk-avg-r"><span class="bk-avg-k lose">連敗</span><span>平均<b>${HIVE_STREAK_AVG.run}</b></span><span>1か月の最長<b>${HIVE_STREAK_AVG.month}</b></span><span>1年の最長<b>${HIVE_STREAK_AVG.year}</b></span></div><div class="bk-avg-r"><span class="bk-avg-k win">連勝</span><span>最長<b>${HIVE_WIN_STREAK.max}</b>(${HIVE_WIN_STREAK.maxTimes}回)</span><span>2連勝は年<b>${HIVE_WIN_STREAK.twoPerYear}</b>回ほど</span></div></div></div>`;
   const per = S.bkPer || "m", rp = { m: rm, y: ry, a: ra }[per];
   h += `<div class="bk-card"><div class="bk-seg">${[["m", "今月"], ["y", "今年"], ["a", "過去最高"]].map(([k, l]) => `<button type="button" class="bk-ch${per === k ? " on" : ""}" data-bk="per" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="bk-two num" style="margin-top:10px"><div class="bk-mini"><div class="bk-lab">最高払戻(1点)</div><b style="color:#ffd866">${rp.best ? yen(rp.best.pay) : "—"}</b><div class="bk-sub">${rp.best ? `${esc(rp.best.venue)}${rp.best.no}R ${fmtMD(rp.best.d)}` : "まだ的中なし"}</div></div>
