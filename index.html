@@ -454,6 +454,7 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 /* 馬名は「…」で切らずに2行まで折り返す。着順の六角がある(結果が出た)カードは少し小さく(2026-10-29) */
 .pick.has-fz .ph b { font-size: 15.5px; }
 .pick .ph small { font-size: 12px; color: var(--muted); }
+.pick .ph small .pk-mark { display: inline; font-size: 13px; color: var(--honey); text-shadow: none; }   /* 札の2行目の印(◎など) */
 .pick .fig { text-align: right; line-height: 1.25; }
 .pick .fig .o { font-family: var(--f-disp); font-weight: 900; font-size: 19px; }
 .pick .fig .o small { font-size: 11px; color: var(--muted); font-weight: 700; }
@@ -2382,12 +2383,16 @@ function viewHome(d) {
     h += `<div class="card empty gate-note"><span class="gn-main">🕘 ${esc(gm ? gm[1] : d.gate.msg)}</span>${gm ? `<span class="gn-sub">${esc(gm[2])}</span>` : ""}${d.gate.at ? `<br>${openTag(d.date, d.gate.at)}` : ""}</div>`; }   // 当日のおすすめの公開時刻(9:00/12:00)
   h += announceBlock(d.announce, d.date === todayStr());
   // おすすめ(★2〜5)を★ごとに
+  // 札の2行目: 印・コース・頭数(「旨蜜はプラス🍯」はおすすめ全頭で同じになるのでやめた 2026-11-01)
+  const raceOf = {}; for (const v of d.venues || []) for (const r of v.races || []) raceOf[r.id] = r;
+  const pickSub = x => { const r = raceOf[x.id], h = r && (r.horses || []).find(z => String(z.no) === String(x.hno));
+    return [h && h.mark ? `<b class="pk-mark">${esc(h.mark)}</b>` : "", r && r.course ? esc(r.course) : "", r && r.field ? `${r.field}頭` : ""].filter(Boolean).join(" ・ "); };
   const card = x => `
     <button class="pick s${x.st} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">${x.fin === 1 ? hitFx() : ""}
       <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}${x.back ? `<span class="urg-badge back">✅やっぱり買い</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
-      <div class="ph"><b>${esc(x.name)}</b><small>旨蜜はプラス🍯</small></div>
+      <div class="ph"><b>${esc(x.name)}</b><small>${pickSub(x)}</small></div>
       <div class="fig num"><div class="e">AI勝率</div><div class="o">${pct(x.p, 0)}</div></div>${x.fin != null ? fzBlock(x.fin) : ""}${bkChip(x)}
     </button>`;
   h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5${(() => { const left = os.filter(x => x.fin == null).length; return `<span class="sub os-count"><span class="osc-n"><b>${os.length}</b>頭</span><span class="osc-split"><span>残り <b class="left">${left}</b></span><span>確定 <b>${os.length - left}</b></span></span></span>`; })()}</h2>`;
@@ -2927,7 +2932,7 @@ function bkChip(x) {
   const d = curDay(), today = d && d.date === todayStr();
   if (today && bkStopped()) return `<span class="buy-chip off" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}">今日はここまで</span>`;
   if (today && BK.day - bkSpent() < BK.unit) return `<span class="buy-chip off" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}">今日の予算は使い切り</span>`;
-  return `<span class="buy-chip" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}">買った ${yen(BK.unit)}</span>`;
+  return `<span class="buy-chip" role="button" data-buy="${esc(x.id)}" data-bhno="${esc(x.hno)}" aria-label="買った(${yen(BK.unit)}で記録)">買った</span>`;   // 押す前は金額を出さない。押すと自分の「1点の金額」で記録し「✓ 買った ¥○」に(2026-11-01)
 }
 function bkRerender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
 function bkBuy(c) {
