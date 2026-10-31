@@ -3207,7 +3207,7 @@ function viewBank() {
   h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最大連敗の記録</span><span class="bk-sub">下までたまる = ${lim}連敗(過去最大)</span></div>
     ${bkGlasses([["今月", rm.streak, false], ["今年", ry.streak, false], ["過去最高", ra.streak, true], ["HIVE最大", HIVE_MAX_STREAK, false]], cap)}
     <div class="bk-sub" style="text-align:center;margin-top:4px;color:${ra.streak > lim ? "#f08a5d" : "#9ee08a"}">${ra.streak > lim ? "HIVE推奨の過去最大(" + lim + "連敗)より長い連敗がありました。金額を見直しましょう" : "どれも起きうる範囲内です。HIVE推奨の過去最大は" + HIVE_MAX_STREAK + "連敗(" + HIVE_MAX_STREAK_YEAR + "年)・今年は最大" + bkYearLimit() + "連敗"}</div>
-    <div class="bk-avg num"><span class="bk-avg-h">はまりの平均(HIVE推奨)</span><span>ふだん<b>${HIVE_STREAK_AVG.run}</b>連敗</span><span>1か月の最長<b>${HIVE_STREAK_AVG.month}</b></span><span>1年の最長<b>${HIVE_STREAK_AVG.year}</b></span></div></div>`;
+    <div class="bk-avg num"><span class="bk-avg-h">はまりの平均(HIVE推奨)</span><span>平均<b>${HIVE_STREAK_AVG.run}</b>連敗</span><span>1か月の最長<b>${HIVE_STREAK_AVG.month}</b></span><span>1年の最長<b>${HIVE_STREAK_AVG.year}</b></span></div></div>`;
   const per = S.bkPer || "m", rp = { m: rm, y: ry, a: ra }[per];
   h += `<div class="bk-card"><div class="bk-seg">${[["m", "今月"], ["y", "今年"], ["a", "過去最高"]].map(([k, l]) => `<button type="button" class="bk-ch${per === k ? " on" : ""}" data-bk="per" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="bk-two num" style="margin-top:10px"><div class="bk-mini"><div class="bk-lab">最高払戻(1点)</div><b style="color:#ffd866">${rp.best ? yen(rp.best.pay) : "—"}</b><div class="bk-sub">${rp.best ? `${esc(rp.best.venue)}${rp.best.no}R ${fmtMD(rp.best.d)}` : "まだ的中なし"}</div></div>
