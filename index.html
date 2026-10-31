@@ -2570,9 +2570,11 @@ function allHorseList(d) {
     <div class="right"><span class="num">勝率 ${pct(x.p, 0)}</span><br>${evMark(x)}</div></button>`).join("") + `</div>`;
 }
 
-// 回収率の推移(累積)。公開データの curve(本体で計算・整数%)を使う。値は「100%からの差」(0の線 = 100%)
+// 収支の推移(累積・何点分のプラスか)。公開データの curve の pt(本体で計算・整数)を使う。円は出さない(2026-10-31)
+// pt が無い古い公開データは回収率から「100%からの差」で描く
 function publicCurve() {
-  if (Array.isArray(S.snap.curve)) return S.snap.curve.map(c => ({ date: c.date, value: Math.round(c.roi * 100) - 100 }));
+  if (Array.isArray(S.snap.curve) && S.snap.curve.every(c => c.pt != null)) return S.snap.curve.map(c => ({ date: c.date, value: c.pt }));
+  if (Array.isArray(S.snap.curve)) return S.snap.curve.map(c => ({ date: c.date, value: Math.round(c.roi * 100) - 100, roi: true }));
   const pts = []; let inv = 0, pay = 0;   // 古い公開データ(curve が無い)
   for (const day of [...S.snap.days].sort((a, b) => a.date.localeCompare(b.date))) {
     const a = day.rec_perf?.actual; if (!a?.n || a.profit == null) continue;
@@ -2597,7 +2599,8 @@ function perfDashboard(d, rp) {
   h += gaugeSvg(per.year?.n ? per.year.roi : null, `今年${per.year?.label ? `(${esc(per.year.label)})` : ""}`, per.year?.n ? `${per.year.hit}/${per.year.n}的中` : "—");
   const rs = S.snap.rec_stats;
   h += gaugeSvg(rs?.roi ?? null, "2013年〜の検証", rs ? `年${rs.per_year}点 ・ プラスの年 ${esc(rs.plus_years || "")}` : "—");
-  h += `</div><div class="card chart-card"><div class="cap">回収率の推移<small>(この90日・累積)</small></div>${lineSvg(pts, { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
+  const ptMode = pts.length && !pts[0].roi;
+  h += `</div><div class="card chart-card"><div class="cap">${ptMode ? "収支の推移<small>(この90日・累積・1点買うのを1として何点分のプラスか・5点きざみ)</small>" : "回収率の推移<small>(この90日・累積)</small>"}</div>${lineSvg(pts, ptMode ? { fmt: fmtMD, fmtV: v => (v > 0 ? "+" : v < 0 ? "−" : "±") + Math.abs(v) + "点", label: "収支の推移" } : { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
     <p class="note">※データの権利の関係で、配布用にはオッズ・払戻・金額を載せていません。1日の回収率も、1レースごとの払戻が分からないよう10%きざみにしています。オッズ・払戻はJRA公式の出馬表・レース結果で確認してください。</p></section>`;
   return h;
 }
