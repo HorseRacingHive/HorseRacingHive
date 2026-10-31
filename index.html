@@ -1490,7 +1490,7 @@ const evMark = x => {
   const b = evBand(x); if (b == null) return "";
   const n = Math.abs(b), plus = b > 0;
   const drops = Array.from({ length: n }, (_, i) => `<path transform="translate(${i * 11} 0)" d="${EV_DROP}"/>`).join("");
-  return `<span class="evm ${plus ? "plus" : "minus"}" title="期待値 ${plus ? "プラス" : "マイナス"}${n}(しずくが多いほど${plus ? "お得" : "割高"})" aria-label="期待値 ${plus ? "プラス" : "マイナス"}${n}">蜜度<svg width="${n * 11 + 2}" height="15" viewBox="-0.5 0 ${n * 11 + 1} 15" aria-hidden="true">${drops}</svg></span>`;
+  return `<span class="evm ${plus ? "plus" : "minus"}" title="蜜度 ${(plus ? "🍯" : "🫙").repeat(n)}" aria-label="蜜度 ${plus ? "プラス" : "マイナス"}${n}">蜜度<svg width="${n * 11 + 2}" height="15" viewBox="-0.5 0 ${n * 11 + 1} 15" aria-hidden="true">${drops}</svg></span>`;
 };
 const starStr = n => n ? "★".repeat(n) + "☆".repeat(5 - n) : "";
 // レースの格付け(2026-10-29): おすすめ馬(★2〜5)の一番高い★で決める。★5 → 勝負 / ★4 → 注目 / ★2〜3 → 買い。★の数はそのまま出す(おすすめタブ・Discordとそろえる)
