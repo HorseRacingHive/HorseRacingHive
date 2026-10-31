@@ -3183,7 +3183,7 @@ document.addEventListener("click", e => {
     S.floatPinned = true;   // 下の ‹ › で送ったら、次のレースでも出したままにする
     if (S.focusNav) {   // 馬の一覧から開いた時: 次の「対象の馬」へ(同じレースの別の馬もあり)
       const j = S.focusIdx + Number(t.dataset.detailStep), it = S.focusNav[j];
-      if (it) { S.focusIdx = j; S.focus = null; if (S.detailNavGroup.startsWith("sig:")) S.nextFocusLabel = "👀 この馬"; openRace(it.id, S.detailNavGroup, true, it.no); }
+      if (it) { S.focusIdx = j; S.focus = null; if (S.detailNavGroup.startsWith("sig:") || S.detailNavGroup === "all") S.nextFocusLabel = "👀 この馬"; openRace(it.id, S.detailNavGroup, true, it.no); }
       return;
     }
     const index = S.detailNav.indexOf(S.detailRaceId);
@@ -3294,7 +3294,7 @@ document.addEventListener("click", e => {
       const idx = uniq.findIndex(e => e.dataset.race === t.dataset.race && e.dataset.hno === t.dataset.hno);
       if (uniq.length > 1 && idx >= 0) { S.focusNav = uniq.map(e => ({ id: e.dataset.race, no: e.dataset.hno })); S.focusIdx = idx; }
     }
-    if (g0.startsWith("sig:")) S.nextFocusLabel = "👀 この馬";   // 狙い・危険から開いた馬に「おすすめ」と出さない
+    if (g0.startsWith("sig:") || g0 === "all") S.nextFocusLabel = "👀 この馬";   // 狙い・危険・全頭の一覧から開いた馬に「おすすめ」と出さない
     if (g0 === "skipped") S.nextFocusLabel = "見送った馬";
     openRace(t.dataset.race, g0, false, t.dataset.hno ?? null); return;
   }
