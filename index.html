@@ -804,6 +804,10 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .money-a .hp-badge { justify-self: start; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; }
 .money-a .hp-badge.plus { background: linear-gradient(180deg, #ffe07a, #f0a400); color: #3a2200; box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 2px 6px rgba(240,164,0,.25); }
 .money-a .hp-badge.minus { background: var(--line); color: var(--muted); }
+.money-a .hp-badge.plus { background: none; border: 1px solid rgba(240, 164, 0, .45); color: #d9a83a; box-shadow: none; font-size: 11px; font-weight: 700; padding: 2px 8px; }   /* あふれた分は控えめに・回収率と金額を主役に(2026-10-31) */
+.money-a .hp-badge.minus { font-size: 11px; font-weight: 700; padding: 2px 8px; }
+.money-a .hp-side .big2 { font-size: 24px; line-height: 1.15; }
+.money-a .hp-side b.yen { font-size: 20px; line-height: 1.2; }
 .money-a .hp-wrap { display: grid; grid-template-columns: minmax(130px, 46%) 1fr; gap: 10px; align-items: center; }
 .money-a .hp-svg { width: 100%; height: auto; display: block; overflow: visible; }
 .money-a .hp-side { display: grid; gap: 6px; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -2546,7 +2550,7 @@ function viewRaces(d) {
   if (!vs.some(v => v.venue === S.venue)) { S.venue = vs[0].venue; S.venuePicked = false; }   // 一覧の表示用に先頭を出すだけ(選んだことにはしない)
   const view = ["order", "post", "os", "all"].includes(S.raceView) ? S.raceView : "order";   // 携帯と同じ: レース順・発走順(全会場)・★あり(2026-10-29)・全頭(2026-10-31)
   let h = `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${(view === "order" && S.venuePicked && x.venue === S.venue) || (view === "all" && S.allVenue === x.venue) ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
-  <p class="race-warn">※全レースの予想を載せていますが、全レースを買うと回収率はマイナスになります。買うのは「おすすめ」の馬にしぼり、ここは参考としてご覧ください。</p>
+  <p class="race-warn">※全レースの予想を載せていますが、予想の参考程度でお願いします。</p>
     <div class="race-sort"><div class="sort-head">
       <button data-race-view="order" class="${view === "order" ? "on" : ""}" data-direction="${S.raceOrder === "asc" ? "1Rから" : "12Rから"}" aria-label="レース順(もう一度押すと昇順・降順が入れ替わります)">レース順</button>
       <button data-race-view="post" class="${view === "post" ? "on" : ""}" data-direction="${S.raceOrder === "asc" ? "早い順" : "遅い順"}" aria-label="全会場まとめて発走順">発走順</button>
@@ -2910,13 +2914,19 @@ function bkBuy(c) {
 }
 function bkAct(k) {
   const a = k.dataset.bk, v = Number(k.dataset.v);
-  if (a !== "unit" && a !== "stop" && a !== "del" && a !== "resume") S.bkConfirm = null;
+  if (a !== "unit" && a !== "unitset" && a !== "stop" && a !== "del" && a !== "resume") S.bkConfirm = null;
   if (a === "jar") { S.bkOpen = !S.bkOpen; return bkRerender(); }
   if (a === "day") { BK.day = v; bkSave(); return bkRerender(); }
   if (a === "unit") {   // 連敗中に金額を大きく上げる時は、もう一度押してもらう(追い上げ防止)
     const cur = bkStreaks(BK.bets).cur;
     if (v > BK.unit * 1.5 && cur >= 3 && S.bkConfirm !== "unit" + v) { S.bkConfirm = "unit" + v; toast(`いま<b>${cur}連敗</b>中です。取り返そうと金額を上げるのは危険です。<br>それでも上げるなら、もう一度押してください`); return; }
-    S.bkConfirm = null; BK.unit = v; bkSave(); return bkRerender();
+    S.bkConfirm = null; BK.unit = v; bkSave(); if (k.dataset.bk === "unit" && !k.closest) toast(`1点の金額を <b>${yen(v)}</b> にしました`); return bkRerender();
+  }
+  if (a === "unitset") {   // 1点の金額を自由な金額で(100円単位・2026-10-31)。連敗中に大きく上げる時の確認は上のボタンと同じ
+    const n = Math.round(Number($("#bk-unit-in")?.value || 0) / 100) * 100;
+    if (!(n >= 100)) { toast("100円以上(100円単位)で入れてください"); return; }
+    if (n > BK.day) { toast(`今日の予算(${yen(BK.day)})より大きい金額は決められません`); return; }
+    return bkAct({ dataset: { bk: "unit", v: String(n) } });
   }
   if (a === "dayset") {   // 今日の予算を自由な金額で(2026-10-29)
     const n = Math.round(Number($("#bk-day-in")?.value || 0));
@@ -3133,8 +3143,9 @@ function viewBank() {
       <div class="bk-lab">今日の予算(いま ${yen(BK.day)})</div>
       <div class="bk-row">${[3000, 5000, 10000, 20000].map(v => `<button type="button" class="bk-ch${BK.day === v ? " on" : ""}" data-bk="day" data-v="${v}">${v >= 10000 ? v / 10000 + "万" : v / 1000 + "千"}</button>`).join("")}</div>
       <div class="bk-fund"><input id="bk-day-in" class="bk-in num" type="number" inputmode="numeric" min="100" step="100" placeholder="自由に入力(例 7000)"><button type="button" class="bk-ch wide" style="padding:8px 14px" data-bk="dayset">決める</button></div>
-      <div class="bk-lab" style="margin-top:6px">1点の金額</div>
+      <div class="bk-lab" style="margin-top:6px">1点の金額(いま ${yen(BK.unit)})</div>
       <div class="bk-row">${[100, 300, 500, 1000].map(v => `<button type="button" class="bk-ch${BK.unit === v ? " on" : ""}${v >= lo && v <= hi ? " rec" : ""}" data-bk="unit" data-v="${v}">${v.toLocaleString("ja-JP")}</button>`).join("")}</div>
+      <div class="bk-fund"><input id="bk-unit-in" class="bk-in num" type="number" inputmode="numeric" min="100" step="100" placeholder="自由に入力(例 200)"><button type="button" class="bk-ch wide" style="padding:8px 14px" data-bk="unitset">決める</button></div>
       <div class="bk-sub num">🐝 おすすめの1点 <b style="color:#ffd866">${lo.toLocaleString("ja-JP")}〜${hi.toLocaleString("ja-JP")}円</b>(軍資金の0.1〜1%)</div>
       <div class="bk-lab" style="margin-top:6px">軍資金(いま ${yen(bal)})</div>
       <div class="bk-fund3"><input id="bk-fund-in" class="bk-in num" type="number" inputmode="numeric" min="0" step="1000" placeholder="30000"><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fundset">この額にする</button><button type="button" class="bk-ch wide" style="padding:8px 10px" data-bk="fund">＋ 足す</button></div>
