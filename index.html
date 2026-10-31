@@ -536,6 +536,9 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .race-ann .cap .sub { margin-left: auto; font-weight: 500; color: var(--muted); }
 h2.c-ann .sub { font-size: 10px; opacity: .8; }   /* 直前のお知らせの「件数・新しい順・下にスクロール」は小さく */
 .race-ann-empty { margin: 10px 0 2px; font-size: 12px; }
+.race-ann-fold > summary { display: block; list-style: none; cursor: pointer; } .race-ann-fold > summary::-webkit-details-marker { display: none; }   /* 終わったレースの直前のお知らせ(たたむ・2026-10-31) */
+.race-ann-fold .rf-open { display: none; } .race-ann-fold[open] .rf-open { display: inline; } .race-ann-fold[open] .rf-closed { display: none; }
+.race-ann-fold[open] .at-tx { display: none; } .race-ann-fold .rf-list { border-top: 1px solid var(--line); }
 .horse.focus { border-color: var(--honey); box-shadow: 0 0 0 3px rgba(247,201,72,.35), inset 4px 0 0 var(--honey); animation: focusGlow 1.1s ease-out 3; }
 @keyframes focusGlow { 0% { box-shadow: 0 0 0 0 rgba(247,201,72,.9), inset 4px 0 0 var(--honey); } 100% { box-shadow: 0 0 0 10px rgba(247,201,72,0), inset 4px 0 0 var(--honey); } }
 .horse .nm .you { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--honey); color: var(--comb); font-size: 10.5px; font-weight: 900; vertical-align: middle; }
@@ -1702,6 +1705,15 @@ function biasNote(b) {
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
   if (!rows.length) return upcoming ? `${hvEmpty(`※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます`, { fill: false, next: false, cls: "race-ann-empty" })}` : "";
+  if (!upcoming) {   // レースが終わった後(過去の日も)は、おすすめのお知らせと同じく1行にたたんで、押すと全部開く(2026-10-31)
+    const a = rows[0];
+    const flat = String(a.text || "").replace(/\s*\n\s*/g, " ／ ");
+    return `<details class="card ann-tick race-ann race-ann-fold k-${esc(a.kind)}"><summary><div class="at-row">
+      <span class="at-head"><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span><b class="at-race">このレースの直前のお知らせ</b>
+        <span class="at-meta num">${esc(a.time || "")} ・ <span class="rf-closed">${rows.length > 1 ? `全${rows.length}件 ▼` : "開く ▼"}</span><span class="rf-open">閉じる ▲</span></span></span>
+      <span class="at-tx l1">${esc(flat)}</span></div></summary>
+    <div class="announce rf-list">${rows.map(x => `<div class="ann"><div class="at num">${esc(x.time || "")}<br><span class="kind k-${esc(x.kind)}">${esc(ANN_KIND[x.kind] || x.kind)}</span></div><div class="tx">${esc(x.text || "")}</div></div>`).join("")}</div></details>`;
+  }
   return `<div class="card announce race-ann"><div class="cap">このレースの直前のお知らせ<span class="sub">${rows.length}件・新しい順</span></div>${rows.map(a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div><div class="tx">${esc(a.text || "")}</div></div>`).join("")}</div>`;
 }
 function announceBlock(list, showEmpty) {
