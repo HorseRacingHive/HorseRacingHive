@@ -333,10 +333,11 @@ header.top::after {
 .day-nav .dn-w .nx { color: #7fff9a; text-shadow: 0 0 6px rgba(127,255,154,.9); letter-spacing: .15em; }
 .day-nav .dn-w .nx.rec { color: #ffd54a; text-shadow: 0 0 6px rgba(255,213,74,1), 0 0 14px rgba(255,180,0,.8); font-weight: 700; animation: dn-glow 1.6s ease-in-out infinite; }   /* 次のレースにおすすめ馬がいる */
 .day-nav .dn-live { display: inline-block; vertical-align: middle; margin-left: 8px; padding: 0 5px; border: 1px solid #ff4b5c; border-radius: 3px; color: #ff4b5c; text-shadow: 0 0 6px #ff4b5c;
-  font-size: 9px; letter-spacing: .2em; animation: dn-blink 1.2s steps(1) infinite; }
-@keyframes dn-blink { 50% { opacity: .25; } }
+  font-size: 9px; letter-spacing: .2em; }
+.day-nav .dn-live .dot { display: inline-block; width: 6px; height: 6px; margin-right: 4px; border-radius: 50%; background: #ff4b5c; box-shadow: 0 0 6px #ff4b5c; vertical-align: 1px; animation: dn-pulse 2s ease-in-out infinite; }   /* LIVEは文字を止めて赤丸だけゆっくり光らせる(2026-10-31) */
+@keyframes dn-pulse { 50% { opacity: .3; box-shadow: 0 0 1px #ff4b5c; } }
 @keyframes dn-glow { 50% { text-shadow: 0 0 2px rgba(255,213,74,.6); } }
-@media (prefers-reduced-motion: reduce) { .day-nav .dn-live, .day-nav .dn-w .nx.rec { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .day-nav .dn-live .dot, .day-nav .dn-w .nx.rec { animation: none; } }
 :root[data-theme="light"] .day-nav .dn-d { color: #b97c12; text-shadow: none; }
 :root[data-theme="light"] .day-nav .dn-w .wd, :root[data-theme="light"] .day-nav .dn-w .nx { text-shadow: none; }
 :root[data-theme="light"] .day-nav .dn-w .nx { color: #0f8a5f; }
@@ -2106,7 +2107,7 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
   const min = days[0]?.date || S.date, max = days[days.length - 1]?.date || S.date;
   const [, mm, dd] = (S.date || "").split("-");
   $("#days").innerHTML = `<div class="day-nav"><button class="day-arrow" data-day-step="-1" aria-label="前の開催日" ${i <= 0 ? "disabled" : ""}>‹</button><span class="dn-line"></span>`
-    + `<div class="dn-mid"><div class="dn-date"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden>LIVE</span></div><div class="dn-w"></div>`
+    + `<div class="dn-mid"><div class="dn-date"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden><span class="dot"></span>LIVE</span></div><div class="dn-w"></div>`
     + `<input class="day-picker" type="date" aria-label="開催日を選択" data-days="${esc(days.map(x => x.date).join(","))}" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}"></div>`
     + `<div class="dn-baba"></div><div class="dn-tick" hidden><span class="in"></span></div></div>`
     + `<span class="dn-line r"></span><button class="day-arrow${i >= days.length - 1 ? " locked" : ""}" data-day-step="1" aria-label="次の開催日">›</button></div>`;   // 先が無くても押せる(押すと公開時刻を知らせる)
