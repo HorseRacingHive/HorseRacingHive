@@ -197,6 +197,7 @@ body {
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--comb); }
 button { font: inherit; color: inherit; }
+.site-foot { max-width: 760px; margin: 8px auto 0; padding: 10px 16px 14px; font-size: 10.5px; line-height: 1.5; color: var(--muted); text-align: center; opacity: .8; }   /* ページ下の注意書き(2026-10-31) */
 .num { font-variant-numeric: tabular-nums; }
 .wrap { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); }
 
@@ -1449,6 +1450,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
   </div>
 </header>
 <main class="wrap" id="view"></main>
+<footer class="site-foot">※オッズ・払戻はJRA公式の出馬表・レース結果で確認してください(データの権利の関係で載せていません)</footer>
 <nav class="tabs" id="tabs">
   <button data-tab="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 6.2l-.4-3.4 2 1.6L12 1.8l1.8 2.6 2-1.6-.4 3.4z" fill="currentColor" stroke-width="1.2"/><ellipse cx="6.8" cy="11" rx="3.4" ry="2.1" transform="rotate(-25 6.8 11)"/><ellipse cx="17.2" cy="11" rx="3.4" ry="2.1" transform="rotate(25 17.2 11)"/><ellipse cx="12" cy="15.6" rx="4.2" ry="6" fill="currentColor" fill-opacity=".25"/><path d="M8 14.2h8M8.1 17.6h7.8"/></svg>おすすめ</button>
   <button data-tab="sig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="10" r="7"/><circle cx="9.5" cy="10" r="3.4"/><circle cx="9.5" cy="10" r=".9" fill="currentColor"/><path d="M17 12.2l5.3 9.3H11.7z" fill="var(--comb)" stroke-width="1.8"/><path d="M17 15.6v2.6" stroke-width="1.7"/><circle cx="17" cy="20" r=".4" fill="currentColor" stroke-width="1"/></svg>狙い・危険</button>
@@ -1702,7 +1704,7 @@ const ANN_KIND = { "直前": "30分前", "最終": "締切直前", "急遽": "�
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
 // 馬場の偏り(前日と同じ馬場のときの内有利/外有利)。買い条件・期待値には入れていない参考表示(2026-10-28 公開ページにも)
 function biasNote(b) {
-  if (!b || !b.label) return "";
+  if (!b || !b.label || b.label === "参考なし") return "";   // 判定が無い(前日に同じコースの開催が無い)ときは出さない(2026-10-31)
   const on = b.label === "内有利" || b.label === "外有利";
   const col = !on ? "#8a7a52" : b.strength === "強め" ? "#ff9f1a" : "#f7c948";   // 黒×蜜色に合わせた色(2026-10-29)
   const bg = !on ? "rgba(255,255,255,.04)" : b.strength === "強め" ? "linear-gradient(90deg,rgba(255,159,26,.18),rgba(255,159,26,.03))" : "linear-gradient(90deg,rgba(247,201,72,.15),rgba(247,201,72,.03))";
@@ -2728,7 +2730,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}<div class="note">※オッズ・払戻はJRA公式の出馬表・レース結果で確認してください(データの権利の関係で載せていません)</div>`;
+    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;   // オッズ・払戻の注意書きはページ下のフッターへ移した(2026-10-31)
   h += `<div class="horse-sort hmsbar${HMS.multi(ds) ? " hm" : ""}" aria-label="並べ替え(押した順に①②③。向きは下の札の⇅で変えます)">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${HMS.cls(ds, sortKey)}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? HMS.word(sortKey, direction) : ""}">${label}${HMS.mark(ds, sortKey)}</button>`;
