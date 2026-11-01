@@ -2008,7 +2008,12 @@ async function unlock(pw, remember, manual) {
   try {
     S.snap = await open(pw); S.pw = pw;
     if (remember && !S.demo) store.set("hivep_pw", pw);
-    if (manual && !S.demo && window.hiveBeacon) window.hiveBeacon(S.slot);   // アクセス記録に合言葉の番号だけ送る(合言葉そのものは送らない)
+    if (!S.demo && window.hiveBeacon && (manual || S.slot !== "_")) {   // アクセス記録に合言葉の番号と「指紋」だけ送る(合言葉そのものは送らない)
+      // 指紋 = どの世代の合言葉で開いたか。1つの合言葉で開ける端末は2台まで(3台目でボットが合言葉を作り直す・2026-11-01)
+      let h = ""; const nc = normCode(pw);
+      try { if (nc) { const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hivecode:" + nc.code))); h = [...d.slice(0, 4)].map(b => b.toString(16).padStart(2, "0")).join(""); } } catch {}
+      window.hiveBeacon(S.slot, h);
+    }
     $("#lock").hidden = true; $("#app").hidden = false;
     pickDate(); renderDays(); render();
   } catch (e) {
@@ -3521,8 +3526,8 @@ hvSwipeInit({
       try { localStorage.setItem(key, id); } catch (e) {}
     }
     if (location.hostname !== "horseracinghive.github.io") return;
-    var send = function (k) {
-      var data = JSON.stringify({ d: id, p: location.pathname, k: k || "" });
+    var send = function (k, h) {
+      var data = JSON.stringify({ d: id, p: location.pathname, k: k || "", h: h || "" });
       if (navigator.sendBeacon) navigator.sendBeacon(WORKER_URL, data);
       else fetch(WORKER_URL, { method: "POST", body: data, keepalive: true });
     };
@@ -3534,7 +3539,7 @@ hvSwipeInit({
       var t = saved.normalize("NFKC").toUpperCase().replace(/[^A-Z0-9]/g, "");
       k = /^[A-Z][0-9]{2}[A-Z0-9]{8}$/.test(t) ? t.slice(0, 3) : "_";
     }
-    send(k);
+    if (!saved) send(k);   // 合言葉を覚えている端末は、開けたときに番号と指紋をつけて1回だけ送る(unlock)
   } catch (e) {}
 })();
 </script>
