@@ -2319,7 +2319,8 @@ function hvNextText() {
    ・前面(#wm・pointer-events:none): 同じ柄をごく薄く。カードだけ切り取られても番号が残る */
 function wmUpdate() {
   let el = document.getElementById("wm");
-  if (!S.snap || S.demo) { if (el) el.remove(); document.body.style.backgroundImage = ""; return; }
+  const sh = document.getElementById("sheet");   // レース画面など、上に重なる画面にも同じ背景の透かし(2026-11-01)
+  if (!S.snap || S.demo) { if (el) el.remove(); document.body.style.backgroundImage = ""; if (sh) sh.style.backgroundImage = ""; return; }
   if (!el) { el = document.createElement("div"); el.id = "wm"; el.setAttribute("aria-hidden", "true"); document.body.appendChild(el); }
   const d = new Date(), p2 = n => String(n).padStart(2, "0");
   const no = S.slot && S.slot !== "_" ? S.slot : "共通";
@@ -2330,6 +2331,7 @@ function wmUpdate() {
   const tile = op => `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="300"><g transform="rotate(-22 160 150)" font-family="sans-serif" fill="#a08a5c" text-anchor="middle"><text x="160" y="150" font-size="76" font-weight="900" fill-opacity="${op}" letter-spacing="4">${e(no)}</text><text x="160" y="182" font-size="16" font-weight="700" fill-opacity="${op * 1.6}">${e(when)}・HIVE 転載禁止</text></g></svg>`;
   const url = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
   document.body.style.backgroundImage = url(tile(0.16));
+  if (sh) sh.style.backgroundImage = url(tile(0.16));
   el.style.backgroundImage = url(tile(0.035));
 }
 function render() {
@@ -2460,7 +2462,7 @@ function viewHome(d) {
         <div class="ph"><b>${esc(x.name)}</b><small>単勝100倍をこえる穴馬</small></div>
         <div class="fig num"><div class="e">AI勝率</div><div class="o">${pct(x.p, 1)}</div></div>
       </button>`).join("")}</div>
-      <p class="note">🎲大穴 = おすすめと同じ条件(旨蜜度プラス・買い材料あり)で、単勝が100倍をこえる馬。当たりは数年に1本の見込みなので、買うならおすすめとは別に少額で(おすすめの1点の8分の1くらい)。成績はおすすめに入れません。直前のオッズで100倍を切ると対象外になります。</p></div>`;
+      <p class="note">🎲大穴 = おすすめと同じ条件で、単勝が100倍をこえる馬。当たりは数年に1本の見込みなので、買うならおすすめとは別に少額で(おすすめの1点の8分の1くらい)。成績はおすすめに入れません。直前のオッズで100倍を切ると対象外になります。</p></div>`;
   }
   h += `</section><p class="note">※オッズは生きてるので予想は締切まで変わります</p>`;
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
