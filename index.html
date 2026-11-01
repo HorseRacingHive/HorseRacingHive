@@ -391,6 +391,8 @@ h2 .sub { margin-left: auto; font-family: var(--f-body); font-size: 12px; font-w
 .empty { padding: 18px; text-align: center; color: var(--muted); font-size: 14px; }
 .gate-note .gn-main { display: inline-block; }
 #wm { position: fixed; inset: 0; z-index: 2147481000; pointer-events: none; background-repeat: repeat; }   /* 透かし(見ている人の合言葉の番号・日時) */
+html, body { overscroll-behavior-x: none; overflow-x: clip; }   /* 横に払っても、ページが横に揺れたり戻ったりしない(2026-11-01) */
+#view, #sheet { touch-action: pan-y pinch-zoom; }
 .gate-mini { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 2px 10px; padding: 7px 12px; border: 1px dashed var(--line); border-radius: 999px; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
 .gate-mini .open-left { margin-top: 0; font-size: 13.5px; font-weight: 800; }
 .gate-note .gn-sub { display: block; margin-top: 4px; font-size: 12.5px; opacity: .85; white-space: nowrap; }
@@ -1917,12 +1919,13 @@ function hvSwipeInit(cfg) {
     if (!s.lock && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) s.lock = Math.abs(dx) > Math.abs(dy) * 1.2 ? 1 : 2;
     if (s.lock === 2) { if (s.el) back(s.el); s = null; return; }   // 縦スクロールが始まったら何もしない
     if (s.lock !== 1) return;
+    if (e.cancelable) e.preventDefault();   // 横に払っている間は、ページ自体を横に動かさない(画面が動いてしまうのを防ぐ 2026-11-01)
     try { if (String(window.getSelection() || "").length) return; } catch {}
     if (!s.el && cfg.target) { s.el = cfg.target(s.z.name); if (s.el) { s.el.style.transition = "none"; s.el.style.willChange = "transform"; } }
     s.dx = dx;
     if (s.el) { const m = dx - Math.sign(dx) * 10, w = s.el.clientWidth || 360;
       s.el.style.transform = `translate3d(${m * 0.55}px,0,0)`; s.el.style.opacity = String(1 - Math.min(.4, Math.abs(m) / w * .7)); }
-  }, { passive: true });
+  }, { passive: false });
   document.addEventListener("touchend", e => {
     if (!s) return;
     const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y, dt = Math.max(1, Date.now() - s.t), z = s.z, el = s.el, lock = s.lock; s = null;
