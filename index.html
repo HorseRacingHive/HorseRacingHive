@@ -2164,7 +2164,10 @@ function dayNavInfo() {
   el.innerHTML = `${wd} <span style="opacity:.5">·</span> ${right}`;
   dayNavTicker(tickText);
   const live = $("#days .dn-live");
-  if (live) live.hidden = !(d && S.date === todayStr() && races.length && races.some(r => !r.done));
+  // LIVE は開門〜閉門の間だけ(最初のレースの発走60分前〜最終レースの発走60分後。JRAの開門9時ごろ・閉門17時ごろに合わせる 2026-11-01 本人指定)
+  const ps = races.map(r => r.post && postDate(r.post)).filter(Boolean).map(t => +t), nowMs = Date.now();
+  const gate = ps.length && nowMs >= Math.min(...ps) - 60 * 60e3 && nowMs <= Math.max(...ps) + 60 * 60e3;
+  if (live) live.hidden = !(d && S.date === todayStr() && gate);
 }
 function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー＋選んだ日の前後の開催日を1段で。選んだ日が見える位置まで横に送る。未来の開催日は出さない
   const days = viewDays();
