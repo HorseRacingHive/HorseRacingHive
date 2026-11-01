@@ -1899,6 +1899,9 @@ function hvSwipeInit(cfg) {
     }
     return false;
   };
+  // 指に合わせて中身が少し動く → 離すと次の項目がすべり込む / 足りなければ元の位置へ戻る(2026-11-01 なめらかに)
+  const back = el => { if (!el) return; el.style.transition = "transform .28s cubic-bezier(.2,.9,.3,1.2), opacity .2s ease"; el.style.transform = ""; el.style.opacity = "";
+    setTimeout(() => { el.style.transition = ""; el.style.willChange = ""; }, 300); };
   document.addEventListener("touchstart", e => {
     s = null;
     if (e.touches.length !== 1) return;
@@ -1906,28 +1909,40 @@ function hvSwipeInit(cfg) {
     if (t.clientX < 20) return;   // 左端はiPhoneの「戻る」操作に任せる
     const z = cfg.zone(e.target); if (!z) return;
     if (blocked(e.target, z.root)) return;
-    s = { x: t.clientX, y: t.clientY, t: Date.now(), z, lock: 0 };
+    s = { x: t.clientX, y: t.clientY, t: Date.now(), z, lock: 0, el: null, dx: 0 };
   }, { passive: true });
   document.addEventListener("touchmove", e => {
     if (!s) return;
     const t = e.touches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
-    if (!s.lock && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) s.lock = Math.abs(dx) > Math.abs(dy) * 1.5 ? 1 : 2;
-    if (s.lock === 2) s = null;   // 縦スクロールが始まったら何もしない
+    if (!s.lock && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) s.lock = Math.abs(dx) > Math.abs(dy) * 1.2 ? 1 : 2;
+    if (s.lock === 2) { if (s.el) back(s.el); s = null; return; }   // 縦スクロールが始まったら何もしない
+    if (s.lock !== 1) return;
+    try { if (String(window.getSelection() || "").length) return; } catch {}
+    if (!s.el && cfg.target) { s.el = cfg.target(s.z.name); if (s.el) { s.el.style.transition = "none"; s.el.style.willChange = "transform"; } }
+    s.dx = dx;
+    if (s.el) { const m = dx - Math.sign(dx) * 10, w = s.el.clientWidth || 360;
+      s.el.style.transform = `translate3d(${m * 0.55}px,0,0)`; s.el.style.opacity = String(1 - Math.min(.4, Math.abs(m) / w * .7)); }
   }, { passive: true });
   document.addEventListener("touchend", e => {
     if (!s) return;
-    const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y, dt = Date.now() - s.t, z = s.z; s = null;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || dt > 600) return;
-    try { if (String(window.getSelection() || "").length) return; } catch {}
-    cfg.go(z.name, dx < 0 ? 1 : -1);
+    const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y, dt = Math.max(1, Date.now() - s.t), z = s.z, el = s.el, lock = s.lock; s = null;
+    const w = (el && el.clientWidth) || window.innerWidth || 360;
+    const ok = lock === 1 && Math.abs(dx) >= Math.abs(dy) * 1.2 && (Math.abs(dx) >= Math.min(90, w * .22) || (Math.abs(dx) >= 35 && Math.abs(dx) / dt > .45));
+    if (!ok) { back(el); return; }
+    const step = dx < 0 ? 1 : -1;
+    const moved = cfg.go(z.name, step);
+    if (moved === false) back(el);                                            // 端: ゴムのように戻る
+    else if (el && el.isConnected && el.style.transform && !el.classList.contains("hv-sw-in")) { el.style.transition = ""; el.style.transform = ""; el.style.opacity = ""; el.style.willChange = ""; }
   }, { passive: true });
-  document.addEventListener("touchcancel", () => { s = null; }, { passive: true });
+  document.addEventListener("touchcancel", () => { if (s && s.el) back(s.el); s = null; }, { passive: true });
 }
-function hvSwipeAnim(el, step) {
+function hvSwipeAnim(el, step) {   // 次の項目が、払った向きからすべり込む
   if (!el) return;
-  el.classList.remove("hv-sw-l", "hv-sw-r"); void el.offsetWidth;
-  el.classList.add(step > 0 ? "hv-sw-l" : "hv-sw-r");
-  setTimeout(() => el.classList.remove("hv-sw-l", "hv-sw-r"), 220);
+  el.classList.add("hv-sw-in");
+  el.style.transition = "none"; el.style.transform = `translate3d(${step > 0 ? 64 : -64}px,0,0)`; el.style.opacity = ".25";
+  void el.offsetWidth;
+  el.style.transition = "transform .3s cubic-bezier(.16,1,.3,1), opacity .22s ease-out"; el.style.transform = ""; el.style.opacity = "";
+  setTimeout(() => { el.style.transition = ""; el.style.willChange = ""; el.classList.remove("hv-sw-in"); }, 320);
 }
 /* 下のタブを見た目の並び順(左→右)で取り出す */
 function hvTabOrder(sel) {
@@ -3487,6 +3502,7 @@ function hmsAct(t) {
 }
 /* ===== 左右スワイプ(2026-10-31) ===== */
 hvSwipeInit({
+  target(name) { return name === "sheet" ? $("#sheet .horses") : $("#view"); },   // 指に合わせて動かす部分
   zone(el) {
     const sh = $("#sheet");
     if (sh && !sh.hidden) return sh.contains(el) && !el.closest(".detail-float") ? { name: "sheet", root: sh } : null;
@@ -3496,28 +3512,28 @@ hvSwipeInit({
   go(zone, step) {
     if (zone === "sheet") {   // レース画面: 並べ替えのタブ(馬番・勝率・期待値…)を左右へ。②③の条件はそのまま
       const btns = [...document.querySelectorAll("#sheet .horse-sort button[data-public-sort]")];
-      const i = btns.findIndex(b => b.classList.contains("on")), nb = btns[i + step]; if (i < 0 || !nb) return;
+      const i = btns.findIndex(b => b.classList.contains("on")), nb = btns[i + step]; if (i < 0 || !nb) return false;
       const k = nb.dataset.publicSort;
       S.detailSort = HMS.swap(S.detailSort, k, hmsDef(k), HMS_DET_BASE); HMS.keep("hivep_dsort", S.detailSort);
       const top = $("#sheet").scrollTop; openRace(S.detailRaceId, S.detailNavGroup, true); $("#sheet").scrollTop = top;
       $("#sheet .horse-sort button.on")?.scrollIntoView({ inline: "nearest", block: "nearest" });
-      hvSwipeAnim($("#sheet .horses"), step); return;
+      hvSwipeAnim($("#sheet .horses"), step); return true;
     }
     // 狙い・危険/全頭の一覧: 並べ替えのタブ(発走順・勝率・期待値・＋/−ファクター…)を左右へ。②③の条件はそのまま(2026-11-01 本人指定)
     const sb = [...document.querySelectorAll("#view .horse-sort button[data-sig-sort], #view .horse-sort button[data-all-sort]")];
     if (sb.length) {
-      const j = sb.findIndex(b => b.classList.contains("on")), nb2 = sb[j + step]; if (j < 0 || !nb2) return;   // 端では止まる(下のタブへは移らない)
+      const j = sb.findIndex(b => b.classList.contains("on")), nb2 = sb[j + step]; if (j < 0 || !nb2) return false;   // 端では止まる(下のタブへは移らない)
       const isSig = !!nb2.dataset.sigSort, k = isSig ? nb2.dataset.sigSort : nb2.dataset.allSort, y = window.scrollY;
       if (isSig) { S.sigSort = HMS.swap(S.sigSort, k, hmsDef(k), HMS_SIG_BASE); HMS.keep("hivep_sigsort", S.sigSort); }
       else { S.allSort = HMS.swap(S.allSort, k, hmsDef(k), HMS_SIG_BASE); HMS.keep("hivep_allsort", S.allSort); }
       render(); window.scrollTo(0, y);
       const bar = document.querySelector("#view .horse-sort"), on = bar && bar.querySelector("button.on");
       if (on) bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2;
-      hvSwipeAnim($("#view"), step); return;
+      hvSwipeAnim($("#view"), step); return true;
     }
     const tabs = hvTabOrder("#tabs button[data-tab]");
-    const i = tabs.findIndex(b => b.dataset.tab === S.tab), nb = tabs[i + step]; if (i < 0 || !nb) return;   // 端では止まる
-    nb.click(); hvSwipeAnim($("#view"), step);   // タブを押したのと同じ動き
+    const i = tabs.findIndex(b => b.dataset.tab === S.tab), nb = tabs[i + step]; if (i < 0 || !nb) return false;   // 端では止まる
+    nb.click(); hvSwipeAnim($("#view"), step); return true;   // タブを押したのと同じ動き
   },
 });
 /* ---------------------------------------------------------------- 起動 */
