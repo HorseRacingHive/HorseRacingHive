@@ -3507,7 +3507,8 @@ hvSwipeInit({
     const sh = $("#sheet");
     if (sh && !sh.hidden) return sh.contains(el) && !el.closest(".detail-float") ? { name: "sheet", root: sh } : null;
     if (document.getElementById("kbLoader") || document.querySelector("#hvCal:not([hidden])") || $("#lock") && !$("#lock").hidden) return null;
-    const v = $("#view"); return v && v.contains(el) ? { name: "main", root: v } : null;
+    // 下のタブのスワイプ移動はしない(2026-11-01 本人指定)。「〇〇順」のある一覧(狙い・危険/全頭/レース一覧)だけ
+    const v = $("#view"); return v && v.contains(el) && v.querySelector(".horse-sort button[data-sig-sort], .horse-sort button[data-all-sort], button[data-race-view]") ? { name: "main", root: v } : null;
   },
   go(zone, step) {
     if (zone === "sheet") {   // レース画面: 並べ替えのタブ(馬番・勝率・期待値…)を左右へ。②③の条件はそのまま
@@ -3519,10 +3520,11 @@ hvSwipeInit({
       $("#sheet .horse-sort button.on")?.scrollIntoView({ inline: "nearest", block: "nearest" });
       hvSwipeAnim($("#sheet .horses"), step); return true;
     }
-    // 狙い・危険/全頭の一覧: 並べ替えのタブ(発走順・勝率・期待値・＋/−ファクター…)を左右へ。②③の条件はそのまま(2026-11-01 本人指定)
+    // 一覧の「〇〇順」を左右へ(2026-11-01 本人指定。下のタブへは移らない)
+    // ① 狙い・危険/全頭の並べ替え(発走順・勝率・期待値・＋/−ファクター…)。②③の条件はそのまま
     const sb = [...document.querySelectorAll("#view .horse-sort button[data-sig-sort], #view .horse-sort button[data-all-sort]")];
-    if (sb.length) {
-      const j = sb.findIndex(b => b.classList.contains("on")), nb2 = sb[j + step]; if (j < 0 || !nb2) return false;   // 端では止まる(下のタブへは移らない)
+    const j = sb.findIndex(b => b.classList.contains("on")), nb2 = j < 0 ? null : sb[j + step];
+    if (nb2) {
       const isSig = !!nb2.dataset.sigSort, k = isSig ? nb2.dataset.sigSort : nb2.dataset.allSort, y = window.scrollY;
       if (isSig) { S.sigSort = HMS.swap(S.sigSort, k, hmsDef(k), HMS_SIG_BASE); HMS.keep("hivep_sigsort", S.sigSort); }
       else { S.allSort = HMS.swap(S.allSort, k, hmsDef(k), HMS_SIG_BASE); HMS.keep("hivep_allsort", S.allSort); }
@@ -3531,9 +3533,11 @@ hvSwipeInit({
       if (on) bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2;
       hvSwipeAnim($("#view"), step); return true;
     }
-    const tabs = hvTabOrder("#tabs button[data-tab]");
-    const i = tabs.findIndex(b => b.dataset.tab === S.tab), nb = tabs[i + step]; if (i < 0 || !nb) return false;   // 端では止まる
-    nb.click(); hvSwipeAnim($("#view"), step); return true;   // タブを押したのと同じ動き
+    // ② レース・結果タブの「レース順・発走順・★あり・全頭」(全頭の並べ替えの端まで来たら、こちらへ続く)
+    const rv = [...document.querySelectorAll("#view button[data-race-view]")];
+    const r = rv.findIndex(b => b.classList.contains("on")), nb3 = r < 0 ? null : rv[r + step];
+    if (nb3) { nb3.click(); hvSwipeAnim($("#view"), step); return true; }
+    return false;   // 下のタブへは移らない
   },
 });
 /* ---------------------------------------------------------------- 起動 */
