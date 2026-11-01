@@ -2316,7 +2316,7 @@ function hvNextText() {
 /* 透かし(2026-11-01): スクショ・画面録画を止める方法はWebに無いので、見ている人の合言葉の番号(B05など・合言葉そのものは出さない)と日時を全面に敷く。
    撮られても誰の画面か分かる(流出の抑止と特定のため)。予想を読みやすくするため2段にする(本人指定):
    ・背景(カードの後ろ・body の背景): 大きな番号をはっきり。カードは不透明なので予想の文字には重ならず、すき間・余白に見える
-   ・前面(#wm・pointer-events:none): 同じ柄をごく薄く。カードだけ切り取られても番号が残る */
+   ・前面(#wm・pointer-events:none): 同じ柄を薄く(2026-11-01 18:31 本人指定で「中」= 背景0.22・前面0.07。前は0.16・0.035)。カードだけ切り取られても番号が残る */
 function wmUpdate() {
   let el = document.getElementById("wm");
   const sh = document.getElementById("sheet");   // レース画面など、上に重なる画面にも同じ背景の透かし(2026-11-01)
@@ -2330,9 +2330,9 @@ function wmUpdate() {
   const e = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const tile = op => `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="300"><g transform="rotate(-22 160 150)" font-family="sans-serif" fill="#a08a5c" text-anchor="middle"><text x="160" y="150" font-size="76" font-weight="900" fill-opacity="${op}" letter-spacing="4">${e(no)}</text><text x="160" y="182" font-size="16" font-weight="700" fill-opacity="${op * 1.6}">${e(when)}・HIVE 転載禁止</text></g></svg>`;
   const url = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-  document.body.style.backgroundImage = url(tile(0.16));
-  if (sh) sh.style.backgroundImage = url(tile(0.16));
-  el.style.backgroundImage = url(tile(0.035));
+  document.body.style.backgroundImage = url(tile(0.22));
+  if (sh) sh.style.backgroundImage = url(tile(0.22));
+  el.style.backgroundImage = url(tile(0.07));
 }
 function render() {
   wmUpdate();
@@ -3502,6 +3502,18 @@ hvSwipeInit({
       const top = $("#sheet").scrollTop; openRace(S.detailRaceId, S.detailNavGroup, true); $("#sheet").scrollTop = top;
       $("#sheet .horse-sort button.on")?.scrollIntoView({ inline: "nearest", block: "nearest" });
       hvSwipeAnim($("#sheet .horses"), step); return;
+    }
+    // 狙い・危険/全頭の一覧: 並べ替えのタブ(発走順・勝率・期待値・＋/−ファクター…)を左右へ。②③の条件はそのまま(2026-11-01 本人指定)
+    const sb = [...document.querySelectorAll("#view .horse-sort button[data-sig-sort], #view .horse-sort button[data-all-sort]")];
+    if (sb.length) {
+      const j = sb.findIndex(b => b.classList.contains("on")), nb2 = sb[j + step]; if (j < 0 || !nb2) return;   // 端では止まる(下のタブへは移らない)
+      const isSig = !!nb2.dataset.sigSort, k = isSig ? nb2.dataset.sigSort : nb2.dataset.allSort, y = window.scrollY;
+      if (isSig) { S.sigSort = HMS.swap(S.sigSort, k, hmsDef(k), HMS_SIG_BASE); HMS.keep("hivep_sigsort", S.sigSort); }
+      else { S.allSort = HMS.swap(S.allSort, k, hmsDef(k), HMS_SIG_BASE); HMS.keep("hivep_allsort", S.allSort); }
+      render(); window.scrollTo(0, y);
+      const bar = document.querySelector("#view .horse-sort"), on = bar && bar.querySelector("button.on");
+      if (on) bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2;
+      hvSwipeAnim($("#view"), step); return;
     }
     const tabs = hvTabOrder("#tabs button[data-tab]");
     const i = tabs.findIndex(b => b.dataset.tab === S.tab), nb = tabs[i + step]; if (i < 0 || !nb) return;   // 端では止まる
