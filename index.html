@@ -1165,6 +1165,10 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 /* ---------- 資金管理(2026-10-29) 蜜壺・巣穴の連敗メーター。記録はこの端末の中だけ */
 nav.tabs { grid-template-columns: repeat(5, 1fr); }
 .ovs-top { flex: none; display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 10px; border: 1px solid rgba(247,201,72,.55); border-radius: 999px; background: rgba(247,201,72,.12); color: var(--honey); font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.ovs-top { position: relative; }
+.ovs-top .ov-dot { position: absolute; top: -3px; right: -3px; width: 11px; height: 11px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 2px #1b140a; }
+.ovs-top .ov-dot.new { background: #ff4d5e; animation: ovPulse 1.1s ease-in-out infinite; }
+@keyframes ovPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 2px #1b140a, 0 0 0 0 rgba(255,77,94,.7); } 50% { transform: scale(1.15); box-shadow: 0 0 0 2px #1b140a, 0 0 0 6px rgba(255,77,94,0); } }   /* 🌏海外の印: 緑=買いあり・赤の点滅=買いが変わった(まだ見ていない)(2026-11-03) */
 .ovs-top[hidden] { display: none; } .ovs-top svg { width: 15px; height: 15px; }   /* 🌏海外: 上の更新ボタンの横(本人の指定 2026-11-03・下のタブからは外した) */
 nav.tabs.has-ovs { grid-template-columns: repeat(6, 1fr); } nav.tabs.has-ovs button { font-size: 10px; letter-spacing: -.04em; } nav.tabs button[data-tab="ovs"] { order: 6; }   /* 🌏海外: 海外のレースがある日だけ(2026-11-03) */
 .ovs-race { display: grid; gap: 10px; }
@@ -2451,22 +2455,40 @@ function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知ら�
 }
 /* 🌏海外(2026-11-03): JRAが馬券を売る海外のレース。HIVEのAIは海外の馬を学習していないので、現地の市場(地元の大口が動かす)の見立ての勝率と、
    日本のプール(日本独自)のオッズを比べ、日本のオッズの方が割に合う馬を出す。オッズ・期待値の数字は出さず、判定・見立ての勝率(整数%)・蜜のしずくだけ */
+/* 🌏海外ボタンの印(2026-11-03 本人の指定「買いが更新するたびに表示されたい」): 買いがある時は緑の●、買いの顔ぶれ・おすすめの形が変わってまだ見ていない時は赤く点滅 */
+function ovDot(sig, has) {
+  const b = document.getElementById("ovsTop"); if (!b) return;
+  let d = b.querySelector(".ov-dot"); let seen = null;
+  try { seen = localStorage.getItem("hive_ov_seen"); } catch (e) { /* 保存できない時は毎回赤 */ }
+  if (!has) { if (d) d.remove(); return; }
+  if (!d) { d = document.createElement("span"); d.className = "ov-dot"; b.appendChild(d); }
+  d.classList.toggle("new", sig !== seen);
+  b.dataset.ovsig = sig;
+  b.title = sig !== seen ? "海外の買いが更新されました" : "海外の買いがあります";
+}
+function ovSeen() {
+  const b = document.getElementById("ovsTop"); if (!b || !b.dataset.ovsig) return;
+  try { localStorage.setItem("hive_ov_seen", b.dataset.ovsig); } catch (e) { /* 何もしない */ }
+  const d = b.querySelector(".ov-dot"); if (d) d.classList.remove("new");
+}
+
 function viewOverseas() {
   const ov = (S.snap && S.snap.overseas) || [], rc = S.snap && S.snap.overseas_rec;
   if (!ov.length) return hvEmpty("海外のレースはありません");
   const roi = t => t && t.roi != null ? t.roi + "%" : "—";
-  const recHtml = rc && (rc.plan.races || rc.win.races) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
+  const recHtml = rc && (rc.plan.races || rc.win.races) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(参考程度に・別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
     <div class="ovs-rec" style="margin-top:6px"><div><small class="note">🎯 おすすめの買い方</small><br><b>${roi(rc.plan)}</b><br><small class="note">${rc.plan.races}レース・的中${rc.plan.hits}</small></div>
     <div><small class="note">🐝 単勝の買い全部</small><br><b>${roi(rc.win)}</b><br><small class="note">${rc.win.races}レース・的中${rc.win.hits}</small></div></div>
     ${(rc.rows || []).slice().reverse().map(x => `<div class="note">${esc(x.date)} ${esc(x.name)}:${esc(x.plan || "見送り")} ${x.hit ? "🎯的中" : "はずれ"}(${(x.order || []).join("-")})</div>`).join("")}</section>` : "";
   return recHtml + ov.map(r => {
-    const head = `<div class="ovs-head"><b>🌏 ${esc(r.name)}</b><br><small>${esc(r.date)} ${r.post ? esc(r.post) + " 発走(日本時間)" : ""}${r.venue ? "・" + esc(r.venue) : ""}</small></div>`;
+    const head = `<div class="ovs-head"><b>🌏 ${esc(r.name)}</b><br><small>${esc(r.date)} ${r.post ? esc(r.post) + " 発走(日本時間)" : ""}${r.venue ? "・" + esc(r.venue) : ""}</small></div>
+      <div class="note" style="border:1px dashed var(--line);border-radius:10px;padding:6px 10px">📝 <b>海外は参考程度に</b>ご覧ください。HIVEのAIの予想ではなく、オッズを比べただけの目安です。</div>`;
     if (!r.open) return `<section class="card ovs-race">${head}<p class="note">🕘 判定は ${esc(r.open_at)} から公開します(日本のオッズが出てから) ${openTag(r.date, r.open_at)}</p>
       <p class="note">出走 ${r.rows.length}頭</p></section>`;
     const fin = r.fin || {};
     const buys = r.buys || [];
     const pl = r.plan || [], pt = t => pl.filter(x => x.t === t).map(x => x.no).join("・"), fb = r.fbuys || [];
-    const planBox = pl.length ? `<div class="ovs-plan"><h3>🎯 おすすめの買い方(各1点・おすすめとは別枠・少額で)</h3><div class="bet">${[pt("単") && "単勝 " + pt("単"), pt("複") && "複勝 " + pt("複")].filter(Boolean).join(" + ")}</div>
+    const planBox = pl.length ? `<div class="ovs-plan"><h3>🎯 おすすめの買い方(参考程度に・各1点・別枠の少額で)</h3><div class="bet">${[pt("単") && "単勝 " + pt("単"), pt("複") && "複勝 " + pt("複")].filter(Boolean).join(" + ")}</div>
       <div class="note">的中率 約${r.hit}%・どれが当たっても赤字にならない形(単勝で割に合う馬を取りにいき、複勝で当てやすさを足す)</div></div>` : "";
     const box = planBox + (buys.length || fb.length ? `<div class="ovs-buy"><h3>🐝 割に合う馬</h3><div class="bet" style="font-size:15px">${buys.length ? "単勝 " + [...buys].sort((a, z) => a - z).join("・") : ""}${buys.length && fb.length ? "　" : ""}${fb.length ? "複勝 " + [...fb].sort((a, z) => a - z).join("・") : ""}</div></div>`
       : `<div class="note"><b>🐝 買いの馬はいません</b>(日本のオッズが現地の見立てより割に合う馬がいない時は、買わないのが正解です)</div>`);
@@ -2507,7 +2529,10 @@ function render() {
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   { const ov = (S.snap && S.snap.overseas) || [], b = document.querySelector('#tabs button[data-tab="ovs"]');   // 🌏海外タブは海外のレースがある日だけ(2026-11-03)
-    if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { t.hidden = !ov.length; t.classList.toggle("on", S.tab === "ovs"); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
+    if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { t.hidden = !ov.length; t.classList.toggle("on", S.tab === "ovs");
+      const op = ov.filter(r => r.open);
+      ovDot(JSON.stringify(op.map(r => [r.id, r.buys, r.fbuys, (r.plan || []).map(x => x.t + x.no)])), op.some(r => (r.buys || []).length + (r.fbuys || []).length + (r.plan || []).length));
+      if (S.tab === "ovs") ovSeen(); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
     if (S.tab === "ovs" && !ov.length) S.tab = "home"; }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") { v.innerHTML = h + `${hvEmpty(`まだ予想がありません。出馬表が出たら表示されます。`)}`; return; }
   h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf, bank: viewBank, ovs: viewOverseas }[S.tab] || viewHome)(d);
