@@ -1955,7 +1955,7 @@ function hvTabOrder(sel) {
     .map((b, i) => ({ b, o: Number(getComputedStyle(b).order) || 0, i })).sort((a, c) => a.o - c.o || a.i - c.i).map(x => x.b);
 }
 const HMS_SIG_BASE = ["post", "fin"], HMS_DET_BASE = ["no", "fin"];   // それだけで並びが決まる項目(押すとその項目だけに戻る)
-const HOURYOKU_NOTE = "🐝 蜂力は、オッズを入れない強さだけの順位です。買う順ではありません(買うのはおすすめの馬だけ)。";
+const HOURYOKU_NOTE = "🐝 蜂力度は、オッズを入れない強さだけの順位です。買う順ではありません。";
 const hmsDef = k => k === "post" || k === "fin" || k === "no" || k === "ar" ? "asc" : "desc";   // 最初の向き: 発走順・着順・馬番は小さい方から、ほかは高い方から
 const S = { pw: null, snap: null, demo: false, date: null, tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.start("hivep_sigsort", { key: "post", dir: "asc", then: [] }), venue: null, resVenue: null, venuePicked: false, resPicked: false,
   raceOrder: store.get("hivep_race_order") || "asc", raceView: store.get("hivep_race_view") || "order", raceSeq: [],   // レース一覧: レース順・発走順・★あり(携帯と同じ)
@@ -2827,7 +2827,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   }
   const sh = $("#sheet"); sh.hidden = false; document.body.style.overflow = "hidden";
   if (!isStep) { try { history.pushState({ sheet: 1 }, ""); } catch {} }
-  const sortKeys = [["no", "馬番"], ["p", "勝率"], ...(r.ai && r.horses.some(x => x.ar != null) ? [["ar", "蜂力"]] : []), ["eb", "旨蜜度"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];   // 蜂力 = 能力だけの強さの順位(オッズが出てから・2026-11-02)
+  const sortKeys = [["no", "馬番"], ["p", "勝率"], ...(r.ai && r.horses.some(x => x.ar != null) ? [["ar", "蜂力度"]] : []), ["eb", "旨蜜度"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];   // 蜂力 = 能力だけの強さの順位(オッズが出てから・2026-11-02)
   if (r.done) sortKeys.push(["fin", "着順"]);
   const ds = HMS.fit(S.detailSort, sortKeys.map(([k]) => k), { key: "no", dir: "asc" });   // 複数条件(①②③)。このレースに無い項目(着順など)は外す
   const { key, dir: direction } = ds;
@@ -2853,7 +2853,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     if (x.buy) tags.push(`<span class="sig-badge buy">💰 おすすめ</span>`);
     if (x.bf === "合う") tags.push(`<span class="pill" style="background:#e6f4ea;color:#1e7b34;border:1px solid #9bd3a8">🧭 偏りに合う</span>`);   // 参考
     if (x.bf === "逆") tags.push(`<span class="pill" style="background:#f1f1f1;color:#666;border:1px solid #ccc">🧭 偏りの逆</span>`);
-    if (r.ai && x.ar != null && x.ar <= 3) tags.push(`<span class="hk-badge r${x.ar}" title="蜂力(能力だけの強さ)の順位。買う順ではありません">🐝 蜂力${x.ar}位</span>`);   // 1〜3位だけ(2026-11-02)
+    if (r.ai && x.ar != null && x.ar <= 3) tags.push(`<span class="hk-badge r${x.ar}" title="蜂力度(能力だけの強さ)の順位。買う順ではありません">🐝 蜂力度${x.ar}位</span>`);   // 1〜3位だけ(2026-11-02)
     const sg = x.sig === "危険" ? "sg-danger" : x.sig === "狙い" ? "sg-aim" : x.sig === "過剰" ? "sg-over" : x.sig === "妙味" ? "sg-ev" : x.himo ? "sg-himo" : "";
     h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${sg}${fzRow(x.fin)}" data-no="${x.no ?? ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
