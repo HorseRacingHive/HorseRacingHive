@@ -2750,7 +2750,7 @@ function viewPerf(d) {
   if (ks.length) h += `<section><h2>★ごとの過去成績<span class="sub">単勝・2013〜2026年の検証</span></h2><div class="card tbl"><table>
     <tr><th>おすすめ度</th><th class="r">単回収</th><th class="r">的中</th><th class="r">最大連敗</th></tr>
     ${ks.map(k => `<tr><td><span class="stars t${+k}">${starStr(+k)}</span></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td><td class="r">${g[k].streak != null ? `${g[k].streak}連敗` : "—"}</td></tr>`).join("")}
-    </table></div><p class="note">${rs ? `※おすすめ(★2〜5)全体: 回収率 ${pct(rs.roi, 0)}・的中率 ${pct(rs.hit, 1)}・最大${rs.streak}連敗。` : ""}※過去の成績は将来を約束しません。最大連敗分の余裕を持ち、1回の金額は少なめに</p></section>`;
+    </table></div><p class="note">${rs ? `※おすすめ(★2〜5)全体: 回収率 ${pct(rs.roi, 0)}・的中率 ${pct(rs.hit, 1)}・最大${rs.streak}連敗※確定オッズ。` : ""}※過去の成績は将来を約束しません。最大連敗分の余裕を持ち、1回の金額は少なめに</p></section>`;
   return h;
 }
 
@@ -2940,13 +2940,13 @@ function bkStarLimits() {   // ★ごとの今年の最大連敗(推奨・公開
   Object.keys(g).forEach(k => { if (g[k].streak != null) lim[k] = g[k].streak; });
   return { lim, lab: "過去の最大連敗(2013年〜)" };
 }
-// HIVE推奨(今のルール・締切4分前オッズ)を2014年からさかのぼった最大連敗(2026-10-31 検証。2024年の76連敗。ほかに2020年71・2015年66・2022年64)
+// HIVE推奨(今のルール・消し条件こみ)を確定オッズで2014年からさかのぼった最大連敗(2026-11-02 本人の指定で確定オッズにそろえた。2020年の82連敗。ほかに2024年67・2015年63・2022年60。旧: 締切4分前判定で76)
 // 今年の最大だけを目安にすると、過去に何度も起きている60〜70台の連敗で「推奨の最大より長い」と出てしまうため、目安はこれ以上にする
-const HIVE_MAX_STREAK = 76, HIVE_MAX_STREAK_YEAR = 2024;
-// はまりの平均(同じ検証・2014〜25年): 当たりと当たりの間は平均13連敗(真ん中9)・1か月で一番長いはまりの平均23・1年で一番長いはまりの平均52
-const HIVE_STREAK_AVG = { run: 13, month: 23, year: 52 };
-// 連勝(同じ検証・2014〜26年・的中514本): ほとんどが1本ずつ。2連勝29回・3連勝5回(最長3)。1年で一番長い連勝は2〜3(2026-11-01)
-const HIVE_WIN_STREAK = { max: 3, maxTimes: 5, twoPerYear: 2 };
+const HIVE_MAX_STREAK = 82, HIVE_MAX_STREAK_YEAR = 2020;
+// はまりの平均(確定オッズ・2014〜25年): 当たりと当たりの間は平均14連敗(13.7・真ん中9)・1か月で一番長いはまりの平均22・1年で一番長いはまりの平均51
+const HIVE_STREAK_AVG = { run: 14, month: 22, year: 51 };
+// 連勝(確定オッズ・2014〜25年): ほとんどが1本ずつ。2連勝以上は年2回ほど・3連勝3回(最長3)(2026-11-02)
+const HIVE_WIN_STREAK = { max: 3, maxTimes: 3, twoPerYear: 2 };
 function bkLimit() { return Math.max(bkYearLimit(), HIVE_MAX_STREAK); }   // 「想定内」の目安 = 過去最大と今年の最大の長い方
 function bkYearLimit() {   // 自分が今年買っている★の今年の最大連敗のうち一番長いもの
   const { lim } = bkStarLimits();
@@ -3269,7 +3269,7 @@ function viewBank() {
     ${bkNestRoute(sk.cur, lim, st[2], brkShow ? brk : null, brkPlay)}
     ${brkShow ? `<div class="bk-sub" style="color:#ffd866">${brk.n}連敗を的中で止めました。蜜を持って巣に帰りました</div>` : ""}
     <div class="bk-sub">蜂が巣から離れるほど連敗。雨雲(${lim}連敗)までは推奨でも起きた範囲です</div>
-    ${starNote ? `<div class="bk-sub" style="margin-top:6px">※★ごとの最大連敗・回収率(HIVE推奨)</div>${starNote}` : ""}
+    ${starNote ? `<div class="bk-sub" style="margin-top:6px">※★ごとの最大連敗・回収率(HIVE推奨・確定オッズ)</div>${starNote}` : ""}
     ${st[0] === "over" ? `<div class="bk-sub" style="color:#f6c4a8;margin-top:6px">一度休んで、予算と1点の金額を見直しましょう</div>` : ""}</div>`;
   // 今月の投資と払戻
   const me = bkSum(bkIn("m"));
@@ -3286,10 +3286,10 @@ function viewBank() {
     <div class="bk-sub" style="font-size:12px;color:#d9b874">${me.roi == null || hvRoi == null ? "今月の記録がたまると比べられます" : `差 ${me.roi >= hvRoi ? "+" : "−"}${Math.abs(Math.round((me.roi - hvRoi) * 100))}%${miss ? `:買い漏れ${miss}頭` : ""}`}</div></div>`;
   // 記録: 最大連敗を今月・今年・過去最高の3つの蜜壺で
   const rm = bkRecords(bkIn("m")), ry = bkRecords(bkIn("y")), ra = bkRecords(BK.bets), cap = Math.max(lim, 1);
-  h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最大連敗の記録</span><span class="bk-sub">下までたまる = ${lim}連敗(過去最大)</span></div>
+  h += `<div class="bk-card"><div class="bk-head"><span style="color:#ffc94a;font-weight:700">最大連敗の記録</span><span class="bk-sub">下までたまる = ${lim}連敗(過去最大・※確定オッズ)</span></div>
     ${bkGlasses([["今月", rm.streak, false], ["今年", ry.streak, false], ["過去最高", ra.streak, true], ["HIVE最大", HIVE_MAX_STREAK, false]], cap)}
-    <div class="bk-sub" style="text-align:center;margin-top:4px;color:${ra.streak > lim ? "#f08a5d" : "#9ee08a"}">${ra.streak > lim ? "HIVE推奨の過去最大(" + lim + "連敗)より長い連敗がありました。金額を見直しましょう" : "どれも起きうる範囲内です。HIVE推奨の過去最大は" + HIVE_MAX_STREAK + "連敗(" + HIVE_MAX_STREAK_YEAR + "年)・今年は最大" + bkYearLimit() + "連敗"}</div>
-    <div class="bk-avg num"><span class="bk-avg-h">連敗・連勝の目安(HIVE推奨・2014年〜)</span><div class="bk-avg-r"><span class="bk-avg-k lose">連敗</span><span>平均<b>${HIVE_STREAK_AVG.run}</b></span><span>1か月の最長<b>${HIVE_STREAK_AVG.month}</b></span><span>1年の最長<b>${HIVE_STREAK_AVG.year}</b></span></div><div class="bk-avg-r"><span class="bk-avg-k win">連勝</span><span>最長<b>${HIVE_WIN_STREAK.max}</b>(${HIVE_WIN_STREAK.maxTimes}回)</span><span>2連勝は年<b>${HIVE_WIN_STREAK.twoPerYear}</b>回ほど</span></div></div></div>`;
+    <div class="bk-sub" style="text-align:center;margin-top:4px;color:${ra.streak > lim ? "#f08a5d" : "#9ee08a"}">${ra.streak > lim ? "HIVE推奨の過去最大(" + lim + "連敗・※確定オッズ)より長い連敗がありました。金額を見直しましょう" : "どれも起きうる範囲内です。HIVE推奨の過去最大は" + HIVE_MAX_STREAK + "連敗(" + HIVE_MAX_STREAK_YEAR + "年・※確定オッズ)・今年は最大" + bkYearLimit() + "連敗"}</div>
+    <div class="bk-avg num"><span class="bk-avg-h">連敗・連勝の目安(HIVE推奨・2014年〜・※確定オッズ)</span><div class="bk-avg-r"><span class="bk-avg-k lose">連敗</span><span>平均<b>${HIVE_STREAK_AVG.run}</b></span><span>1か月の最長<b>${HIVE_STREAK_AVG.month}</b></span><span>1年の最長<b>${HIVE_STREAK_AVG.year}</b></span></div><div class="bk-avg-r"><span class="bk-avg-k win">連勝</span><span>最長<b>${HIVE_WIN_STREAK.max}</b>(${HIVE_WIN_STREAK.maxTimes}回)</span><span>2連勝は年<b>${HIVE_WIN_STREAK.twoPerYear}</b>回ほど</span></div></div></div>`;
   const per = S.bkPer || "m", rp = { m: rm, y: ry, a: ra }[per];
   h += `<div class="bk-card"><div class="bk-seg">${[["m", "今月"], ["y", "今年"], ["a", "過去最高"]].map(([k, l]) => `<button type="button" class="bk-ch${per === k ? " on" : ""}" data-bk="per" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="bk-two num" style="margin-top:10px"><div class="bk-mini"><div class="bk-lab">最高払戻(1点)</div><b style="color:#ffd866">${rp.best ? yen(rp.best.pay) : "—"}</b><div class="bk-sub">${rp.best ? `${esc(rp.best.venue)}${rp.best.no}R ${fmtMD(rp.best.d)}` : "まだ的中なし"}</div></div>
