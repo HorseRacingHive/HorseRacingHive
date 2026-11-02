@@ -2389,15 +2389,19 @@ function wmUpdate() {
   const d = new Date(), p2 = n => String(n).padStart(2, "0");
   const no = S.slot && S.slot !== "_" ? S.slot : "共通";
   const when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
-  if (el.dataset.t === no + when) return;
-  el.dataset.t = no + when;
+  const wide = window.matchMedia && matchMedia("(min-width: 760px)").matches;   // パソコンの幅(2026-11-02 21:50 本人指定: PCだと余白に番号が並んで濃く見える → PCだけ薄く・間隔を広く)
+  if (el.dataset.t === no + when + wide) return;
+  el.dataset.t = no + when + wide;
   const e = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const tile = op => `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="300"><g transform="rotate(-22 160 150)" font-family="sans-serif" fill="#a08a5c" text-anchor="middle"><text x="160" y="150" font-size="76" font-weight="900" fill-opacity="${op}" letter-spacing="4">${e(no)}</text><text x="160" y="182" font-size="16" font-weight="700" fill-opacity="${op * 1.6}">${e(when)}・HIVE 転載禁止</text></g></svg>`;
+  const W = wide ? 440 : 320, H = wide ? 400 : 300;
+  const tile = op => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><g transform="rotate(-22 ${W / 2} ${H / 2})" font-family="sans-serif" fill="#a08a5c" text-anchor="middle"><text x="${W / 2}" y="${H / 2}" font-size="76" font-weight="900" fill-opacity="${op}" letter-spacing="4">${e(no)}</text><text x="${W / 2}" y="${H / 2 + 32}" font-size="16" font-weight="700" fill-opacity="${op * 1.6}">${e(when)}・HIVE 転載禁止</text></g></svg>`;
   const url = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-  document.body.style.backgroundImage = url(tile(0.18));
-  if (sh) sh.style.backgroundImage = url(tile(0.18));
-  el.style.backgroundImage = url(tile(0.07));
+  const bgOp = wide ? 0.11 : 0.18, fgOp = wide ? 0.05 : 0.07;   // 携帯は今まで通り(背景0.18・前面0.07)、PCは背景0.11・前面0.05
+  document.body.style.backgroundImage = url(tile(bgOp));
+  if (sh) sh.style.backgroundImage = url(tile(bgOp));
+  el.style.backgroundImage = url(tile(fgOp));
 }
+window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__wmRs = setTimeout(wmUpdate, 300); });   // 窓の幅を変えたら透かしの濃さも合わせる
 function render() {
   wmUpdate();
   if (S.snap) { renderWeather(); dayNavInfo(); }   // 選択中の会場名の色を合わせる
