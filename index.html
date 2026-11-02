@@ -1461,13 +1461,31 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
   </div>
 </div>
 
+<style>
+/* パソコンで開いたとき(2026-11-02 本人指定): 画面いっぱいに広がって成績・資金の絵が巨大になるので、
+   ふつうは携帯と同じ幅(560px)でまん中に表示。右上の「🖥 PC表示」で広め(900px)の表示に切り替え(この端末で覚える: hivep_pcw) */
+.pcw-btn { display: none; }
+@media (min-width: 760px) {
+  .pcw-btn { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; padding: 4px 10px; border: 1px solid rgba(247,201,72,.55); border-radius: 999px;
+    background: rgba(247,201,72,.08); color: var(--honey); font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .pcw-btn:hover { background: rgba(247,201,72,.18); }
+  .top-actions { grid-template-columns: auto auto; align-items: center; column-gap: 0; }
+  .top-actions .pcw-btn { grid-row: 1 / span 2; }
+  .top-actions .refresh, .top-actions .top-right { grid-column: 2; }
+  .ov-strip { margin-left: 0; margin-right: 0; }   /* 携帯では画面の端まで広げている帯を、中の幅に収める */
+  html:not(.pcw) header.top > .wrap, html:not(.pcw) main.wrap, html:not(.pcw) .site-foot, html:not(.pcw) .sheet .wrap { max-width: 560px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+  html:not(.pcw) nav.tabs { left: max(0px, calc(50% - 280px)); right: max(0px, calc(50% - 280px)); border-left: 1px solid rgba(247,201,72,.35); border-right: 1px solid rgba(247,201,72,.35); border-radius: 14px 14px 0 0; }
+  html.pcw header.top > .wrap, html.pcw main.wrap, html.pcw .site-foot, html.pcw .sheet .wrap { max-width: 900px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+  html.pcw nav.tabs { left: max(0px, calc(50% - 320px)); right: max(0px, calc(50% - 320px)); border-left: 1px solid rgba(247,201,72,.35); border-right: 1px solid rgba(247,201,72,.35); border-radius: 14px 14px 0 0; }
+}
+</style>
 <div id="app" hidden>
 <header class="top">
   <div class="wrap">
     <div class="top-row">
       <img class="logo" src="hive_logo.png?v=4" alt="" onerror="this.style.visibility='hidden'">
       <div class="brand">HORSE RACING</div>
-      <div class="top-actions"><button class="refresh" id="refresh" aria-label="最新にする">
+      <div class="top-actions"><button type="button" class="pcw-btn" id="pcwBtn" aria-pressed="false">🖥 PC表示</button><button class="refresh" id="refresh" aria-label="最新にする">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
         </button><div class="top-right" id="stamp"></div></div>
     </div>
@@ -1796,6 +1814,13 @@ function announceBlock(list, showEmpty) {
   return h + `</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
+(function pcwInit() {   // パソコン用の表示の切り替え(2026-11-02)。幅760px以上のときだけボタンが出る
+  const apply = on => { document.documentElement.classList.toggle("pcw", on); const b = document.getElementById("pcwBtn");
+    if (b) { b.textContent = on ? "📱 スマホ表示" : "🖥 PC表示"; b.setAttribute("aria-pressed", on ? "true" : "false"); } };
+  apply(store.get("hivep_pcw") === "1");
+  document.addEventListener("click", e => { if (!e.target.closest || !e.target.closest("#pcwBtn")) return;
+    const on = !document.documentElement.classList.contains("pcw"); store.set("hivep_pcw", on ? "1" : "0"); apply(on); });
+})();
 /* ===== 複数条件の並べ替え(2026-10-31): 押した順に①②③(最大3つ)。1番目をもう一度押すと向きが入れ替わる。馬番(発走順)を押すと元に戻る
    📌固定: 押すと今の並びをどのレースでも使う。もう一度押すと解除(解除中はレースを開くたび馬番順) ===== */
 const HMS = {
