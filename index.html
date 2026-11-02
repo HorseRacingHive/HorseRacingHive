@@ -918,6 +918,15 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 @keyframes secFlash { 0% { box-shadow: 0 0 0 0 rgba(247,201,72,0); } 30% { box-shadow: 0 0 0 4px rgba(247,201,72,.6); } 100% { box-shadow: 0 0 0 0 rgba(247,201,72,0); } }
 #os-sec.flash { animation: secFlash 1.4s ease-out 1; border-radius: 14px; }
 .ann-note { margin: 4px 2px 0; font-size: 10.5px; color: var(--muted); line-height: 1.4; }
+.ann-note b { color: var(--ink); font-weight: 700; }
+.ann-help { margin: 6px 2px 0; font-size: 11.5px; color: var(--muted); line-height: 1.5; }   /* 見直しの時刻とDiscordの通知(2026-11-02) */
+.ann-help > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border: 1px solid rgba(247,201,72,.4); border-radius: 999px; color: var(--honey); font-weight: 700; font-size: 11.5px; }
+.ann-help > summary::-webkit-details-marker { display: none; }
+.ann-help > summary::after { content: "▼"; font-size: 9px; } .ann-help[open] > summary::after { content: "▲"; }
+.ann-help .ah-body { margin-top: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(247,201,72,.05); }
+.ann-help .ah-h { margin: 0 0 4px; color: var(--ink); font-weight: 800; font-size: 12px; } .ann-help .ah-h + ul + .ah-h { margin-top: 10px; }
+.ann-help .ah-flow { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; } .ann-help .ah-flow b { color: var(--honey); font-weight: 700; }
+.ann-help .ah-s { margin: 8px 0 0; font-size: 10.5px; }
 
 .fz { display: grid; justify-items: center; gap: 1px; min-width: 42px; }
 .fz-hex { width: 40px; height: 35px; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); display: grid; place-items: center;
@@ -1771,7 +1780,7 @@ function raceAnnounce(list, raceId, upcoming) {
 }
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
-    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2>${hvEmpty(`※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます`, { fill: false, next: false, style: "font-size:12px" })}<p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>` : "";
+    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2>${hvEmpty(`※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます`, { fill: false, next: false, style: "font-size:12px" })}${annHelp()}</section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
@@ -1811,7 +1820,7 @@ function announceBlock(list, showEmpty) {
     h += `<div class="at-full">${a.id ? `<button class="ah-race" data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>` : ""}<div class="ah-text">${esc(a.text || "")}</div></div>`;
     if (rest.length) h += `<div class="announce scrollbox ah-list">${rest.map(row).join("")}</div>`;
   }
-  return h + `</div><p class="ann-note">※お知らせは最大10分ほど遅れて届きます。すぐ知りたい方はDiscordの通知をオンにしてください。</p></section>`;
+  return h + `</div>${annHelp()}</section>`;
 }
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
 (function pcwInit() {   // パソコン用の表示の切り替え(2026-11-02)。幅760px以上のときだけボタンが出る
@@ -2402,6 +2411,32 @@ function wmUpdate() {
   el.style.backgroundImage = url(tile(fgOp));
 }
 window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__wmRs = setTimeout(wmUpdate, 300); });   // 窓の幅を変えたら透かしの濃さも合わせる
+/* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
+   時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終判断=締切約4分前 / 共有ページは10分ごとに更新 */
+function annHelp() {
+  return `<p class="ann-note">※このページは10分ごとに更新するので、お知らせは最大10分ほど遅れます。<b>締切直前の最終判断はページに間に合わないことがある</b>ので、すぐ知りたい方はDiscordの通知をオンにしてください。</p>
+<details class="ann-help"><summary>ℹ️ AIが見直す時刻と、Discordに届く通知</summary>
+<div class="ah-body">
+<p class="ah-h">🕘 1日の流れ</p>
+<ul class="ah-flow">
+<li><b>前日16:20</b> 次の日の全レース予想を公開(おすすめ・★は当日まで隠します)</li>
+<li><b>当日7:00〜</b> 30分ごとに全レースを見直し。おすすめは<b>8:21</b>に公開(12:30以降に発走する午後のレースは<b>12:00</b>)</li>
+<li><b>発走の約30分前</b> 全レースを見直し(新しくおすすめに入った馬は 🚨急遽)/おすすめのあるレースは<b>直前予想</b>(そのまま買い・見送り)</li>
+<li><b>発走の約10分前</b> もう一度全レースを見直し(🚨急遽・一度見送った馬が戻れば ✅やっぱり買い)</li>
+<li><b>締切の約4分前</b> <b>最終判断</b>。変わらなくても毎回「そのまま買い」か「見送り」を送ります</li>
+<li><b>レースのあと</b> 着順・的中を反映</li>
+</ul>
+<p class="ah-h">🔔 Discordに届く通知(合言葉メンバー)</p>
+<ul class="ah-flow">
+<li><b>🏇｜AIおすすめ予想</b> 8:21・12:00のおすすめ(狙い馬)</li>
+<li><b>⏰｜AI直前予想</b> 直前予想・最終判断・🚨急遽・✅やっぱり買い・取消/乗り替わり</li>
+<li><b>📣｜AIからのお知らせ</b> 前日16:20の全レース予想の公開</li>
+<li><b>🎉｜AIの的中・成績</b> 的中・今日の成績(レースのあと)</li>
+<li><b>📈｜プラスの買い方</b> プラスになった買い方の紹介</li>
+</ul>
+<p class="ah-s">※公開時刻(8:21・12:00)より前のレースの通知は、公開時刻になってからまとめて届きます。<br>※見直しの時刻はJRAのオッズの発表やパソコンの処理で、数分ずれることがあります。</p>
+</div></details>`;
+}
 function render() {
   wmUpdate();
   if (S.snap) { renderWeather(); dayNavInfo(); }   // 選択中の会場名の色を合わせる
@@ -2506,8 +2541,8 @@ function viewHome(d) {
   } else {
     h += `${hvEmpty(`${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}`)}`;
   }
-  if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから、直前のオッズで新しく おすすめ に入った馬。</p>`;
-  if (os.some(x => x.back)) h += `<p class="note">✅やっぱり買い = 直前の見直しで一度見送りにしたが、最後の判断で買いに戻った馬。</p>`;
+  if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから(約30分前・約10分前の見直し)、直前のオッズで新しく おすすめ に入った馬。Discordの ⏰｜AI直前予想 にも届きます。</p>`;
+  if (os.some(x => x.back)) h += `<p class="note">✅やっぱり買い = 約30分前の直前予想で一度見送りにしたが、約10分前の見直しか締切約4分前の最終判断で買いに戻った馬。Discordの ⏰｜AI直前予想 にも届きます。</p>`;
   const sk = d.skipped || [];
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
