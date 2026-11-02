@@ -927,6 +927,9 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .ann-help .ah-h { margin: 0 0 4px; color: var(--ink); font-weight: 800; font-size: 12px; } .ann-help .ah-h + ul + .ah-h { margin-top: 10px; }
 .ann-help .ah-flow { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; } .ann-help .ah-flow b { color: var(--honey); font-weight: 700; }
 .ann-help .ah-s { margin: 8px 0 0; font-size: 10.5px; }
+/* 時刻は色つきの小さな札・説明はまとめて折り返す(1文字だけ次の行に残らないように・2026-11-03) */
+.ann-help .ah-t { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: var(--good); background: var(--good-soft); border: 1px solid currentColor; white-space: nowrap; }
+.ann-help .ah-d { display: inline-block; }
 
 .fz { display: grid; justify-items: center; gap: 1px; min-width: 42px; }
 .fz-hex { width: 40px; height: 35px; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); display: grid; place-items: center;
@@ -1693,11 +1696,11 @@ const fmtYM = s => { const m = String(s).match(/(\d{4})-(\d{2})/); return m ? `$
 const STAR_LABEL = { 5: "勝負", 4: "注目", 3: "狙い", 2: "買い" };
 const roiCls = r => r == null ? "" : r >= 1 ? "plus" : "minus";
 const factorSum = (x, key) => key === "fplus" ? (x.kp ?? 0) + (x.mp ?? 0) : (x.km ?? 0) + (x.mm ?? 0);
-// ファクターは名前を出さず、数だけ
+// ファクターは名前を出さず、数だけ。2026-11-03 本人の指定で「買い条件+＋材料」を＋ファクター、「消し+−材料」を−ファクターの2つにまとめた
+// (並べ替えの「＋ファクター順/−ファクター順」と同じ数。K/Mの区別も出なくなる)
 function factorLine(x) {
   if (x.kp == null) return "";
-  return `<div class="bar fcount"><span class="fc plus">買い条件 +${x.kp}</span><span class="fc minus">消し ${x.km}</span>`
-    + `<span class="fc plus">＋材料 ${x.mp}</span><span class="fc minus">−材料 ${x.mm}</span></div>`;
+  return `<div class="bar fcount"><span class="fc plus">＋ファクター ${factorSum(x, "fplus")}</span><span class="fc minus">−ファクター ${factorSum(x, "fminus")}</span></div>`;
 }
 // おすすめの単勝成績: 直前の見送りを反映した「実際」をメインに、見送らなかった場合を下に
 function recPerfBlock(rp, title) {
@@ -2419,10 +2422,10 @@ function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知ら�
 <details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
-<li><b>直前予想</b>(発走約30分前) おすすめのレースを「そのまま買い」か「見送り」</li>
-<li><b>🚨 急遽</b>(発走約30分前・10分前) 新しくおすすめに入った馬</li>
-<li><b>✅ やっぱり買い</b>(発走約10分前) 一度見送った馬が戻った</li>
-<li><b>締切直前</b>(締切約4分前) 最終判断。変わらなくても毎回送ります。ここで新しく入った馬・大穴は 🆕</li>
+<li><b>直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">おすすめのレースを「そのまま買い」か「見送り」</span></li>
+<li><b>🚨 急遽</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">新しくおすすめに入った馬</span></li>
+<li><b>✅ やっぱり買い</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">一度見送った馬が戻った</span></li>
+<li><b>締切直前</b> <span class="ah-t">締切約4分前</span> <span class="ah-d">最終判断。変わらなくても毎回送ります</span> <span class="ah-d">ここで新しく入った馬・大穴は 🆕</span></li>
 </ul>
 </div></details>`;
 }
