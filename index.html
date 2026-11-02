@@ -2085,7 +2085,7 @@ function pickDate() {   // 当日(開催がなければ直前の開催日)。未
   S.date = ds.includes(t) ? t : (ds[ds.length - 1] || S.snap.days[S.snap.days.length - 1]?.date || null);
 }
 // 着順(案Z): 右端の六角+王冠、左の帯で金・銀・銅、4着以下は薄く
-const fzBlock = f => f == null ? "" : `<span class="fz ${f <= 3 ? "f" + f : "fx"}" aria-label="${f}着"><span class="fz-hex">${f}</span><small>${f}着</small></span>`;
+const fzBlock = f => f == null ? "" : `<span class="fz ${f <= 3 ? "f" + f : "fx"}" aria-label="${f}着"><span class="fz-hex">${f}</span><small>着</small></span>`;
 const fzRow = f => f == null ? "" : ` has-fz fz${f <= 3 ? f : "x"}`;
 const curDay = () => (S.snap?.days || []).find(d => d.date === S.date);
 function postDate(post) {
