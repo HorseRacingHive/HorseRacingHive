@@ -2203,6 +2203,21 @@ function babaStripHtml(venues) {   // 馬場の帯(携帯用と同じ): 東京 �
 }
 
 // 電光板の2段目の馬場(案B)。押すとその会場に切り替わる(今までの馬場の帯と同じ動き)
+// 過去の日(馬場の発表データが残っていない日)は、各レースの馬場状態から電光掲示板を作る(場ごと・芝/ダートそれぞれ一番後のレース・2026-11-02)
+function babaFromRaces(day) {
+  const out = [];
+  for (const v of (day?.venues || [])) {
+    const rs = (v.races || []).slice().sort((a, b) => (a.no || 0) - (b.no || 0));
+    let shiba = null, dirt = null;
+    for (const r of rs) {
+      const c = String(r.course || ""), g = r.going_known === false ? null : r.going;
+      if (!g || c.startsWith("障")) continue;
+      if (c.includes("ダ")) dirt = g; else if (c.includes("芝")) shiba = g;
+    }
+    if (shiba || dirt) out.push({ venue: v.venue, tenko: null, shiba, dirt, time: "" });
+  }
+  return out;
+}
 function ledBabaHtml(venues) {
   if (!venues.length) return "";
   const cls = { "良": "g1", "稍重": "g2", "重": "g3", "不良": "g4" };
@@ -2215,7 +2230,7 @@ function ledBabaHtml(venues) {
 function renderWeather() {
   const el = $("#weather");
   const day = curDay();
-  const venues = (day?.baba || []).slice().sort((a, b) => ["東京", "京都", "新潟"].indexOf(a.venue) - ["東京", "京都", "新潟"].indexOf(b.venue));
+  const venues = ((day?.baba || []).length ? day.baba : babaFromRaces(day)).slice().sort((a, b) => ["東京", "京都", "新潟"].indexOf(a.venue) - ["東京", "京都", "新潟"].indexOf(b.venue));
   el.innerHTML = "";   // 馬場は電光板の中に出す(案B)
   S.ledBaba = ledBabaHtml(venues);
   const box = $("#days .dn-baba"); if (box && box.innerHTML !== S.ledBaba) box.innerHTML = S.ledBaba;
