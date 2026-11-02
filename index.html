@@ -1173,6 +1173,12 @@ nav.tabs.has-ovs { grid-template-columns: repeat(6, 1fr); } nav.tabs.has-ovs but
 .ovs-buy h3 { margin: 0 0 4px; font-size: 15px; color: var(--aim, #4ade80); } .ovs-buy .bet { font-size: 18px; font-weight: 900; }
 .ovs-tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 13px; }
 .ovs-tbl td, .ovs-tbl th { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: left; }
+.ovs-tbl td.j, .ovs-tbl td.fj, .ovs-tbl th { white-space: nowrap; }
+.ovs-tbl td.fj { font-size: 12px; } .ovs-tbl td.fj.買い { color: var(--aim, #4ade80); font-weight: 900; } .ovs-tbl td.fj.見送り, .ovs-tbl td.fj.検討 { color: var(--muted); }
+.ovs-plan { border: 2px solid var(--honey); border-radius: 14px; padding: 10px 12px; background: rgba(247,201,72,.10); }
+.ovs-plan h3 { margin: 0 0 4px; font-size: 15px; color: var(--honey); } .ovs-plan .bet { font-size: 19px; font-weight: 900; }
+.ovs-rec { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ovs-rec > div { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.ovs-rec b { font-size: 20px; color: var(--honey); }   /* 判定が2行に割れないように(2026-11-03) */
 .ovs-tbl th { color: var(--muted); font-size: 11px; } .ovs-tbl td.n { text-align: right; width: 2.2em; } .ovs-tbl td.pc { text-align: right; }
 .ovs-tbl tr.買い td { background: rgba(74,222,128,.10); } .ovs-tbl tr.買い td.j { color: var(--aim, #4ade80); font-weight: 900; }
 .ovs-tbl tr.検討 td.j { color: #fbbf24; font-weight: 800; } .ovs-tbl tr.見送り td, .ovs-tbl tr.取消 td { color: var(--muted); }
@@ -2446,20 +2452,28 @@ function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知ら�
 /* 🌏海外(2026-11-03): JRAが馬券を売る海外のレース。HIVEのAIは海外の馬を学習していないので、現地の市場(地元の大口が動かす)の見立ての勝率と、
    日本のプール(日本独自)のオッズを比べ、日本のオッズの方が割に合う馬を出す。オッズ・期待値の数字は出さず、判定・見立ての勝率(整数%)・蜜のしずくだけ */
 function viewOverseas() {
-  const ov = (S.snap && S.snap.overseas) || [];
+  const ov = (S.snap && S.snap.overseas) || [], rc = S.snap && S.snap.overseas_rec;
   if (!ov.length) return hvEmpty("海外のレースはありません");
-  return ov.map(r => {
+  const roi = t => t && t.roi != null ? t.roi + "%" : "—";
+  const recHtml = rc && (rc.plan.races || rc.win.races) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
+    <div class="ovs-rec" style="margin-top:6px"><div><small class="note">🎯 おすすめの買い方</small><br><b>${roi(rc.plan)}</b><br><small class="note">${rc.plan.races}レース・的中${rc.plan.hits}</small></div>
+    <div><small class="note">🐝 単勝の買い全部</small><br><b>${roi(rc.win)}</b><br><small class="note">${rc.win.races}レース・的中${rc.win.hits}</small></div></div>
+    ${(rc.rows || []).slice().reverse().map(x => `<div class="note">${esc(x.date)} ${esc(x.name)}:${esc(x.plan || "見送り")} ${x.hit ? "🎯的中" : "はずれ"}(${(x.order || []).join("-")})</div>`).join("")}</section>` : "";
+  return recHtml + ov.map(r => {
     const head = `<div class="ovs-head"><b>🌏 ${esc(r.name)}</b><br><small>${esc(r.date)} ${r.post ? esc(r.post) + " 発走(日本時間)" : ""}${r.venue ? "・" + esc(r.venue) : ""}</small></div>`;
     if (!r.open) return `<section class="card ovs-race">${head}<p class="note">🕘 判定は ${esc(r.open_at)} から公開します(日本のオッズが出てから) ${openTag(r.date, r.open_at)}</p>
       <p class="note">出走 ${r.rows.length}頭</p></section>`;
     const fin = r.fin || {};
     const buys = r.buys || [];
-    const box = buys.length ? `<div class="ovs-buy"><h3>🐝 買い ${buys.length}頭(単勝・おすすめとは別枠・少額で)</h3><div class="bet">単勝 ${[...buys].sort((a, z) => a - z).join("・")}</div></div>`
-      : `<div class="note"><b>🐝 買いの馬はいません</b>(日本のオッズが現地の見立てより割に合う馬がいない時は、買わないのが正解です)</div>`;
+    const pl = r.plan || [], pt = t => pl.filter(x => x.t === t).map(x => x.no).join("・"), fb = r.fbuys || [];
+    const planBox = pl.length ? `<div class="ovs-plan"><h3>🎯 おすすめの買い方(各1点・おすすめとは別枠・少額で)</h3><div class="bet">${[pt("単") && "単勝 " + pt("単"), pt("複") && "複勝 " + pt("複")].filter(Boolean).join(" + ")}</div>
+      <div class="note">的中率 約${r.hit}%・どれが当たっても赤字にならない形(単勝で割に合う馬を取りにいき、複勝で当てやすさを足す)</div></div>` : "";
+    const box = planBox + (buys.length || fb.length ? `<div class="ovs-buy"><h3>🐝 割に合う馬</h3><div class="bet" style="font-size:15px">${buys.length ? "単勝 " + [...buys].sort((a, z) => a - z).join("・") : ""}${buys.length && fb.length ? "　" : ""}${fb.length ? "複勝 " + [...fb].sort((a, z) => a - z).join("・") : ""}</div></div>`
+      : `<div class="note"><b>🐝 買いの馬はいません</b>(日本のオッズが現地の見立てより割に合う馬がいない時は、買わないのが正解です)</div>`);
     const rows = [...r.rows].sort((a, z) => ({ 買い: 0, 検討: 1 }[a.j] ?? 2) - ({ 買い: 0, 検討: 1 }[z.j] ?? 2) || (z.p || 0) - (a.p || 0)).map(x =>
-      `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td></tr>`).join("");
+      `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td><td class="fj ${esc(x.fj || "")}">${{ 買い: "🎯買い", 検討: "検討", 見送り: "—" }[x.fj] || "—"}</td></tr>`).join("");
     return `<section class="card ovs-race">${head}${box}
-      <table class="ovs-tbl"><thead><tr><th>判定</th><th>番</th><th>馬名</th><th>見立て勝率</th><th>旨蜜度</th></tr></thead><tbody>${rows}</tbody></table>
+      <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="note">※HIVEのAIは海外の馬を学習していないので、ここはAIの予想ではありません。現地の市場の見立ての勝率と日本のオッズを比べ、日本のオッズの方が割に合う馬(🐝買い)を出しています。日本のオッズは締切直前まで大きく動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
   }).join("");
 }
