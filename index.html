@@ -1164,6 +1164,8 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .rtier.t1{background:#2a2110;color:#f0c75e;box-shadow:inset 0 0 0 1px #E0B23A}
 /* ---------- 資金管理(2026-10-29) 蜜壺・巣穴の連敗メーター。記録はこの端末の中だけ */
 nav.tabs { grid-template-columns: repeat(5, 1fr); }
+.ovs-top { flex: none; display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 10px; border: 1px solid rgba(247,201,72,.55); border-radius: 999px; background: rgba(247,201,72,.12); color: var(--honey); font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.ovs-top[hidden] { display: none; } .ovs-top svg { width: 15px; height: 15px; }   /* 🌏海外: 上の更新ボタンの横(本人の指定 2026-11-03・下のタブからは外した) */
 nav.tabs.has-ovs { grid-template-columns: repeat(6, 1fr); } nav.tabs.has-ovs button { font-size: 10px; letter-spacing: -.04em; } nav.tabs button[data-tab="ovs"] { order: 6; }   /* 🌏海外: 海外のレースがある日だけ(2026-11-03) */
 .ovs-race { display: grid; gap: 10px; }
 .ovs-race .ovs-head b { font-size: 18px; } .ovs-race .ovs-head small { color: var(--muted); }
@@ -1508,6 +1510,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
     <div class="top-row">
       <img class="logo" src="hive_logo.png?v=4" alt="" onerror="this.style.visibility='hidden'">
       <div class="brand">HORSE RACING</div>
+      <button type="button" class="ovs-top" id="ovsTop" hidden onclick="var b=document.querySelector('#tabs button[data-tab=&quot;ovs&quot;]');if(b)b.click();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.9 5.6 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.6-3.9-9S9.4 5.6 12 3z"/></svg>海外</button>
       <div class="top-actions"><button type="button" class="pcw-btn" id="pcwBtn" aria-pressed="false">🖥 PC表示</button><button class="refresh" id="refresh" aria-label="最新にする">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
         </button><div class="top-right" id="stamp"></div></div>
@@ -2490,7 +2493,7 @@ function render() {
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   { const ov = (S.snap && S.snap.overseas) || [], b = document.querySelector('#tabs button[data-tab="ovs"]');   // 🌏海外タブは海外のレースがある日だけ(2026-11-03)
-    if (b) b.hidden = !ov.length; const nav = document.getElementById("tabs"); if (nav) nav.classList.toggle("has-ovs", !!ov.length);
+    if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { t.hidden = !ov.length; t.classList.toggle("on", S.tab === "ovs"); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
     if (S.tab === "ovs" && !ov.length) S.tab = "home"; }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") { v.innerHTML = h + `${hvEmpty(`まだ予想がありません。出馬表が出たら表示されます。`)}`; return; }
   h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf, bank: viewBank, ovs: viewOverseas }[S.tab] || viewHome)(d);
