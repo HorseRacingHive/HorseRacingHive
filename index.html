@@ -1260,6 +1260,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 @keyframes bkBdrop { 0%, 40% { opacity: 0; transform: translateY(0); } 45% { opacity: 1; } 66% { opacity: 1; transform: translateY(26px); } 72%, 100% { opacity: 0; transform: translateY(30px); } }
 @keyframes bkRise { from { transform: translateY(5px); } }
 .bk-st { width: 100%; border-collapse: collapse; margin-top: 2px; font-size: 11px; color: #c9a35a; }
+.bk-st tr.bk-st-all td { font-weight: 800; color: var(--ink); border-bottom: 1px solid rgba(232,163,23,.35); padding-bottom: 3px; }
 .bk-st th { font-weight: 500; color: #a8894a; text-align: left; padding: 1px 4px; }
 .bk-st th, .bk-st td { background: none !important; border: 0 !important; } .bk-st td { padding: 1px 4px; } .bk-st td:first-child { color: #ffc94a; width: 2.6em; }
 .bk-st .p { color: #9ee08a; } .bk-st .m { color: #ff9aa8; }
@@ -2413,28 +2414,16 @@ function wmUpdate() {
 window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__wmRs = setTimeout(wmUpdate, 300); });   // 窓の幅を変えたら透かしの濃さも合わせる
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
    時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終判断=締切約4分前 / 共有ページは10分ごとに更新 */
-function annHelp() {
-  return `<p class="ann-note">※このページは10分ごとに更新するので、お知らせは最大10分ほど遅れます。<b>締切直前の最終判断はページに間に合わないことがある</b>ので、すぐ知りたい方はDiscordの通知をオンにしてください。</p>
-<details class="ann-help"><summary>ℹ️ AIが見直す時刻と、Discordに届く通知</summary>
+function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ
+  return `<p class="ann-note">※このページは10分ごとに更新します。<b>締切直前の最終判断は間に合わないことがある</b>ので、すぐ知りたい方はDiscordの通知をオンにしてください。</p>
+<details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
-<p class="ah-h">🕘 1日の流れ</p>
 <ul class="ah-flow">
-<li><b>前日16:20</b> 次の日の全レース予想を公開(おすすめ・★は当日まで隠します)</li>
-<li><b>当日7:00〜</b> 30分ごとに全レースを見直し。おすすめは<b>8:21</b>に公開(12:30以降に発走する午後のレースは<b>12:00</b>)</li>
-<li><b>発走の約30分前</b> 全レースを見直し(新しくおすすめに入った馬は 🚨急遽)/おすすめのあるレースは<b>直前予想</b>(そのまま買い・見送り)</li>
-<li><b>発走の約10分前</b> もう一度全レースを見直し(🚨急遽・一度見送った馬が戻れば ✅やっぱり買い)</li>
-<li><b>締切の約4分前</b> <b>最終判断</b>。変わらなくても毎回「そのまま買い」か「見送り」を送ります</li>
-<li><b>レースのあと</b> 着順・的中を反映</li>
+<li><b>直前予想</b>(発走約30分前) おすすめのレースを「そのまま買い」か「見送り」</li>
+<li><b>🚨 急遽</b>(発走約30分前・10分前) 新しくおすすめに入った馬</li>
+<li><b>✅ やっぱり買い</b>(発走約10分前) 一度見送った馬が戻った</li>
+<li><b>締切直前</b>(締切約4分前) 最終判断。変わらなくても毎回送ります。ここで新しく入った馬・大穴は 🆕</li>
 </ul>
-<p class="ah-h">🔔 Discordに届く通知(合言葉メンバー)</p>
-<ul class="ah-flow">
-<li><b>🏇｜AIおすすめ予想</b> 8:21・12:00のおすすめ(狙い馬)</li>
-<li><b>⏰｜AI直前予想</b> 直前予想・最終判断・🚨急遽・✅やっぱり買い・取消/乗り替わり</li>
-<li><b>📣｜AIからのお知らせ</b> 前日16:20の全レース予想の公開</li>
-<li><b>🎉｜AIの的中・成績</b> 的中・今日の成績(レースのあと)</li>
-<li><b>📈｜プラスの買い方</b> プラスになった買い方の紹介</li>
-</ul>
-<p class="ah-s">※公開時刻(8:21・12:00)より前のレースの通知は、公開時刻になってからまとめて届きます。<br>※見直しの時刻はJRAのオッズの発表やパソコンの処理で、数分ずれることがあります。</p>
 </div></details>`;
 }
 function render() {
@@ -2782,22 +2771,39 @@ function publicCurve() {
   }
   return pts;
 }
+// 成績タブの「○月」= 選んでいる日の月(2026-11-03 本人の指定。10月の日を見ているのに今月(11月)が出ていた)。
+// 公開データの period_months(月ごと・検証データで正確)→ 今月なら period.month → 無ければ手元の90日分のおすすめの成績から数える(1日10%きざみなので目安)
+function pubMonth() {
+  const ym = String(S.date || todayStr()).slice(0, 7), per = S.snap?.period || {};
+  const lab = `${Number(ym.slice(5, 7))}月`;
+  const pm = S.snap?.period_months?.[ym];
+  if (pm) return { lab, ym, x: pm };
+  if (per.month && per.month.label === ym) return { lab, ym, x: per.month };
+  let n = 0, hit = 0, ret = 0, days = 0;
+  for (const day of S.snap?.days || []) {
+    if (!String(day.date).startsWith(ym)) continue;
+    const a = day.rec_perf?.actual || day.perf; if (!a?.n || a.roi == null) continue;
+    n += a.n; hit += a.hit || 0; ret += a.roi * a.n; days++;
+  }
+  return { lab, ym, approx: true, x: n ? { label: ym, n, hit, hit_rate: hit / n, roi: ret / n, days, races: null } : null };
+}
 function perfDashboard(d, rp) {
   const per = S.snap.period || {};
+  const PM = pubMonth();
   const today = rp?.actual;
   const pts = publicCurve();
   const pm = x => x && x.n && x.roi != null ? { roi: x.roi, n: x.n, hit: x.hit } : null;   // 金額は使わない(回収率だけ)
   const osN = (d.osusume || []).length;   // この日のおすすめの頭数(0なら「おすすめなし」と出す)
   const dayEmpty = osN ? `結果待ち(おすすめ${osN}頭)` : "この日はおすすめの馬がいませんでした";
-  const periods = { day: { lab: d.label, tab: "この日", empty: dayEmpty, ...(pm(today) || {}) }, month: { lab: "今月", ...(pm(per.month) || {}) },
+  const periods = { day: { lab: d.label, tab: "この日", empty: dayEmpty, ...(pm(today) || {}) }, month: { lab: PM.lab, tab: PM.lab, ...(pm(PM.x) || {}) },
     year: { lab: `今年${per.year?.label ? `(${per.year.label})` : ""}`, ...(pm(per.year) || {}) } };
   let h = `<section><h2>ひと目でわかる成績<span class="sub">おすすめ・単勝</span></h2>${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
   h += gaugeSvg(today?.n ? today.roi : null, `${esc(d.label)}`, today?.n ? `${today.hit}/${today.n}的中` : (osN ? `結果待ち・おすすめ${osN}頭` : "おすすめなし"));
-  h += gaugeSvg(per.month?.n ? per.month.roi : null, "今月", per.month?.n ? `${per.month.hit}/${per.month.n}的中` : "まだ結果なし");
+  h += gaugeSvg(PM.x?.n ? PM.x.roi : null, PM.lab, PM.x?.n ? `${PM.x.hit}/${PM.x.n}的中` : "まだ結果なし");
   h += `</div><div class="dash">`;
   h += gaugeSvg(per.year?.n ? per.year.roi : null, `今年${per.year?.label ? `(${esc(per.year.label)})` : ""}`, per.year?.n ? `${per.year.hit}/${per.year.n}的中` : "—");
   const rs = S.snap.rec_stats;
-  h += gaugeSvg(rs?.roi ?? null, "2013年〜の検証", rs ? `年${rs.per_year}点 ・ プラスの年 ${esc(rs.plus_years || "")}` : "—");
+  h += gaugeSvg(rs?.roi ?? null, "2014年〜の検証", rs ? `年${rs.per_year}点 ・ プラスの年 ${esc(rs.plus_years || "")}` : "—");
   const ptMode = pts.length && !pts[0].roi;
   h += `</div><div class="card chart-card"><div class="cap">${ptMode ? "収支の推移<small>(この90日・累積・1点買うのを1として何点分のプラスか・5点きざみ)</small>" : "回収率の推移<small>(この90日・累積)</small>"}</div>${lineSvg(pts, ptMode ? { fmt: fmtMD, fmtV: v => (v > 0 ? "+" : v < 0 ? "−" : "±") + Math.abs(v) + "点", label: "収支の推移" } : { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
     <p class="note">※データの権利の関係で、配布用にはオッズ・払戻・金額を載せていません。1日の回収率も、1レースごとの払戻が分からないよう10%きざみにしています。オッズ・払戻はJRA公式の出馬表・レース結果で確認してください。</p></section>`;
@@ -2808,10 +2814,10 @@ function viewPerf(d) {
   const p0 = d.perf || {};
   const rp = d.rec_perf || (p0.n ? { source: "app", actual: { n: p0.n, hit: p0.hit, hit_rate: p0.hit / p0.n, roi: p0.roi, profit: p0.roi == null ? null : (p0.roi - 1) * p0.n * 1000 } } : null);
   let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2>${hvEmpty(`${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}`, { fill: false, next: false })}</section>`);
-  const per = S.snap.period;
+  const per = S.snap.period, PM = pubMonth();
   if (per) {
-    h += `<section><h2>今月・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${periodCard("今月", per.month)}${periodCard("今年", per.year)}
-      <p class="note">※おすすめ★2〜5のうち結果が確定した分の集計です</p></section>`;
+    h += `<section><h2>${PM.lab}・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${PM.x ? periodCard(PM.lab, PM.x) : ""}${periodCard("今年", per.year)}
+      <p class="note">※おすすめ★2〜5のうち結果が確定した分の集計です${PM.approx ? `。${PM.lab}は1日ごとの成績(10%きざみ)から数えた目安です` : ""}</p></section>`;
   } else {   // 古い公開データ(今月・今年の集計がまだ無い)ときは、手元の90日分から今月だけ数える
     const currentMonth = (S.date || todayStr()).slice(0, 7);
     const monthPicks = S.snap.days.filter(day => day.date.startsWith(currentMonth)).flatMap(day => day.osusume || []);
@@ -2829,7 +2835,7 @@ function viewPerf(d) {
   const g = S.snap.star_guide || {};
   const ks = Object.keys(g).sort((a, b) => b - a);
   const rs = S.snap.rec_stats;
-  if (ks.length) h += `<section><h2>★ごとの過去成績<span class="sub">単勝・2013〜2026年の検証</span></h2><div class="card tbl"><table>
+  if (ks.length) h += `<section><h2>★ごとの過去成績<span class="sub">単勝・2014〜2026年の検証</span></h2><div class="card tbl"><table>
     <tr><th>おすすめ度</th><th class="r">単回収</th><th class="r">的中</th><th class="r">最大連敗</th></tr>
     ${ks.map(k => `<tr><td><span class="stars t${+k}">${starStr(+k)}</span></td><td class="r ${g[k].roi >= 1 ? "plus" : "minus"}">${Math.round(g[k].roi * 100)}%</td><td class="r">${pct(g[k].hit, 0)}</td><td class="r">${g[k].streak != null ? `${g[k].streak}連敗` : "—"}</td></tr>`).join("")}
     </table></div><p class="note">${rs ? `※おすすめ(★2〜5)全体: 回収率 ${pct(rs.roi, 0)}・的中率 ${pct(rs.hit, 1)}・最大${rs.streak}連敗※確定オッズ。` : ""}※過去の成績は将来を約束しません。最大連敗分の余裕を持ち、1回の金額は少なめに</p></section>`;
@@ -3021,7 +3027,7 @@ function bkStarLimits() {   // ★ごとの今年の最大連敗(推奨・公開
   if (ys && Object.keys(ys).length) return { lim: ys, lab: "今年の最大連敗" };
   const g = S.snap?.star_guide || {}, lim = {};
   Object.keys(g).forEach(k => { if (g[k].streak != null) lim[k] = g[k].streak; });
-  return { lim, lab: "過去の最大連敗(2013年〜)" };
+  return { lim, lab: "過去の最大連敗(2014年〜)" };
 }
 // HIVE推奨(今のルール・消し条件こみ)を確定オッズで2014年からさかのぼった最大連敗(2026-11-02 本人の指定で確定オッズにそろえた。血統の穴埋め後の予想+坂路1〜3本の消し(21:00)で数え直し(21:40): 2026年の78連敗。ほかに2020年72・2022年71・2021年63。旧: 82(坂路消し前)・76(締切4分前判定))
 // 今年の最大だけを目安にすると、過去に何度も起きている60〜70台の連敗で「推奨の最大より長い」と出てしまうため、目安はこれ以上にする
@@ -3343,11 +3349,14 @@ function viewBank() {
   const hx = i => { const x = i * 30 + 2, on = i < sk.cur, lit = brkShow && i < brk.n, pts = `${x + 6},2 ${x + 18},2 ${x + 24},13 ${x + 18},24 ${x + 6},24 ${x},13`;
     if (lit) return `<polygon class="lit" style="animation-delay:${(i * .12).toFixed(2)}s" points="${pts}"/>`;
     return `<polygon points="${pts}" ${on ? `fill="${st[2]}"` : `fill="none" stroke="#6b4a0c" stroke-width="1.5"`}/>`; };
-  // ★ごとの最大連敗・回収率(推奨): 今年 と 2013年〜(今まで)を小さな表で(2026-10-29)
+  // ★ごとの最大連敗・回収率(推奨): 今年 と 2014年〜(今まで)を小さな表で(2026-10-29・2026-11-03 2014年〜に)
   const yS = S.snap?.period?.year?.star_streak || {}, yR = S.snap?.period?.year?.star_roi || {}, gA = S.snap?.star_guide || {};
   const cell = (st, r) => st == null && r == null ? "—" : `${st != null ? st + "連敗" : "—"}・<span class="${r != null && r >= 1 ? "p" : "m"}">${r != null ? Math.round(r * 100) + "%" : "—"}</span>`;
   const sks = ["5", "4", "3", "2"].filter(k => yS[k] != null || yR[k] != null || gA[k]);
-  const starNote = sks.length ? `<table class="bk-st num"><tr><th></th><th>今年</th><th>2013年〜</th></tr>${sks.map(k => `<tr><td>★${k}</td><td>${cell(yS[k], yR[k])}</td><td>${cell(gA[k]?.streak, gA[k]?.roi)}</td></tr>`).join("")}</table>` : "";
+  // いちばん上に全体(★2〜5まとめて)の最大連敗・回収率(2026-11-03 本人の指定)
+  const yAll = S.snap?.period?.year, rsA = S.snap?.rec_stats;
+  const allRow = (yAll?.n || rsA) ? `<tr class="bk-st-all"><td>全体</td><td>${yAll?.n ? cell(yAll.streak, yAll.roi) : "—"}</td><td>${rsA ? cell(rsA.streak, rsA.roi) : "—"}</td></tr>` : "";
+  const starNote = sks.length ? `<table class="bk-st num"><tr><th></th><th>今年</th><th>2014年〜</th></tr>${allRow}${sks.map(k => `<tr><td>★${k}</td><td>${cell(yS[k], yR[k])}</td><td>${cell(gA[k]?.streak, gA[k]?.roi)}</td></tr>`).join("")}</table>` : "";
   h += `<div class="bk-card"><div class="bk-head"><span class="bk-lab" style="font-size:13px">連敗</span>${brkShow ? `<span class="bk-stop">🎉 連敗ストップ！</span>` : `<span class="bk-state ${st[0]}">${sk.cur}連敗・${st[1]}</span>`}</div>
     ${bkNestRoute(sk.cur, lim, st[2], brkShow ? brk : null, brkPlay)}
     ${brkShow ? `<div class="bk-sub" style="color:#ffd866">${brk.n}連敗を的中で止めました。蜜を持って巣に帰りました</div>` : ""}
