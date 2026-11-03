@@ -3772,4 +3772,46 @@ hvSwipeInit({
 </script>
 <!-- ===== アクセス記録 ここまで ===== -->
 
+<!-- ===== 下のタブの位置直し(2026-11-03) =====
+     iPhone のホーム画面アプリでは、中身が短くてページがスクロールしないとき、下に固定したタブが画面の一番下より
+     少し上(上の時計の帯の高さぶん)に止まることがある。中身を画面の高さ以上にして、それでもずれていたら、ずれた分だけ下げる -->
+<style>
+html { min-height: 100%; }
+body { min-height: 100vh; min-height: 100lvh; box-sizing: border-box; }
+</style>
+<script>
+(function hvTabsBottomFix() {
+  var nav = null, busy = false;
+  function fix() {
+    busy = false;
+    nav = nav || document.getElementById("tabs");
+    if (!nav) return;
+    var hid = nav.classList.contains("scroll-hidden");
+    if (hid) return;   // しまっている間は測らない(出したときにまた測る)
+    var cur = parseFloat(nav.style.bottom) || 0;
+    var r = nav.getBoundingClientRect(), ty = 0;
+    try { var m = getComputedStyle(nav).transform; if (m && m !== "none") ty = new DOMMatrix(m).m42 || 0; } catch (e) {}   // 出し入れの動きの途中なら、その分を引いて測る
+    if (!r.height) return;   // まだ出していない(合言葉の画面など)
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var gap = vh - (r.bottom - ty);   // 画面の一番下とタブの下のすき間(+なら上に浮いている)
+    if (Math.abs(gap) < 1) return;
+    var nb = cur - gap;
+    if (nb > 0) nb = 0;                    // 上に持ち上げることはしない
+    if (nb < -80) nb = 0;                  // おかしな値のときは何もしない
+    nav.style.bottom = nb ? nb + "px" : "";
+  }
+  function later() { if (!busy) { busy = true; requestAnimationFrame(function () { setTimeout(fix, 30); }); } }
+  window.addEventListener("resize", later);
+  window.addEventListener("orientationchange", function () { setTimeout(later, 300); });
+  window.addEventListener("pageshow", later);
+  window.addEventListener("scroll", later, { passive: true });
+  document.addEventListener("visibilitychange", later);
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", later);
+  try { new MutationObserver(later).observe(document.body, { childList: true, subtree: false }); } catch (e) {}
+  document.addEventListener("click", function () { setTimeout(later, 120); }, true);
+  setTimeout(later, 300); setTimeout(later, 1500); setInterval(later, 3000);
+})();
+</script>
+<!-- ===== 下のタブの位置直し ここまで ===== -->
+
 </body></html>
