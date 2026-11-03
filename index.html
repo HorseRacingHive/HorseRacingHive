@@ -2539,6 +2539,10 @@ function render() {
       ovDot(JSON.stringify(op.map(r => [r.id, r.buys, r.fbuys, (r.plan || []).map(x => x.t + x.no)])), op.some(r => (r.buys || []).length + (r.fbuys || []).length + (r.plan || []).length));
       if (S.tab === "ovs") ovSeen(); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
     if (S.tab === "ovs" && !ov.length) S.tab = "home"; }
+  if (!d && S.tab === "perf") {   // 開催がない日の成績: 直前の開催日の成績を出す(海外とは混ぜない・2026-11-03)
+    const ld = viewDays().filter(x => x.date <= S.date).slice(-1)[0];
+    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 8px">📊 今日はJRAの開催がないので、直前の開催 <b>${esc(ld.label || ld.date)}</b> の成績です(海外の成績は🌏海外のページで別に出します)</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
+  }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") {   // 開催がない日: 次の開催の案内と、その日の海外のレース(2026-11-03)
     const no = S.snap.next_open, ov = (S.snap.overseas || []).filter(r => r.date === S.date);
     const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px">次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は <b>${esc(no.open_label)} ${esc(no.open_at)}</b> から。★・おすすめは当日 8:21〜(午後のレースは 12:00〜)</div></section>`
