@@ -2483,7 +2483,8 @@ function viewOverseas() {
   const roi = t => t && t.roi != null ? t.roi + "%" : "—";
   const recHtml = rc && (rc.plan.races || rc.win.races) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(参考程度に・別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
     <div class="ovs-rec" style="margin-top:6px"><div><small class="note">🎯 おすすめの買い方</small><br><b>${roi(rc.plan)}</b><br><small class="note">${rc.plan.races}レース・的中${rc.plan.hits}</small></div>
-    <div><small class="note">🐝 単勝の買い全部</small><br><b>${roi(rc.win)}</b><br><small class="note">${rc.win.races}レース・的中${rc.win.hits}</small></div></div>
+    <div><small class="note">🐝 単勝の買い全部</small><br><b>${roi(rc.win)}</b><br><small class="note">${rc.win.races}レース・的中${rc.win.hits}</small></div>
+    ${rc.base ? `<div><small class="note">📏 基準(外国馬6〜30倍を全部)</small><br><b>${roi(rc.base)}</b><br><small class="note">${rc.base.races}レース・的中${rc.base.hits}</small></div>` : ""}</div>
     ${(rc.rows || []).slice().reverse().map(x => `<div class="note">${esc(x.date)} ${esc(x.name)}:${esc(x.plan || "見送り")} ${x.hit ? "🎯的中" : "はずれ"}(${(x.order || []).join("-")})</div>`).join("")}</section>` : "";
   return recHtml + ov.map(r => {
     const head = `<div class="ovs-head"><b>🌏 ${esc(r.name)}</b><br><small>${esc(r.date)} ${r.post ? esc(r.post) + " 発走(日本時間)" : ""}${r.venue ? "・" + esc(r.venue) : ""}</small></div>
