@@ -2142,10 +2142,10 @@ function lock(msg) {
 
 /* ---------------------------------------------------------------- 日付・時刻 */
 const todayStr = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
-function pickDate() {   // 当日(開催がなければ直前の開催日)。未来の開催日は公開データに入っていない
-  const ds = S.snap.days.map(d => d.date).filter(d => d <= todayStr()), t = todayStr();
-  S.date = ds.includes(t) ? t : (ds[ds.length - 1] || S.snap.days[S.snap.days.length - 1]?.date || null);
+function pickDate() {   // 当日。開催がない日も当日の日付にする(前の開催の電光掲示板を出さない・2026-11-03 本人の指定)。未来の開催日は公開データに入っていない
+  S.date = todayStr();
 }
+const noMeeting = () => !curDay();   // 選んでいる日にJRAの開催がない
 // 着順(案Z): 右端の六角+王冠、左の帯で金・銀・銅、4着以下は薄く
 const fzBlock = f => f == null ? "" : `<span class="fz ${f <= 3 ? "f" + f : "fx"}" aria-label="${f}着"><span class="fz-hex">${f}</span><small>着</small></span>`;
 const fzRow = f => f == null ? "" : ` has-fz fz${f <= 3 ? f : "x"}`;
@@ -2215,6 +2215,10 @@ function dayNavInfo() {
   const wd = `<span class="wd${wdN === 0 ? " sun" : wdN === 6 ? " sat" : ""}">${["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][wdN]}</span>`;
   const races = d ? (d.venues || []).flatMap(v => v.races || []) : [];
   let right = races.length ? `${races.length}R` : (S.date > todayStr() ? "未定" : "");
+  if (!d) {   // 開催がない日: 海外のレースがあればそれ、なければ次の開催日(2026-11-03)
+    const ov = (S.snap.overseas || []).find(r => r.date === S.date), no = S.snap.next_open;
+    right = ov ? `<span class="nx">🌏 ${esc(ov.post || "")} ${esc(ov.name || "海外")}</span>` : no && no.date ? `開催なし ・ 次 ${esc(no.label)}` : "開催なし";
+  }
   let tickText = null;   // 次のレースにおすすめ馬がいれば、流れる電光文字に(案A)
   if (d && S.date === todayStr() && races.length) {
     const now = Date.now();
@@ -2236,15 +2240,16 @@ function dayNavInfo() {
 }
 function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー＋選んだ日の前後の開催日を1段で。選んだ日が見える位置まで横に送る。未来の開催日は出さない
   const days = viewDays();
-  const i = Math.max(0, days.findIndex(d => d.date === S.date));
+  const has = days.some(d => d.date === S.date);
+  const i = has ? days.findIndex(d => d.date === S.date) : days.filter(d => d.date < S.date).length;   // 開催がない日は「次の開催日の位置」として扱う(‹で前の開催へ戻れる)
   const near = days.slice(Math.max(0, i - 6), i + 4);
   const min = days[0]?.date || S.date, max = days[days.length - 1]?.date || S.date;
   const [, mm, dd] = (S.date || "").split("-");
-  $("#days").innerHTML = `<div class="day-nav"><button class="day-arrow" data-day-step="-1" aria-label="前の開催日" ${i <= 0 ? "disabled" : ""}>‹</button><span class="dn-line"></span>`
+  $("#days").innerHTML = `<div class="day-nav"><button class="day-arrow" data-day-step="-1" aria-label="前の開催日" ${(has ? i <= 0 : i === 0) ? "disabled" : ""}>‹</button><span class="dn-line"></span>`
     + `<div class="dn-mid"><div class="dn-date"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden><span class="dot"></span>LIVE</span></div><div class="dn-w"></div>`
     + `<input class="day-picker" type="date" aria-label="開催日を選択" data-days="${esc(days.map(x => x.date).join(","))}" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}"></div>`
     + `<div class="dn-baba"></div><div class="dn-tick" hidden><span class="in"></span></div></div>`
-    + `<span class="dn-line r"></span><button class="day-arrow${i >= days.length - 1 ? " locked" : ""}" data-day-step="1" aria-label="次の開催日">›</button></div>`;   // 先が無くても押せる(押すと公開時刻を知らせる)
+    + `<span class="dn-line r"></span><button class="day-arrow${(has ? i >= days.length - 1 : i >= days.length) ? " locked" : ""}" data-day-step="1" aria-label="次の開催日">›</button></div>`;   // 先が無くても押せる(押すと公開時刻を知らせる)
   dayNavInfo();
   renderWeather();
   const u = S.snap.updated ? S.snap.updated.slice(11, 16) : "";
@@ -2534,7 +2539,12 @@ function render() {
       ovDot(JSON.stringify(op.map(r => [r.id, r.buys, r.fbuys, (r.plan || []).map(x => x.t + x.no)])), op.some(r => (r.buys || []).length + (r.fbuys || []).length + (r.plan || []).length));
       if (S.tab === "ovs") ovSeen(); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
     if (S.tab === "ovs" && !ov.length) S.tab = "home"; }
-  if (!d && S.tab !== "bank" && S.tab !== "ovs") { v.innerHTML = h + `${hvEmpty(`まだ予想がありません。出馬表が出たら表示されます。`)}`; return; }
+  if (!d && S.tab !== "bank" && S.tab !== "ovs") {   // 開催がない日: 次の開催の案内と、その日の海外のレース(2026-11-03)
+    const no = S.snap.next_open, ov = (S.snap.overseas || []).filter(r => r.date === S.date);
+    const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px">次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は <b>${esc(no.open_label)} ${esc(no.open_at)}</b> から。★・おすすめは当日 8:21〜(午後のレースは 12:00〜)</div></section>`
+      : S.date > todayStr() ? hvEmpty("まだ予想がありません。出馬表が出たら表示されます。") : hvEmpty("この日はJRAの開催がありません");
+    v.innerHTML = h + nx + (ov.length ? viewOverseas() : ""); tick(); return;
+  }
   h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf, bank: viewBank, ovs: viewOverseas }[S.tab] || viewHome)(d);
   const scrolls = [...v.querySelectorAll(".seg, .horse-sort")].map(e => e.scrollLeft);   // 横スクロールの位置を描き直しても保つ(右端のボタンが左に戻らないように)
   v.innerHTML = h; tick();
@@ -3532,8 +3542,10 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
   if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
-    const days = viewDays(), i = days.findIndex(d => d.date === S.date), j = i + Number(t.dataset.dayStep);
+    const days = viewDays(), has = days.some(d => d.date === S.date), st = Number(t.dataset.dayStep);
+    const i = has ? days.findIndex(d => d.date === S.date) : days.filter(d => d.date < S.date).length, j = has ? i + st : (st < 0 ? i - 1 : i);   // 開催がない日からは ‹ で前の開催、› で次の開催へ
     if (days[j]) { S.date = days[j].date; renderDays(); render(); }
+    else if (st > 0 && S.date < todayStr()) { S.date = todayStr(); renderDays(); render(); }   // 前の開催から › で今日(開催なし)へ戻る
     else if (Number(t.dataset.dayStep) > 0) {   // 16:20まで「あと◯分」も出す(16:20を過ぎて翌日が無いなら、翌日は開催なし)
       const no = S.snap?.next_open;   // 次の開催日と公開日時(PC側で計算して送ってくる・2026-10-29)
       const left = no ? jstAt(no.open_date, no.open_at) - Date.now() : 0;
