@@ -2488,6 +2488,37 @@ function ovSeen() {
   const d = b.querySelector(".ov-dot"); if (d) d.classList.remove("new");
 }
 
+/* 🌏海外のお知らせ(おすすめの「直前のお知らせ」と同じ見た目: 最新1件を1行で、押すと全部開く・2026-11-03) */
+function ovAnnBox(list, emptyText, key) {
+  if (!list.length) return `<div class="card ann-tick"><div class="at-row" style="cursor:default"><span class="at-head"><span class="lamp off"></span><b class="at-race">📣 海外のお知らせ</b></span><span class="at-tx l1">${esc(emptyText)}</span></div></div>`;
+  const a = list[0], rest = list.slice(1), open = !!(S.ovAnnOpen || {})[key];
+  const kind = { 発表: "直前", 直前予想: "直前", 見直し: "やっぱり", 締切直前: "最終" }[a.stage] || "直前";
+  const lamp = a.stage === "締切直前" ? "green" : a.stage === "見直し" ? "honey" : "blue";
+  const clean = t => String(t || "").replace(/\*\*/g, "");
+  const body = clean(a.text).split("\n").slice(1).join(" ／ ");
+  const urgent = /🚨/.test(a.text || "");
+  let seen = null; try { seen = localStorage.getItem("hive_ov_ann_seen"); } catch (e) { /* なし */ }
+  const sk = key + "|" + a.at + "|" + a.stage;
+  const lampCls = seen === sk ? `on ${urgent ? "red" : lamp}` : `on ${urgent ? "red" : lamp} blink`;
+  let h = `<div class="card ann-tick k-${kind} ${urgent ? "urgent" : ""} ${open ? "open" : ""}">
+    <button class="at-row" data-ov-ann="${esc(key)}" data-ov-ann-seen="${esc(sk)}" type="button" aria-expanded="${open}">
+      <span class="at-head"><span class="lamp ${lampCls}"></span><span class="kind k-${kind}">🌏 ${esc(a.stage)}</span>
+        <span class="at-meta num">${esc(a.at)}${rest.length ? ` ・ ${open ? "閉じる ▲" : `他${rest.length}件 ▼`}` : ""}</span></span>
+      <span class="at-tx l${urgent ? 2 : 1}">${esc(body)}</span></button>`;
+  if (open) {
+    h += `<div class="at-full"><div class="ah-text">${esc(clean(a.text))}</div></div>`;
+    if (rest.length) h += `<div class="announce scrollbox ah-list">${rest.map(x => `<div class="ann"><div class="at num">${esc(x.at)}<br><span class="kind">${esc(x.stage)}</span></div><div class="tx">${esc(clean(x.text))}</div></div>`).join("")}</div>`;
+  }
+  return h + `</div>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-ov-ann]"); if (!b) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const k = b.dataset.ovAnn; S.ovAnnOpen = S.ovAnnOpen || {}; S.ovAnnOpen[k] = !S.ovAnnOpen[k];
+  try { localStorage.setItem("hive_ov_ann_seen", b.dataset.ovAnnSeen); } catch (err) { /* なし */ }
+  const y = window.scrollY; render(); window.scrollTo(0, y);
+}, true);
+
 function viewOverseas(onDate) {
   const ov = ((S.snap && S.snap.overseas) || []).filter(r => !onDate || r.date === onDate), rc = S.snap && S.snap.overseas_rec;
   if (!ov.length) return hvEmpty("海外のレースはありません");
@@ -2511,9 +2542,8 @@ function viewOverseas(onDate) {
       : `<div class="note"><b>🐝 買いの馬はいません</b>(日本のオッズが現地の見立てより割に合う馬がいない時は、買わないのが正解です)</div>`);
     const rows = [...r.rows].sort((a, z) => ({ 買い: 0, 検討: 1 }[a.j] ?? 2) - ({ 買い: 0, 検討: 1 }[z.j] ?? 2) || (z.p || 0) - (a.p || 0)).map(x =>
       `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td><td class="fj ${esc(x.fj || "")}">${{ 買い: "🎯買い", 検討: "検討", 見送り: "—" }[x.fj] || "—"}</td></tr>`).join("");
-    const msgs = (r.msgs || []).slice().reverse();
-    const msgBox = `<div class="ovs-msgs"><b>📣 海外のお知らせ</b>${msgs.length ? msgs.map(m => `<div class="ovs-msg"><small>${esc(m.at)} ${esc(m.stage)}</small><div>${esc(m.text).replace(/\*\*/g, "").replace(/\n/g, "<br>")}</div></div>`).join("") : `<div class="note">${esc(r.open_at || "")}の発表から、ここにDiscordと同じお知らせが出ます</div>`}</div>`;
-    return `<section class="card ovs-race">${head}${box}${msgBox}
+    const msgBox = ovAnnBox((r.msgs || []).slice().reverse(), `${r.open_at || ""}の発表から、ここにDiscordと同じお知らせが出ます`, r.id);
+    return `<section class="card ovs-race">${head}${msgBox}${box}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p>
       <p class="note">🔔 Discordの通知(JRAのレースと同じ): 📣 発表=公開時刻(8:21・午後のレースは12:00)に「おすすめの買い方」／ ⏰ 直前予想=発走約30分前に「そのまま買い・見送り・🚨急遽」／ 🔎 見直し=発走約10分前に「🚨急遽・✅やっぱり買い」(ある時だけ)／ 🔔 締切直前=発走約4分前に最終判断(毎回)。発走後は送りません。日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます(共有用はオッズの数字なし)。</p></section>`;
@@ -2549,7 +2579,9 @@ function render() {
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   { const ov = (S.snap && S.snap.overseas) || [], b = document.querySelector('#tabs button[data-tab="ovs"]');   // 🌏海外タブは海外のレースがある日だけ(2026-11-03)
-    if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { t.hidden = !ov.length || (!d && S.tab === "home" && ov.some(r => r.date === S.date)); t.classList.toggle("on", S.tab === "ovs");   // 開催がない日はホームに海外のカードが出るのでボタンは隠す(2026-11-03)
+    if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { const ovHome = !d && ov.some(r => r.date === S.date);   // JRAの開催がない日に海外がある時は、ホームに海外が出るのでボタンは出さない(どのタブでも・2026-11-03)
+      if (ovHome && S.tab === "ovs") S.tab = "home";
+      t.hidden = !ov.length || ovHome; t.classList.toggle("on", S.tab === "ovs");   // 開催がない日はホームに海外のカードが出るのでボタンは隠す(2026-11-03)
       const op = ov.filter(r => r.open);
       ovDot(JSON.stringify(op.map(r => [r.id, r.buys, r.fbuys, (r.plan || []).map(x => x.t + x.no)])), op.some(r => (r.buys || []).length + (r.fbuys || []).length + (r.plan || []).length));
       if (S.tab === "ovs") ovSeen(); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
