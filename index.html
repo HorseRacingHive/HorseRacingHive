@@ -2546,7 +2546,7 @@ function viewOverseas(onDate) {
     return `<section class="card ovs-race">${head}${msgBox}${box}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p>
-      <p class="note">🔔 Discordの通知(JRAのレースと同じ): 📣 発表=公開時刻(8:21・午後のレースは12:00)に「おすすめの買い方」／ ⏰ 直前予想=発走約30分前に「そのまま買い・見送り・🚨急遽」／ 🔎 見直し=発走約10分前に「🚨急遽・✅やっぱり買い」(ある時だけ)／ 🔔 締切直前=発走約4分前に最終判断(毎回)。発走後は送りません。日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます(共有用はオッズの数字なし)。</p></section>`;
+      <details class="card ann-tick race-ann-fold ovs-dc"><summary><div class="at-row"><span class="at-head"><span class="kind">🔔 通知</span><b class="at-race">Discordの通知(JRAのレースと同じ)</b><span class="at-meta num"><span class="rf-closed">開く ▼</span><span class="rf-open">閉じる ▲</span></span></span><span class="at-tx l1">📣 発表 ／ ⏰ 直前予想 ／ 🔎 見直し ／ 🔔 締切直前</span></div></summary><div class="announce rf-list"><div class="ann"><div class="tx">📣 発表=公開時刻(8:21・午後のレースは12:00)に「おすすめの買い方」</div></div><div class="ann"><div class="tx">⏰ 直前予想=発走約30分前に「そのまま買い・見送り・🚨急遽」</div></div><div class="ann"><div class="tx">🔎 見直し=発走約10分前に「🚨急遽・✅やっぱり買い」(ある時だけ)</div></div><div class="ann"><div class="tx">🔔 締切直前=発走約4分前に最終判断(毎回)</div></div><div class="ann"><div class="tx">発走後は送りません。日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます(共有用はオッズの数字なし)。</div></div></div></details></section>`;
   }).join("");
 }
 function render() {
@@ -2581,11 +2581,11 @@ function render() {
   { const ov = (S.snap && S.snap.overseas) || [], b = document.querySelector('#tabs button[data-tab="ovs"]');   // 🌏海外タブは海外のレースがある日だけ(2026-11-03)
     if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { const ovHome = !d && ov.some(r => r.date === S.date);   // JRAの開催がない日に海外がある時は、ホームに海外が出るのでボタンは出さない(どのタブでも・2026-11-03)
       if (ovHome && S.tab === "ovs") S.tab = "home";
-      t.hidden = !ov.length || ovHome; t.classList.toggle("on", S.tab === "ovs");   // 開催がない日はホームに海外のカードが出るのでボタンは隠す(2026-11-03)
+      t.hidden = !ov.some(r => r.date === S.date) || ovHome;   /* その日に海外のレースがある時だけ出す(海外のない日には出さない・2026-11-03 本人の指摘) */ t.classList.toggle("on", S.tab === "ovs");   // 開催がない日はホームに海外のカードが出るのでボタンは隠す(2026-11-03)
       const op = ov.filter(r => r.open);
       ovDot(JSON.stringify(op.map(r => [r.id, r.buys, r.fbuys, (r.plan || []).map(x => x.t + x.no)])), op.some(r => (r.buys || []).length + (r.fbuys || []).length + (r.plan || []).length));
       if (S.tab === "ovs") ovSeen(); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
-    if (S.tab === "ovs" && !ov.length) S.tab = "home"; }
+    if (S.tab === "ovs" && !ov.some(r => r.date === S.date)) S.tab = "home"; }
   if (!d && S.tab === "perf") {   // 開催がない日の成績: 直前の開催日の成績を出す(海外とは混ぜない・2026-11-03)
     const ld = viewDays().filter(x => x.date <= S.date).slice(-1)[0];
     v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 8px">📊 今日はJRAの開催がないので、直前の開催 <b>${esc(ld.label || ld.date)}</b> の成績です(海外の成績は🌏海外のページで別に出します)</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
@@ -2595,9 +2595,9 @@ function render() {
     if (S.date !== todayStr() && ovDates().includes(S.date)) { v.innerHTML = h + (ov.length ? viewOverseas(S.date) : hvEmpty("この日の海外の判定は共有ページには残っていません(成績は🌏海外の成績欄に)")); tick(); return; }
     const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px">次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は <b>${esc(no.open_label)} ${esc(no.open_at)}</b> から。★・おすすめは当日 8:21〜(午後のレースは 12:00〜)</div></section>`
       : S.date > todayStr() ? hvEmpty("まだ予想がありません。出馬表が出たら表示されます。") : hvEmpty("この日はJRAの開催がありません");
-    v.innerHTML = h + nx + (ov.length ? viewOverseas() : ""); tick(); return;
+    v.innerHTML = h + nx + (ov.length ? viewOverseas(S.date) : ""); tick(); return;
   }
-  h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf, bank: viewBank, ovs: viewOverseas }[S.tab] || viewHome)(d);
+  h += ({ home: viewHome, sig: viewSig, race: viewRaces, perf: viewPerf, bank: viewBank, ovs: () => viewOverseas(S.date) }[S.tab] || viewHome)(d);
   const scrolls = [...v.querySelectorAll(".seg, .horse-sort")].map(e => e.scrollLeft);   // 横スクロールの位置を描き直しても保つ(右端のボタンが左に戻らないように)
   v.innerHTML = h; tick();
   [...v.querySelectorAll(".seg, .horse-sort")].forEach((e, i) => { if (scrolls[i]) e.scrollLeft = scrolls[i]; });
