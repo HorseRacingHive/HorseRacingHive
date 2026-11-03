@@ -1557,6 +1557,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 <script>
 (() => {
 "use strict";
+window.hvCalPL = (y, cb) => { const c = (S.snap && S.snap.cal_pl) || {}; cb(c[String(y)] || null); };   /* カレンダーの数字の色: 共有用は+/−だけ(金額は送らない)。S はこの中だけにあるのでここで用意する(2026-11-03 直し) */
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 let lastHeaderScrollY = window.scrollY;
@@ -3881,6 +3882,5 @@ body { min-height: 100vh; min-height: 100lvh; box-sizing: border-box; }
 })();
 </script>
 <!-- ===== 下のタブの位置直し ここまで ===== -->
-<script>window.hvCalPL = function (y, cb) { var c = (typeof S !== "undefined" && S.snap && S.snap.cal_pl) || {}; cb(c[String(y)] || null); };   /* カレンダーの数字の色: 共有用は+/−だけ(金額は送らない・2026-11-03) */</script>
 
 </body></html>
