@@ -2487,7 +2487,7 @@ function viewOverseas() {
     ${(rc.rows || []).slice().reverse().map(x => `<div class="note">${esc(x.date)} ${esc(x.name)}:${esc(x.plan || "見送り")} ${x.hit ? "🎯的中" : "はずれ"}(${(x.order || []).join("-")})</div>`).join("")}</section>` : "";
   return recHtml + ov.map(r => {
     const head = `<div class="ovs-head"><b>🌏 ${esc(r.name)}</b><br><small>${esc(r.date)} ${r.post ? esc(r.post) + " 発走(日本時間)" : ""}${r.venue ? "・" + esc(r.venue) : ""}</small></div>
-      <div class="note" style="border:1px dashed var(--line);border-radius:10px;padding:6px 10px">📝 <b>海外は参考程度に</b>ご覧ください。HIVEのAIの予想ではなく、オッズを比べただけの目安です。</div>`;
+      <div class="note" style="border:1px dashed var(--line);border-radius:10px;padding:6px 10px">📝 <b>海外は参考程度に</b>。海外競馬はHIVEの<b>おすすめレースには含まれません</b>(成績も別枠)。</div>`;
     if (!r.open) return `<section class="card ovs-race">${head}<p class="note">🕘 判定は ${esc(r.open_at)} から公開します(日本のオッズが出てから) ${openTag(r.date, r.open_at)}</p>
       <p class="note">出走 ${r.rows.length}頭</p></section>`;
     const fin = r.fin || {};
@@ -2501,7 +2501,7 @@ function viewOverseas() {
       `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td><td class="fj ${esc(x.fj || "")}">${{ 買い: "🎯買い", 検討: "検討", 見送り: "—" }[x.fj] || "—"}</td></tr>`).join("");
     return `<section class="card ovs-race">${head}${box}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
-      <p class="note">※HIVEのAIは海外の馬を学習していないので、ここはAIの予想ではありません。現地の市場の見立ての勝率と日本のオッズを比べ、日本のオッズの方が割に合う馬(🐝買い)を出しています。日本のオッズは締切直前まで大きく動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
+      <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
   }).join("");
 }
 function render() {
@@ -2534,7 +2534,7 @@ function render() {
   const d = curDay(), v = $("#view");
   let h = S.demo ? `<div class="demo-band">見本データです。名前・数字はすべて架空です。</div>` : "";
   { const ov = (S.snap && S.snap.overseas) || [], b = document.querySelector('#tabs button[data-tab="ovs"]');   // 🌏海外タブは海外のレースがある日だけ(2026-11-03)
-    if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { t.hidden = !ov.length; t.classList.toggle("on", S.tab === "ovs");
+    if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { t.hidden = !ov.length || (!d && S.tab === "home" && ov.some(r => r.date === S.date)); t.classList.toggle("on", S.tab === "ovs");   // 開催がない日はホームに海外のカードが出るのでボタンは隠す(2026-11-03)
       const op = ov.filter(r => r.open);
       ovDot(JSON.stringify(op.map(r => [r.id, r.buys, r.fbuys, (r.plan || []).map(x => x.t + x.no)])), op.some(r => (r.buys || []).length + (r.fbuys || []).length + (r.plan || []).length));
       if (S.tab === "ovs") ovSeen(); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
