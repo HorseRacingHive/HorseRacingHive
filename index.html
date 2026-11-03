@@ -2192,6 +2192,8 @@ function viewDays() {   // それより先の予想には行けない。海外�
 }
 const ovDates = () => [...new Set(((S.snap && S.snap.overseas_days) || (S.snap && S.snap.overseas || []).map(r => r.date)).filter(Boolean))];
 const ovOn = d => ((S.snap && S.snap.overseas) || []).filter(r => r.date === d);
+/* その日に見せる海外: その日のレース+今日を見ている時は、もう公開した翌日のレース(朝早いBCなどは前日20:00に公開・2026-11-03) */
+const ovFor = d => { const t = todayStr(), tm = new Date(Date.parse(t + "T00:00:00Z") + 864e5).toISOString().slice(0, 10); return ((S.snap && S.snap.overseas) || []).filter(r => r.date === d || (d === t && r.date === tm && r.open)); };
 
 // 日付の段の下の行: 曜日 ・ 次の発走(当日)/レース数。次のレースにおすすめの馬がいれば金色で光る(2026-10-29)
 
@@ -2520,7 +2522,7 @@ document.addEventListener("click", e => {
 }, true);
 
 function viewOverseas(onDate) {
-  const ov = ((S.snap && S.snap.overseas) || []).filter(r => !onDate || r.date === onDate), rc = S.snap && S.snap.overseas_rec;
+  const ov = onDate ? ovFor(onDate) : ((S.snap && S.snap.overseas) || []), rc = S.snap && S.snap.overseas_rec;
   if (!ov.length) return hvEmpty("海外のレースはありません");
   const roi = t => t && t.roi != null ? t.roi + "%" : "—";
   const recHtml = rc && (rc.plan.races || rc.win.races) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(参考程度に・別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
@@ -2581,11 +2583,11 @@ function render() {
   { const ov = (S.snap && S.snap.overseas) || [], b = document.querySelector('#tabs button[data-tab="ovs"]');   // 🌏海外タブは海外のレースがある日だけ(2026-11-03)
     if (b) b.hidden = true; const t = document.getElementById("ovsTop"); if (t) { const ovHome = !d && ov.some(r => r.date === S.date);   // JRAの開催がない日に海外がある時は、ホームに海外が出るのでボタンは出さない(どのタブでも・2026-11-03)
       if (ovHome && S.tab === "ovs") S.tab = "home";
-      t.hidden = !ov.some(r => r.date === S.date) || ovHome;   /* その日に海外のレースがある時だけ出す(海外のない日には出さない・2026-11-03 本人の指摘) */ t.classList.toggle("on", S.tab === "ovs");   // 開催がない日はホームに海外のカードが出るのでボタンは隠す(2026-11-03)
+      t.hidden = !ovFor(S.date).length || ovHome;   /* その日に海外のレースがある時だけ出す(海外のない日には出さない・2026-11-03 本人の指摘) */ t.classList.toggle("on", S.tab === "ovs");   // 開催がない日はホームに海外のカードが出るのでボタンは隠す(2026-11-03)
       const op = ov.filter(r => r.open);
       ovDot(JSON.stringify(op.map(r => [r.id, r.buys, r.fbuys, (r.plan || []).map(x => x.t + x.no)])), op.some(r => (r.buys || []).length + (r.fbuys || []).length + (r.plan || []).length));
       if (S.tab === "ovs") ovSeen(); }   // 下のタブではなく上の更新ボタンの横に出す(2026-11-03)
-    if (S.tab === "ovs" && !ov.some(r => r.date === S.date)) S.tab = "home"; }
+    if (S.tab === "ovs" && !ovFor(S.date).length) S.tab = "home"; }
   if (!d && S.tab === "perf") {   // 開催がない日の成績: 直前の開催日の成績を出す(海外とは混ぜない・2026-11-03)
     const ld = viewDays().filter(x => x.date <= S.date).slice(-1)[0];
     v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 8px">📊 今日はJRAの開催がないので、直前の開催 <b>${esc(ld.label || ld.date)}</b> の成績です(海外の成績は🌏海外のページで別に出します)</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
