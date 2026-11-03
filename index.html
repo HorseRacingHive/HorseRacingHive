@@ -1182,7 +1182,8 @@ nav.tabs.has-ovs { grid-template-columns: repeat(6, 1fr); } nav.tabs.has-ovs but
 .ovs-plan { border: 2px solid var(--honey); border-radius: 14px; padding: 10px 12px; background: rgba(247,201,72,.10); }
 .ovs-plan h3 { margin: 0 0 4px; font-size: 15px; color: var(--honey); } .ovs-plan .bet { font-size: 19px; font-weight: 900; }
 .ovs-rec { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ovs-rec > div { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
-.ovs-rec b { font-size: 20px; color: var(--honey); }   /* 判定が2行に割れないように(2026-11-03) */
+.ovs-rec b { font-size: 20px; color: var(--honey); }
+.ovs-msgs { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; } .ovs-msg { border-top: 1px dashed var(--line); padding: 6px 0; font-size: 13px; line-height: 1.5; } .ovs-msg small { color: var(--muted); }   /* 判定が2行に割れないように(2026-11-03) */
 .ovs-tbl th { color: var(--muted); font-size: 11px; } .ovs-tbl td.n { text-align: right; width: 2.2em; } .ovs-tbl td.pc { text-align: right; }
 .ovs-tbl tr.買い td { background: rgba(74,222,128,.10); } .ovs-tbl tr.買い td.j { color: var(--aim, #4ade80); font-weight: 900; }
 .ovs-tbl tr.検討 td.j { color: #fbbf24; font-weight: 800; } .ovs-tbl tr.見送り td, .ovs-tbl tr.取消 td { color: var(--muted); }
@@ -1397,6 +1398,9 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 #hvCal .c{width:40px;height:40px;line-height:40px;margin:0 auto;border-radius:50%;font-size:15px;color:#4d4433;border:0;background:none;padding:0;font-family:inherit}
 #hvCal .c.r{color:#fbf1dc;cursor:pointer;position:relative}
 #hvCal .c.r:after{content:"";position:absolute;left:50%;bottom:5px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#f7c948}
+#hvCal .c.ov{color:#fbf1dc;cursor:pointer;position:relative}
+#hvCal .c.ov:before{content:"";position:absolute;left:50%;top:4px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#4ea3ff;box-shadow:0 0 0 1px #16110a}   /* 青の点 = 海外のレース(2026-11-03) */
+#hvCal .c.on:before{background:#16110a}
 #hvCal .c.now{box-shadow:inset 0 0 0 1px #5e4d25}
 #hvCal .c.on{background:#f7c948;color:#16110a;font-weight:700}
 #hvCal .c.on:after{background:#16110a}
@@ -1413,13 +1417,14 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
   function p2(n){return (n<10?'0':'')+n;}
   function ds(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
   function pd(s){var a=String(s||'').split('-');return a.length===3?new Date(+a[0],a[1]-1,+a[2]):null;}
-  var inp=null,box=null,Y,M,mode='day',sel,min,max,set={},last='';
+  var inp=null,box=null,Y,M,mode='day',sel,min,max,set={},last='',ov={};
 
   function isRace(s){if(set[s])return true;var d=pd(s);if(!d||s<min||s>max)return false;var w=d.getDay();return s>last&&(w===0||w===6);}
   function open(el){
     inp=el;var v=el.value||ds(new Date());sel=v;
     var t=ds(new Date());min=el.min||'2000-01-01';max=el.max||'2100-12-31';
     set={};last='';(el.getAttribute('data-days')||'').split(',').forEach(function(s){if(s){set[s]=1;if(s>last)last=s;}});
+    ov={};(el.getAttribute('data-ov')||'').split(',').forEach(function(s){if(s)ov[s]=1;});
     if(!last)last=min;
     var d=pd(v)||new Date();Y=d.getFullYear();M=d.getMonth();mode='day';
     if(!box){box=document.createElement('div');box.id='hvCal';box.setAttribute('role','dialog');box.setAttribute('aria-label','開催日を選ぶ');
@@ -1437,9 +1442,9 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
         +'<div class="gr wk"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div class="gr">';
       var f=new Date(Y,M,1).getDay(),n=new Date(Y,M+1,0).getDate();
       for(var i=0;i<f;i++)h+='<div></div>';
-      for(var dd=1;dd<=n;dd++){var s=Y+'-'+p2(M+1)+'-'+p2(dd),r=isRace(s);
-        h+='<div><button class="c'+(r?' r':'')+(s===sel?' on':'')+(s===today?' now':'')+'"'+(r?' data-d="'+s+'"':' disabled')+'>'+dd+'</button></div>';}
-      h+='</div><div class="ft"><span>金の点 = 開催日</span><button data-a="today">今週</button></div>';
+      for(var dd=1;dd<=n;dd++){var s=Y+'-'+p2(M+1)+'-'+p2(dd),r=isRace(s),o=!!ov[s];
+        h+='<div><button class="c'+(r?' r':'')+(o?' ov':'')+(s===sel?' on':'')+(s===today?' now':'')+'"'+((r||o)?' data-d="'+s+'"':' disabled')+'>'+dd+'</button></div>';}
+      h+='</div><div class="ft"><span>金の点 = 開催日 ・ 青の点 = 海外</span><button data-a="today">今週</button></div>';
     }else{
       h+='<div class="hd"><button class="ar" data-a="-y" aria-label="前の年"'+(String(Y-1)>=min.slice(0,4)?'':' disabled')+'>&#8249;</button>'
         +'<button class="ttl" data-a="back">'+Y+'年</button>'
@@ -2180,7 +2185,13 @@ function tick() { if (new Date().getSeconds() === 0) { dayNavInfo(); wmUpdate();
 
 /* ---------------------------------------------------------------- 描画 */
 const viewLimit = () => new Date(Date.now() + (16 * 60 + 40) * 60e3).toISOString().slice(0, 10);   // 16:20(日本時間)からは翌日まで(日本時間+9h ＋ 16:20→24:00の7h40m)。★・おすすめは当日の公開時刻まで送られない
-function viewDays() { return S.snap.days.filter(d => d.date <= viewLimit()); }   // それより先の予想には行けない
+function viewDays() {   // それより先の予想には行けない。海外のレースの日も行ける(2026-11-03)
+  const m = new Map(S.snap.days.filter(d => d.date <= viewLimit()).map(d => [d.date, d]));
+  ovDates().forEach(d => { if (!m.has(d)) m.set(d, { date: d, label: d.slice(5).replace("-", "/"), ov: true }); });
+  return [...m.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+const ovDates = () => [...new Set(((S.snap && S.snap.overseas_days) || (S.snap && S.snap.overseas || []).map(r => r.date)).filter(Boolean))];
+const ovOn = d => ((S.snap && S.snap.overseas) || []).filter(r => r.date === d);
 
 // 日付の段の下の行: 曜日 ・ 次の発走(当日)/レース数。次のレースにおすすめの馬がいれば金色で光る(2026-10-29)
 
@@ -2217,7 +2228,7 @@ function dayNavInfo() {
   let right = races.length ? `${races.length}R` : (S.date > todayStr() ? "未定" : "");
   if (!d) {   // 開催がない日: 海外のレースがあればそれ、なければ次の開催日(2026-11-03)
     const ov = (S.snap.overseas || []).find(r => r.date === S.date), no = S.snap.next_open;
-    right = ov ? `<span class="nx">🌏 ${esc(ov.post || "")} ${esc(ov.name || "海外")}</span>` : no && no.date ? `開催なし ・ 次 ${esc(no.label)}` : "開催なし";
+    right = ov ? `<span class="nx">🌏 ${esc(ov.post || "")} ${esc(ov.name || "海外")}</span>` : ovDates().includes(S.date) ? "🌏 海外" : no && no.date && S.date === todayStr() ? `開催なし ・ 次 ${esc(no.label)}` : "開催なし";
   }
   let tickText = null;   // 次のレースにおすすめ馬がいれば、流れる電光文字に(案A)
   if (d && S.date === todayStr() && races.length) {
@@ -2247,7 +2258,7 @@ function renderDays() {   // 携帯版(m.html)と同じ仕様: カレンダー�
   const [, mm, dd] = (S.date || "").split("-");
   $("#days").innerHTML = `<div class="day-nav"><button class="day-arrow" data-day-step="-1" aria-label="前の開催日" ${(has ? i <= 0 : i === 0) ? "disabled" : ""}>‹</button><span class="dn-line"></span>`
     + `<div class="dn-mid"><div class="dn-date"><div class="dn-d"><span class="dn-num">${esc(mm || "--")}.${esc(dd || "--")}</span><span class="dn-live" hidden><span class="dot"></span>LIVE</span></div><div class="dn-w"></div>`
-    + `<input class="day-picker" type="date" aria-label="開催日を選択" data-days="${esc(days.map(x => x.date).join(","))}" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}"></div>`
+    + `<input class="day-picker" type="date" aria-label="開催日を選択" data-days="${esc(days.filter(x => !x.ov).map(x => x.date).join(","))}" data-ov="${esc(ovDates().join(","))}" value="${esc(S.date || "")}" min="${esc(min || "")}" max="${esc(max || "")}"></div>`
     + `<div class="dn-baba"></div><div class="dn-tick" hidden><span class="in"></span></div></div>`
     + `<span class="dn-line r"></span><button class="day-arrow${(has ? i >= days.length - 1 : i >= days.length) ? " locked" : ""}" data-day-step="1" aria-label="次の開催日">›</button></div>`;   // 先が無くても押せる(押すと公開時刻を知らせる)
   dayNavInfo();
@@ -2477,8 +2488,8 @@ function ovSeen() {
   const d = b.querySelector(".ov-dot"); if (d) d.classList.remove("new");
 }
 
-function viewOverseas() {
-  const ov = (S.snap && S.snap.overseas) || [], rc = S.snap && S.snap.overseas_rec;
+function viewOverseas(onDate) {
+  const ov = ((S.snap && S.snap.overseas) || []).filter(r => !onDate || r.date === onDate), rc = S.snap && S.snap.overseas_rec;
   if (!ov.length) return hvEmpty("海外のレースはありません");
   const roi = t => t && t.roi != null ? t.roi + "%" : "—";
   const recHtml = rc && (rc.plan.races || rc.win.races) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(参考程度に・別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
@@ -2500,9 +2511,12 @@ function viewOverseas() {
       : `<div class="note"><b>🐝 買いの馬はいません</b>(日本のオッズが現地の見立てより割に合う馬がいない時は、買わないのが正解です)</div>`);
     const rows = [...r.rows].sort((a, z) => ({ 買い: 0, 検討: 1 }[a.j] ?? 2) - ({ 買い: 0, 検討: 1 }[z.j] ?? 2) || (z.p || 0) - (a.p || 0)).map(x =>
       `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td><td class="fj ${esc(x.fj || "")}">${{ 買い: "🎯買い", 検討: "検討", 見送り: "—" }[x.fj] || "—"}</td></tr>`).join("");
-    return `<section class="card ovs-race">${head}${box}
+    const msgs = (r.msgs || []).slice().reverse();
+    const msgBox = `<div class="ovs-msgs"><b>📣 海外のお知らせ</b>${msgs.length ? msgs.map(m => `<div class="ovs-msg"><small>${esc(m.at)} ${esc(m.stage)}</small><div>${esc(m.text).replace(/\*\*/g, "").replace(/\n/g, "<br>")}</div></div>`).join("") : `<div class="note">${esc(r.open_at || "")}の発表から、ここにDiscordと同じお知らせが出ます</div>`}</div>`;
+    return `<section class="card ovs-race">${head}${box}${msgBox}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
-      <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
+      <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p>
+      <p class="note">🔔 Discordの通知(JRAのレースと同じ): 📣 発表=公開時刻(8:21・午後のレースは12:00)に「おすすめの買い方」／ ⏰ 直前予想=発走約30分前に「そのまま買い・見送り・🚨急遽」／ 🔎 見直し=発走約10分前に「🚨急遽・✅やっぱり買い」(ある時だけ)／ 🔔 締切直前=発走約4分前に最終判断(毎回)。発走後は送りません。日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます(共有用はオッズの数字なし)。</p></section>`;
   }).join("");
 }
 function render() {
@@ -2546,6 +2560,7 @@ function render() {
   }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") {   // 開催がない日: 次の開催の案内と、その日の海外のレース(2026-11-03)
     const no = S.snap.next_open, ov = (S.snap.overseas || []).filter(r => r.date === S.date);
+    if (S.date !== todayStr() && ovDates().includes(S.date)) { v.innerHTML = h + (ov.length ? viewOverseas(S.date) : hvEmpty("この日の海外の判定は共有ページには残っていません(成績は🌏海外の成績欄に)")); tick(); return; }
     const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px">次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は <b>${esc(no.open_label)} ${esc(no.open_at)}</b> から。★・おすすめは当日 8:21〜(午後のレースは 12:00〜)</div></section>`
       : S.date > todayStr() ? hvEmpty("まだ予想がありません。出馬表が出たら表示されます。") : hvEmpty("この日はJRAの開催がありません");
     v.innerHTML = h + nx + (ov.length ? viewOverseas() : ""); tick(); return;
