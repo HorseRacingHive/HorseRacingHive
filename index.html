@@ -1180,6 +1180,7 @@ nav.tabs.has-ovs { grid-template-columns: repeat(6, 1fr); } nav.tabs.has-ovs but
 .ovs-tbl td.j, .ovs-tbl td.fj, .ovs-tbl th { white-space: nowrap; }
 .ovs-tbl td.fj { font-size: 12px; } .ovs-tbl td.fj.買い { color: var(--aim, #4ade80); font-weight: 900; } .ovs-tbl td.fj.見送り, .ovs-tbl td.fj.検討 { color: var(--muted); }
 .ovs-plan { border: 2px solid var(--honey); border-radius: 14px; padding: 10px 12px; background: rgba(247,201,72,.10); }
+.ovs-res { border: 2px solid #8fc7ff; border-radius: 14px; padding: 8px 12px; background: rgba(90,169,255,.08); } .ovs-res h3 { margin: 0 0 2px; font-size: 14px; color: #8fc7ff; } .ovs-res .plus { color: #4ade80; font-weight: 800; } .ovs-res .minus { color: #ff7d92; font-weight: 800; }   /* 🏁 海外の結果の箱(レースのカードの上・2026-11-03 本人の指摘「結果が反映されない」) */
 .ovs-plan h3 { margin: 0 0 4px; font-size: 15px; color: var(--honey); } .ovs-plan .bet { font-size: 19px; font-weight: 900; }
 .ovs-rec { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ovs-rec > div { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
 .ovs-rec b { font-size: 20px; color: var(--honey); }
@@ -2543,6 +2544,8 @@ function viewOverseas(onDate) {
     if (!r.open) return `<section class="card ovs-race">${head}<p class="note">🕘 判定は ${esc(r.open_at)} から公開します(日本のオッズが出てから) ${openTag(r.date, r.open_at)}</p>
       <p class="note">出走 ${r.rows.length}頭</p></section>`;
     const fin = r.fin || {};
+    const rs = r.res, nmOf = n => ((r.rows || []).find(x => x.no === n) || {}).name || "";   // 🏁 結果(共有用: 着順と、おすすめの形の当否だけ・2026-11-03)
+    const resBox = rs && (rs.order || []).length ? `<div class="ovs-res"><h3>🏁 結果</h3><b>${rs.order.map((n, i) => `${i + 1}着 ${n} ${esc(nmOf(n))}`).join("・")}</b>${(rs.plan || []).length ? `<div class="note">🎯 おすすめの形(${rs.plan.map(t => t.t + t.no).join("・")}): <span class="${rs.hit ? "plus" : "minus"}">${rs.hit ? "🎯的中" : "はずれ"}</span></div>` : ""}</div>` : "";
     const buys = r.buys || [];
     const pl = r.plan || [], pt = t => pl.filter(x => x.t === t).map(x => x.no).join("・"), fb = r.fbuys || [];
     const planBox = pl.length ? `<div class="ovs-plan"><h3>🎯 おすすめの買い方(参考程度に・各1点・別枠の少額で)</h3><div class="bet">${[pt("単") && "単勝 " + pt("単"), pt("複") && "複勝 " + pt("複")].filter(Boolean).join(" + ")}</div>
@@ -2561,7 +2564,7 @@ function viewOverseas(onDate) {
 <li><b>🔔 締切直前</b> <span class="ah-t">発走約4分前</span> <span class="ah-d">最終判断。変わらなくても毎回送ります</span></li>
 </ul>
 <p class="ah-s">日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます。発走後は送りません。</p>
-</div></details></div>${box}
+</div></details></div>${resBox}${box}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
   }).join("");
