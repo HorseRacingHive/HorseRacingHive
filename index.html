@@ -2545,10 +2545,18 @@ function viewOverseas(onDate) {
     const rows = [...r.rows].sort((a, z) => ({ 買い: 0, 検討: 1 }[a.j] ?? 2) - ({ 買い: 0, 検討: 1 }[z.j] ?? 2) || (z.p || 0) - (a.p || 0)).map(x =>
       `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td><td class="fj ${esc(x.fj || "")}">${{ 買い: "🎯買い", 検討: "検討", 見送り: "—" }[x.fj] || "—"}</td></tr>`).join("");
     const msgBox = ovAnnBox((r.msgs || []).slice().reverse(), `${r.open_at || ""}の発表から、ここにDiscordと同じお知らせが出ます`, r.id);
-    return `<section class="card ovs-race">${head}${msgBox}${box}
+    return `<section class="card ovs-race">${head}<div>${msgBox}<details class="ann-help"><summary>ℹ️ 海外のお知らせの種類</summary>
+<div class="ah-body">
+<ul class="ah-flow">
+<li><b>📣 発表</b> <span class="ah-t">公開時刻(8:21・午後は12:00)</span> <span class="ah-d">おすすめの買い方</span></li>
+<li><b>⏰ 直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">「そのまま買い」か「見送り」。新しく入った買い目は 🚨急遽</span></li>
+<li><b>🔎 見直し</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">🚨急遽・✅やっぱり買い(ある時だけ)</span></li>
+<li><b>🔔 締切直前</b> <span class="ah-t">発走約4分前</span> <span class="ah-d">最終判断。変わらなくても毎回送ります</span></li>
+</ul>
+<p class="ah-s">日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます。発走後は送りません。</p>
+</div></details></div>${box}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
-      <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p>
-      <details class="card ann-tick race-ann-fold ovs-dc"><summary><div class="at-row"><span class="at-head"><span class="kind">🔔 通知</span><b class="at-race">Discordの通知(JRAのレースと同じ)</b><span class="at-meta num"><span class="rf-closed">開く ▼</span><span class="rf-open">閉じる ▲</span></span></span><span class="at-tx l1">📣 発表 ／ ⏰ 直前予想 ／ 🔎 見直し ／ 🔔 締切直前</span></div></summary><div class="announce rf-list"><div class="ann"><div class="tx">📣 発表=公開時刻(8:21・午後のレースは12:00)に「おすすめの買い方」</div></div><div class="ann"><div class="tx">⏰ 直前予想=発走約30分前に「そのまま買い・見送り・🚨急遽」</div></div><div class="ann"><div class="tx">🔎 見直し=発走約10分前に「🚨急遽・✅やっぱり買い」(ある時だけ)</div></div><div class="ann"><div class="tx">🔔 締切直前=発走約4分前に最終判断(毎回)</div></div><div class="ann"><div class="tx">発走後は送りません。日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます(共有用はオッズの数字なし)。</div></div></div></details></section>`;
+      <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
   }).join("");
 }
 function render() {
