@@ -2746,7 +2746,7 @@ function viewHome(d) {
   }
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
-    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から</span></h2><div class="kd-stat"><span>1レースあたりの目安(13年の検証)</span><b>馬単 3点</b><i>的中率 3.5%・回収率 138%</i><b>馬連 3点</b><i>的中率 9.7%・回収率 116%</i><b>3連単 6点</b><i>的中率 2.1%・回収率 170%</i></div>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
+    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から</span></h2><div class="kd-stat"><span>1レースあたりの目安(13年の検証)</span><b>馬単 3点</b><i>的中率 3.5%・回収率 138%</i><b>馬連 3点</b><i>的中率 9.7%・回収率 116%</i><b>3連単 6点</b><i>的中率 2.1%・回収率 170%</i></div><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※待ちが長いので資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
       <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から選んだ組(締切約4分前に決まります)。3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。</p></section>`;
   }
   h += `<p class="note" style="margin-top:0">※オッズは生きてるので予想は締切まで変わります</p>`;
@@ -3001,7 +3001,7 @@ function allHorseList(d) {
   const vn = S.allVenue && d.venues.some(v => v.venue === S.allVenue) ? S.allVenue : "";
   let list = allHorses(d); if (vn) list = list.filter(x => x.venue === vn);
   if (!list.length) return hvEmpty("馬がいません");
-  const sortKeys = [["p", "勝率"], ["eb", "旨蜜度"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];
+  const sortKeys = [["p", "勝率"], ...(list.some(x => x.ar != null) ? [["ar", "蜂力度"]] : []), ["eb", "旨蜜度"], ["fplus", "＋ファクター"], ["fminus", "−ファクター"]];   // 蜂力度(能力だけの強さの順位・2026-11-07 本人の指定「全頭にも」)
   if (list.some(x => x.fin != null)) sortKeys.push(["fin", "着順"]);
   const ss = HMS.fit(S.allSort, ["post", ...sortKeys.map(([k]) => k)], { key: "post", dir: "asc" });
   const { key: sk, dir: sd } = ss;
@@ -3010,8 +3010,9 @@ function allHorseList(d) {
   h += `<div class="horse-sort hmsbar${HMS.multi(ss) ? " hm" : ""}" aria-label="全頭の並べ替え(押した順に①②③。向きは下の札の⇅で変えます)">${sBtn("post", "発走順")}${sortKeys.map(([k, l]) => sBtn(k, l.endsWith("順") ? l : l + "順")).join("")}</div>`;
   h += HMS.chips(ss, "all", "hivep_allsort", HMS_SIG_BASE, Object.fromEntries([["post", "発走順"], ...sortKeys]));   // 条件の札(向き⇅・外す✕)と📌
   if (sk === "eb") h += `<p class="note" style="margin:0">${EV_NOTE}</p>`;
+  if (sk === "ar") h += `<p class="note" style="margin:0">${HOURYOKU_NOTE}</p>`;
   const postMin = x => { const m = /(\d+):(\d+)/.exec(x.post || ""); return m ? +m[1] * 60 + +m[2] : null; };
-  const val = (x, k) => k === "post" ? postMin(x) : k === "fplus" || k === "fminus" ? (x.kp == null ? null : factorSum(x, k)) : k === "eb" ? evBand(x) : x[k];
+  const val = (x, k) => k === "post" ? postMin(x) : k === "fplus" || k === "fminus" ? (x.kp == null ? null : factorSum(x, k)) : k === "eb" ? evBand(x) : k === "ar" ? (x.ar > 0 ? x.ar : null) : x[k];
   list.sort(HMS.cmp(ss, val, (a, b) => (postMin(a) ?? 9999) - (postMin(b) ?? 9999) || String(a.venue).localeCompare(String(b.venue), "ja") || a.rno - b.rno || a.no - b.no));
   requestAnimationFrame(sigFitNames);
   return h + `<div class="card list">` + list.map(x => `<button class="row sig-row${x.sig && SIG_INFO[x.sig] ? " sg-" + SIG_INFO[x.sig][0] : ""}" data-race="${esc(x.id)}" data-race-group="all" data-hno="${x.no ?? ""}">
