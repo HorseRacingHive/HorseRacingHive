@@ -2746,7 +2746,7 @@ function viewHome(d) {
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
     h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から</span></h2><div class="kd-stat"><span>1レースあたりの目安(13年の検証)</span><b>馬単 3点</b><i>的中率 3.5%・回収率 138%</i><b>馬連 3点</b><i>的中率 9.7%・回収率 116%</i><b>3連単 6点</b><i>的中率 2.1%・回収率 170%</i></div>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
-      <p class="note" style="margin-bottom:0">馬単 = おすすめの中から選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から選んだ組(締切約4分前に決まります)。3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。</p></section>`;
+      <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から選んだ組(締切約4分前に決まります)。3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。</p></section>`;
   }
   h += `<p class="note" style="margin-top:0">※オッズは生きてるので予想は締切まで変わります</p>`;
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
