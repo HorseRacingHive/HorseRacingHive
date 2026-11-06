@@ -2744,7 +2744,7 @@ function viewHome(d) {
   }
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
-    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬からの買い方</span></h2>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
+    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から</span></h2>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
       <p class="note">馬単 = ★3・★4の馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から選んだ組(締切約4分前に決まります)。3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。</p></section>`;
   }
   h += `<p class="note">※オッズは生きてるので予想は締切まで変わります</p>`;
