@@ -46,7 +46,7 @@ html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(
 #kbLoader>svg{position:absolute;left:50%;transform:translateX(-50%);top:calc(50% + min(84vw,54vh,440px) * .47)}   /* ロゴを画面の真ん中に、帽子の巣はロゴのすぐ下(重ならない程度) */
 #kbLoader:not(.intro)>svg{top:calc(50% + 106px)}
 @media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
-.dash-amts{display:grid;gap:4px;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.08)}.dash-amts .da-cap{font-size:11.5px;opacity:.75}.dash-amts .da-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.dash-amts .da-sum{font-size:11.5px;font-variant-numeric:tabular-nums;opacity:.85;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.02em}.dash-amts .da-min{flex:none;border:1px solid rgba(247,201,72,.45);background:rgba(247,201,72,.08);color:#f0c040;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;cursor:pointer}.dash-amts.min{padding:6px 10px}.dash-amts .da-row{display:grid;grid-template-columns:4.6em minmax(0,1fr);align-items:center;gap:2px 8px;font-size:12.5px}.dash-amts .da-n{font-weight:700;white-space:nowrap}.dash-amts .da-ctl{display:inline-flex;align-items:center;gap:4px}.dash-amts .da-ctl i{font-style:normal}.dash-amts .pt-unit{font-size:16px}
+.dash-amts{display:grid;gap:4px;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.08)}.dash-amts .da-cap{font-size:11.5px;opacity:.75}.dash-amts .da-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.dash-amts .da-sum{font-size:11.5px;font-variant-numeric:tabular-nums;opacity:.85;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.02em}.dash-amts .da-min{flex:none;border:1px solid rgba(247,201,72,.45);background:rgba(247,201,72,.08);color:#f0c040;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;cursor:pointer}.dash-amts.min{padding:6px 10px}.dash-amts .da-row{display:grid;grid-template-columns:4.6em minmax(0,1fr);align-items:center;gap:2px 8px;font-size:12.5px}.dash-amts .da-n{font-weight:700;white-space:nowrap}.dash-amts .da-ctl{display:inline-flex;align-items:center;gap:4px}.dash-amts .da-ctl i{font-style:normal}.dash-amts .pt-unit{font-size:16px}.dash-amts .da-ctl select.pt-unit{max-width:7.5em;min-height:30px;padding:2px 4px}
 .seg.dash-t{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:0 0 8px}.seg.dash-t button{min-height:40px;padding:3px 2px;font-size:11.5px;line-height:1.15;white-space:nowrap;letter-spacing:-.02em}.seg.dash-t .ic{display:block;font-size:15px;line-height:1.2}
 .pt-unit-row{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}.pt-unit{width:78px;font:700 14px inherit;padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--soft,transparent);color:var(--ink)}
 /* グラフの見出し: 1行目「収支の推移」+切り替え・2行目に説明(文字が縦にならないように・2026-11-07) */
@@ -3055,20 +3055,25 @@ function pubMonth() {
 const DASH_T = [["単勝", "🎯 単勝"], ["馬単", "🐴 馬単"], ["馬連", "🐎 馬連"], ["3連単", "🏆 3連単"], ["total", "🍯 トータル"]];
 // 1点の金額(券種ごと・この端末に覚える。2026-11-07 本人の指定「単勝1000・その他は100円・変えない限りそのまま・トータルはそれぞれの金額を引き継ぐ」)
 const UNIT_T = ["単勝", "馬単", "馬連", "3連単"], UNIT_DEF = { "単勝": 1000, "馬単": 100, "馬連": 100, "3連単": 100 };
-function unitOf(t) { const v = +((S.units || {})[t]); return v >= 100 ? Math.round(v / 100) * 100 : (UNIT_DEF[t] || 100); }
-function unitInput(t, cls, id) { return `<input class="${cls}" ${id ? `id="${id}"` : ""} data-unit-t="${esc(t)}" type="number" inputmode="numeric" min="100" step="100" value="${unitOf(t)}" aria-label="${esc(t)}の1点の金額">`; }
+function unitOf(t) { const r = (S.units || {})[t], v = +r; return r !== undefined && r !== null && r !== "" && v >= 0 ? Math.round(v / 100) * 100 : (UNIT_DEF[t] || 100); }   // 0円 = その券種を入れない(2026-11-07 携帯と同じ)
+function unitInput(t, cls, id) { return `<input class="${cls}" ${id ? `id="${id}"` : ""} data-unit-t="${esc(t)}" type="number" inputmode="numeric" min="0" step="100" value="${unitOf(t)}" aria-label="${esc(t)}の1点の金額">`; }
+const UNIT_OPTS = [0, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000];   // 一覧からも選べる(携帯と同じ・2026-11-07)
+function unitSelect(t) { return `<select class="pt-unit" data-unit-t="${esc(t)}" aria-label="${esc(t)}の金額を一覧から"><option value="">一覧</option>${UNIT_OPTS.map(v => `<option value="${v}">${v ? v.toLocaleString("ja-JP") + "円" : "0円(買わない)"}</option>`).join("")}</select>`; }
 function unitPanel(tt) {   // 「1点の金額」(トータルは4券種・ほかはその券種。2026-11-07 本人の指定・どの券種でも小さくできる)。見る人がこの端末で入れる金額だけ
   const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
   const L = tt && tt !== "total" && UNIT_T.includes(tt) ? [tt] : UNIT_T;
   if (S.amtMin) return `<div class="dash-amts min"><div class="da-top"><span class="da-sum">${L.map(t => `${t}${unitOf(t).toLocaleString()}`).join("・")}円</span><button type="button" class="da-min" data-amt-min>広げる ▼</button></div></div>`;
-  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">${L.length > 1 ? "それぞれの1点の金額(トータルはこの金額で計算・100円単位)" : "1点の金額(100円単位・ほかの券種に移っても引き継ぎ)"}</span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${L.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i></span></div>`).join("")}</div>`;
+  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">${L.length > 1 ? "それぞれの1点の金額(トータルはこの金額で計算・100円単位・0円でその券種なし)" : "1点の金額(100円単位・ほかの券種に移っても引き継ぎ)"}</span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${L.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i>${unitSelect(t)}</span></div>`).join("")}</div>`;
 }
-function unitSumText() { return UNIT_T.map(t => `${t}${unitOf(t).toLocaleString()}円`).join("・") + "で買っていたら"; }
+function unitSumText() { const L = UNIT_T.filter(t => unitOf(t) > 0); return (L.length ? L.map(t => `${t}${unitOf(t).toLocaleString()}円`).join("・") : "どの券種も0円") + "で買っていたら"; }
 function dashKind(d, PM) {
   const KP = S.snap?.kaime_pub, t = KP && KP[S.dashT] && S.dashT !== "単勝" ? S.dashT : "単勝";
   if (t === "単勝") return { t };
-  const K = KP[t], mk = a => a && a[0] && a[2] != null ? { n: a[0], hit: a[1], roi: a[2] } : null;
-  const src = t === "total" ? UNIT_T : [t];
+  const src = t === "total" ? UNIT_T.filter(tt => unitOf(tt) > 0) : [t];   // トータルは0円の券種を入れない(2026-11-07)
+  const skip0 = t === "total" && src.length < UNIT_T.length;
+  const addA = f => { let n = 0, h = 0, w = 0; for (const tt of src) { const a = f(KP[tt] || {}); if (a && a[0] && a[2] != null) { n += a[0]; h += a[1] || 0; w += a[0] * a[2]; } } return n ? [n, h, w / n] : null; };
+  const comb = sec => { const o = {}; const ks = new Set(src.flatMap(tt => Object.keys((KP[tt] || {})[sec] || {}))); for (const k of ks) { const a = addA(x => (x[sec] || {})[k]); if (a) o[k] = a; } return o; };
+  const K = skip0 ? { year: addA(x => x.year), days: comb("days"), months: comb("months") } : KP[t], mk = a => a && a[0] && a[2] != null ? { n: a[0], hit: a[1], roi: a[2] } : null;
   const yenOf = f => src.reduce((s, tt) => { const a = f(KP[tt] || {}); return s + (a && a[0] && a[2] != null ? a[0] * (a[2] - 1) * unitOf(tt) : 0); }, 0);   // 円 = 券種ごとの「何点分」×その券種の1点の金額
   const invOf = f => src.reduce((s, tt) => { const a = f(KP[tt] || {}); return s + (a && a[0] && a[2] != null ? a[0] * unitOf(tt) : 0); }, 0);
   // トータルの回収率は、券種ごとの1点の金額で重みを付ける(本人の指定「トータルはそれぞれの金額を引き継いで」)
@@ -3077,7 +3082,8 @@ function dashKind(d, PM) {
   // 2014年〜の検証(券種ごと・トータル)
   const H = S.snap?.hist13; let rs = null;
   if (H) {
-    const yrs = t === "total" ? (H.years_total || {}) : ((H.stats?.[t] || {}).years || {});
+    let yrs = t === "total" ? (H.years_total || {}) : ((H.stats?.[t] || {}).years || {});
+    if (skip0) { yrs = {}; for (const tt of src) for (const [y, a] of Object.entries((H.stats?.[tt] || {}).years || {})) { if (!a || !a[0] || a[2] == null) continue; const o = yrs[y] || [0, 0, 0]; const n = o[0] + a[0]; yrs[y] = [n, o[1] + (a[1] || 0), (o[2] * o[0] + a[2] * a[0]) / n]; } }
     const ys = Object.values(yrs).filter(a => a[0] && a[2] != null);
     const n = ys.reduce((s, a) => s + a[0], 0);
     if (n) rs = { roi: ys.reduce((s, a) => s + a[2] * a[0], 0) / n, per_year: Math.round(n / ys.length).toLocaleString(), plus_years: `${ys.filter(a => a[2] >= 1).length}/${ys.length}` };
@@ -3135,7 +3141,16 @@ function h13Ticks(ms) {
 }
 // 年ごとの表(選んでいる券種・トータル)。点数・的中・回収率・収支(何点分。円は見る人が入れた1点の金額×点数)
 function h13Years(H, md, yenMode, sign) {
-  const ys = md === "total" ? H.years_total : (H.stats?.[md] || {}).years;
+  let ys = md === "total" ? H.years_total : (H.stats?.[md] || {}).years;
+  const on = UNIT_T.filter(t => unitOf(t) > 0);
+  if (md === "total" && on.length < UNIT_T.length) {   // 0円の券種を外して足し直す(2026-11-07)。[点数, 的中, 回収率, 何点分]
+    ys = {};
+    for (const t of on) for (const [y, a] of Object.entries((H.stats?.[t] || {}).years || {})) {
+      if (!a || !a[0] || a[2] == null) continue;
+      const o = ys[y] || [0, 0, 0, 0], n = o[0] + a[0];
+      ys[y] = [n, o[1] + (a[1] || 0), (o[2] * o[0] + a[2] * a[0]) / n, o[3] + (a[3] || 0)];
+    }
+  }
   if (!ys || !Object.keys(ys).length) return "";
   const isTot = md === "total", unitY = isTot ? null : unitOf(md);
   // 円 = その券種の「何点分」×1点の金額(トータルは券種ごとの金額で足す)
@@ -3151,7 +3166,7 @@ function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。�
   const T = [["単勝", "🎯 単勝", "おすすめ(★2〜5)を1点"], ["馬単", "🐴 馬単", "選んだおすすめの馬を1着に・相手3頭(3点)"], ["馬連", "🐎 馬連", "おすすめ-相手3頭(3点)"], ["3連単", "🏆 3連単", "おすすめ1着→相手3頭→3頭(6点)"]];
   const md = ["total", ...T.map(x => x[0])].includes(S.h13) ? S.h13 : "total";
   const yenMode = !!S.curveYen, isTot = md === "total", unitY = isTot ? null : unitOf(md);
-  const vals = H.months.map((m, i) => (isTot ? T.map(x => x[0]) : [md]).reduce((s, t) => s + ((H.curve[t] || [])[i] || 0) * (yenMode ? unitOf(t) : 1), 0));   // 円はそれぞれの券種の1点の金額で
+  const vals = H.months.map((m, i) => (isTot ? T.map(x => x[0]).filter(t => unitOf(t) > 0) : [md]).reduce((s, t) => s + ((H.curve[t] || [])[i] || 0) * (yenMode ? unitOf(t) : 1), 0));   // 円はそれぞれの券種の1点の金額で・トータルは0円の券種を入れない
   const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "±");
   const pts = H.months.map((m, i) => ({ date: m, value: vals[i] }));
   const btn = (v, l) => `<button type="button" data-h13="${v}" class="${md === v ? "on" : ""}" style="min-height:28px;padding:2px 8px;font-size:11px">${l}</button>`;
@@ -3531,7 +3546,8 @@ document.addEventListener("click", e => {   // 札(ボタン)の中の「買っ�
 }, true);
 document.addEventListener("change", e => {   // 収支の推移の「1点○円」(2026-11-05)
   if (e.target.id !== "curve-unit" && !(e.target.classList && e.target.classList.contains("pt-unit"))) return;   // 「1点○円なら」(ひと目でわかる成績)も同じ金額・この端末に覚える(2026-11-07)
-  const v = Math.max(100, Math.min(1000000, Math.round((+e.target.value || 0) / 100) * 100));
+  if (e.target.value === "") return;   // 一覧の「一覧」(何も選んでいない)
+  const v = Math.max(0, Math.min(1000000, Math.round((+e.target.value || 0) / 100) * 100));   // 0円 = その券種を入れない(2026-11-07)
   const t = e.target.dataset.unitT || "単勝";   // 券種ごとに覚える(2026-11-07)
   S.units = { ...(S.units || {}), [t]: v }; store.set("hivep_units", JSON.stringify(S.units));
   const y = window.scrollY; render(); window.scrollTo(0, y);
