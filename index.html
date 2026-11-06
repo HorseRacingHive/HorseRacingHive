@@ -2741,9 +2741,84 @@ function viewHome(d) {
       </button>`).join("")}</div>
       <p class="note">🎲大穴 = おすすめと同じ条件で、単勝が100倍をこえる馬。当たりは数年に1本の見込みなので、買うならおすすめとは別に<b>1点100円</b>で(金額は増やさない)。成績はおすすめに入れません。直前のオッズで100倍を切ると対象外になります。</p></div>`;
   }
-  h += `</section><p class="note">※オッズは生きてるので予想は締切まで変わります</p>`;
+  h += `</section>`;
+  if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
+    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬からの買い方</span></h2>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
+      <p class="note">馬単 = ★3・★4の馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から選んだ組(締切約4分前に決まります)。3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。</p></section>`;
+  }
+  h += `<p class="note">※オッズは生きてるので予想は締切まで変わります</p>`;
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
 }
+// ===== おすすめタブの「🐴馬単・🐎馬連・🏆3連単」(2026-11-07 本人の指定「作り直して・PC・携帯・共有用に」) =====
+// /api/kaime-day(共有用は公開データの kaime_days)。馬単 = Discordで知らせた★3・★4の買い目・馬連 = 締切約4分前の最終判断の組・
+// 3連単 = 自動購入で締切約1分前に決めた組(まだなら今の予想での予定)。共有用は組と当たりだけ(金額・払戻・オッズは出さない)
+const KD_ESC = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const KD_YEN = n => Math.round(n || 0).toLocaleString("ja-JP") + "円";
+(function () {
+  if (document.getElementById("kd-style")) return;
+  const st = document.createElement("style"); st.id = "kd-style";
+  st.textContent = ".kd-grid{display:grid;gap:10px}" +
+    ".kd-card{background:var(--panel,#1d150a);border:1px solid var(--line,#3a2a12);border-radius:12px;padding:10px 12px}" +
+    ".kd-card.kd-done{opacity:.92}" +
+    ".kd-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px}.kd-h b{font-size:15px}.kd-h .kd-post{color:var(--muted,#a8977a);font-size:12px}" +
+    ".kd-h a{color:inherit;text-decoration:none}" +
+    ".kd-h .kd-tag{margin-left:auto;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;border:1px solid var(--line,#3a2a12);color:var(--muted,#a8977a)}" +
+    ".kd-h .kd-tag.won{color:var(--good,#3dd69b);border-color:var(--good,#3dd69b)}" +
+    ".kd-ax{font-size:12.5px;color:var(--muted,#a8977a);margin-bottom:6px}.kd-ax b{color:var(--ink,#fbf1dc)}.kd-ax s{opacity:.7}" +
+    ".kd-l{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:start;padding:5px 0;border-top:1px dashed var(--line,#3a2a12)}" +
+    ".kd-b{font-size:12px;font-weight:800;white-space:nowrap;padding-top:2px}" +
+    ".kd-k{display:flex;flex-wrap:wrap;gap:4px}" +
+    ".kd-k span{font-family:var(--f-disp,inherit);font-size:13px;font-weight:800;padding:1px 7px;border-radius:7px;background:var(--soft,rgba(255,255,255,.06));border:1px solid var(--line,#3a2a12);white-space:nowrap}" +
+    ".kd-k span.won{background:rgba(61,214,155,.16);border-color:var(--good,#3dd69b);color:var(--good,#3dd69b)}" +
+    ".kd-k span.sk{text-decoration:line-through;opacity:.55}" +
+    ".kd-m{grid-column:2;font-size:11px;color:var(--muted,#a8977a)}.kd-m b.plus{color:var(--good,#3dd69b)}" +
+    ".kd-wait{font-size:12px;color:var(--muted,#a8977a)}";
+  document.head.appendChild(st);
+})();
+function kdRender(races, opt) {
+  opt = opt || {};
+  const pub = !!opt.pub;
+  if (!races) return `<div class="note">買い目を読み込んでいます…</div>`;
+  if (!races.length) return `<p class="muted" style="font-size:13px">この日の馬単・馬連・3連単の買い目はまだありません(おすすめの馬が決まると、ここに並びます)。</p>`;
+  const NAMES = [["馬単", "🐴 馬単"], ["馬連", "🐎 馬連"], ["3連単", "🏆 3連単"]];
+  return `<div class="kd-grid">${races.map(r => {
+    const all = [].concat(...NAMES.map(([b]) => (r.bets || {})[b] || []));
+    const hit = all.filter(t => pub ? t.hit : t.pay);
+    const tag = r.result ? (hit.length ? `<span class="kd-tag won">的中</span>` : `<span class="kd-tag">はずれ</span>`) : "";
+    const ax = (r.axes || []).map(a => { const t = `<b>${a.no}</b> ${KD_ESC(a.name)}${a.stars ? ` <span class="stars t${a.stars}">${"★".repeat(a.stars)}</span>` : ""}`; return a.skip ? `<s>${t}</s>(見送り)` : t; }).join("・");
+    const lines = NAMES.map(([b, lab]) => {
+      const ts = (r.bets || {})[b] || [];
+      if (!ts.length) {
+        if (b === "馬連" && r.umaren_wait) return `<div class="kd-l"><span class="kd-b">${lab}</span><span class="kd-wait">締切約4分前の最終判断で決まります</span></div>`;
+        return "";
+      }
+      const plan = ts.some(t => t.plan);
+      const live = ts.filter(t => !t.skip);
+      const n = live.reduce((s, t) => s + (t.n || 1), 0);
+      let m = `${n ? `${n}点` : "見送り"}${plan ? "・予定(締切約1分前に決まります)" : ""}`;
+      if (!pub) {
+        const st = live.reduce((s, t) => s + (t.stake || 0), 0), py = live.reduce((s, t) => s + (t.pay || 0), 0);
+        if (st) m += `・${KD_YEN(st)}`;
+        if (py) m += ` <b class="plus">払戻 ${KD_YEN(py)}</b>`;
+      }
+      return `<div class="kd-l"><span class="kd-b">${lab}</span><span class="kd-k">${ts.map(t => `<span class="${(pub ? t.hit : t.pay) ? "won" : ""}${t.skip ? " sk" : ""}">${KD_ESC(t.kumi)}</span>`).join("")}</span><span class="kd-m">${m}</span></div>`;
+    }).join("");
+    const link = opt.link ? opt.link(r) : "";
+    return `<div class="kd-card${r.result ? " kd-done" : ""}"><div class="kd-h">${link ? `<a ${link}><b>${KD_ESC(r.venue)}${r.no}R</b></a>` : `<b>${KD_ESC(r.venue)}${r.no}R</b>`}<span class="kd-post">${KD_ESC(r.post)}発走</span>${tag}</div>${ax ? `<div class="kd-ax">軸 ${ax}</div>` : ""}${lines}</div>`;
+  }).join("")}</div>`;
+}
+function kdCopyText(races) {   // 管理用: 買い目をコピー(単勝も含む・見送りは除く)
+  const out = [];
+  for (const r of races || []) {
+    if (r.result) continue;
+    const ls = [];
+    for (const a of r.axes || []) if (!a.skip && a.stake) ls.push(`  単勝 ${a.no} ${a.stake}円`);
+    for (const b of ["馬単", "馬連", "3連単"]) for (const t of (r.bets || {})[b] || []) if (!t.skip && !t.plan) ls.push(`  ${b} ${t.kumi}${t.n ? `(${t.n}点)` : ""} ${t.stake}円`);
+    if (ls.length) out.push(`${r.venue}${r.no}R ${r.post}発走\n` + ls.join("\n"));
+  }
+  return out.join("\n");
+}
+
 
 // 結果画面の印バッジの色(2026-10-28)
 const RM_CLS = { "◎": "rm-hon", "○": "rm-tai", "▲": "rm-tan", "△": "rm-ren", "注": "rm-chu", "穴": "rm-ana", "☆": "rm-hosi" };
