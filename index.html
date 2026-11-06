@@ -1475,13 +1475,13 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
       for(var i=0;i<f;i++)h+='<div></div>';
       for(var dd=1;dd<=n;dd++){var s=Y+'-'+p2(M+1)+'-'+p2(dd),r=isRace(s),o=!!ov[s];
         h+='<div><button class="c'+(r?' r':'')+(o?' ov':'')+plc((P.days||{})[s])+(s===sel?' on':'')+(s===today?' now':'')+'"'+((r||o)?' data-d="'+s+'"':' disabled')+'>'+dd+'</button></div>';}
-      h+='</div><div class="ft"><span>金の点 = 開催日 ・ 青の点 = 海外'+(P.days&&Object.keys(P.days).length?' ・ 数字 <b style="color:#3dd69b">緑</b>=プラス <b style="color:#ff7d92">赤</b>=マイナス':'')+'</span><button data-a="today">今週</button></div>';
+      h+='</div><div class="ft"><span>金の点 = 開催日 ・ 青の点 = 海外'+(P.days&&Object.keys(P.days).length?' ・ 数字 <b style="color:#3dd69b">緑</b>=プラス <b style="color:#ff7d92">赤</b>=マイナス(※単勝)':'')+'</span><button data-a="today">今週</button></div>';
     }else{
       h+='<div class="hd"><button class="ar" data-a="-y" aria-label="前の年"'+(String(Y-1)>=min.slice(0,4)?'':' disabled')+'>&#8249;</button>'
         +'<button class="ttl" data-a="back"><span class="yy'+plc(ysum(P))+'">'+Y+'年</span></button>'
         +'<button class="ar" data-a="+y" aria-label="次の年"'+(String(Y+1)<=max.slice(0,4)?'':' disabled')+'>&#8250;</button></div><div class="mg">';
       for(var m=0;m<12;m++){var ym=Y+'-'+p2(m+1);h+='<button data-m="'+m+'" class="'+(ym===sel.slice(0,7)?'on':'')+plc((P.months||{})[ym])+'"'+(inMonth(Y,m)?'':' disabled')+'>'+(m+1)+'月</button>';}
-      h+='</div>';var ys=ysum(P);if(ys!=null)h+='<div class="ft"><span>'+Y+'年の収支: '+(ys>0?'<b style="color:#3dd69b">プラス</b>':ys<0?'<b style="color:#ff7d92">マイナス</b>':'±0')+' ・ 月の色 <b style="color:#3dd69b">緑</b>=プラス <b style="color:#ff7d92">赤</b>=マイナス</span></div>';
+      h+='</div>';var ys=ysum(P);if(ys!=null)h+='<div class="ft"><span>'+Y+'年の収支: '+(ys>0?'<b style="color:#3dd69b">プラス</b>':ys<0?'<b style="color:#ff7d92">マイナス</b>':'±0')+' ・ 月の色 <b style="color:#3dd69b">緑</b>=プラス <b style="color:#ff7d92">赤</b>=マイナス(※単勝)</span></div>';
     }
     box.innerHTML=h+'</div>';
   }
