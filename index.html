@@ -2982,10 +2982,30 @@ function perfDashboard(d, rp) {
   return h;
 }
 
+function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。金額なし: 1点を1として何点分か・10点きざみ。円は見る人が入れた1点の金額×点数で、この端末だけで計算)
+  const H = S.snap?.hist13; if (!H || !H.months?.length) return "";
+  const T = [["単勝", "🎯 単勝", "おすすめ(★2〜5)を1点"], ["馬単", "🐴 馬単", "★3・★4を1着に・相手3頭(3点)"], ["馬連", "🐎 馬連", "おすすめ-相手3頭(3点)"], ["3連単", "🏆 3連単", "おすすめ1着→相手3頭→3頭(6点)"]];
+  const md = ["total", ...T.map(x => x[0])].includes(S.h13) ? S.h13 : "total";
+  const vals = H.months.map((m, i) => md === "total" ? T.reduce((s, [t]) => s + ((H.curve[t] || [])[i] || 0), 0) : ((H.curve[md] || [])[i] || 0));
+  const unitY = Math.max(100, Math.round((+S.curveUnit || 1000) / 100) * 100), yenMode = !!S.curveYen;
+  const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "±");
+  const pts = H.months.map((m, i) => ({ date: m, value: yenMode ? vals[i] * unitY : vals[i] }));
+  const btn = (v, l) => `<button type="button" data-h13="${v}" class="${md === v ? "on" : ""}" style="min-height:28px;padding:2px 8px;font-size:11px">${l}</button>`;
+  const seg = `<span class="seg" style="gap:4px"><button data-curve-yen="0" class="${yenMode ? "" : "on"}" style="min-height:28px;padding:2px 10px;font-size:11px">点数</button><button data-curve-yen="1" class="${yenMode ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:11px">円</button></span>`;
+  let h = `<section><h2>過去13年の検証<span class="sub">券種ごと・2014年〜</span></h2><div class="card chart-card"><div class="cap" style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">収支の推移<small>(${yenMode ? `1点${unitY.toLocaleString()}円で買っていたら` : "1点買うのを1として何点分のプラスか"}・累積)</small>${seg}</div>
+    <div class="seg" style="gap:4px;margin:4px 0 6px;flex-wrap:wrap">${btn("total", "トータル")}${T.map(([t]) => btn(t, t)).join("")}</div>
+    ${yenMode ? `<div class="curve-unit">1点<input id="curve-unit" type="number" inputmode="numeric" min="100" step="100" value="${unitY}">円で買っていたら</div>` : ""}
+    ${lineSvg(pts, { fmt: s => String(s).slice(0, 7).replace("-", "/"), fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v).toLocaleString() + "点"), label: "過去13年の収支の推移" })}</div>
+    <div class="card tbl"><table><tr><th>券種</th><th class="r">点数</th><th class="r">的中</th><th class="r">回収率</th><th class="r">＋の年</th></tr>
+    ${T.map(([t, lab, sub]) => { const x = (H.stats || {})[t]; return x && x.n ? `<tr><td>${lab}<br><small class="muted">${sub}</small></td><td class="r">${x.n.toLocaleString()}</td><td class="r">${x.hit.toLocaleString()}</td><td class="r ${x.roi >= 1 ? "plus" : "minus"}"><b>${Math.round(x.roi * 100)}%</b></td><td class="r">${esc(x.plus_years)}</td></tr>` : ""; }).join("")}
+    </table></div><p class="note">※その年より前のデータで学習したAIで、締切の数分前に判断した場合の検証です(払戻は実際の払戻)。相手はAIの勝率の上位。馬単・3連単は当たりが少なく、1年近く当たらない時期もあります。過去の成績は将来を約束しません。</p></section>`;
+  return h;
+}
+
 function viewPerf(d) {
   const p0 = d.perf || {};
   const rp = d.rec_perf || (p0.n ? { source: "app", actual: { n: p0.n, hit: p0.hit, hit_rate: p0.hit / p0.n, roi: p0.roi, profit: p0.roi == null ? null : (p0.roi - 1) * p0.n * 1000 } } : null);
-  let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2>${hvEmpty(`${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}`, { fill: false, next: false })}</section>`);
+  let h = perfDashboard(d, rp) + hist13Block() + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2>${hvEmpty(`${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}`, { fill: false, next: false })}</section>`);
   const per = S.snap.period, PM = pubMonth();
   if (per) {
     h += `<section><h2>${PM.lab}・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${PM.x ? periodCard(PM.lab, PM.x) : ""}${periodCard("今年", per.year)}
@@ -3653,6 +3673,7 @@ document.addEventListener("click", e => {
     window.scrollTo(0, y); return;
   }
   if (t.dataset.moneyPer) { const y = window.scrollY; S.moneyPer = t.dataset.moneyPer; render(); window.scrollTo(0, y); return; }
+  if (t.dataset.h13) { const y = window.scrollY; S.h13 = t.dataset.h13; render(); window.scrollTo(0, y); return; }
   if (t.dataset.curveYen) { const y = window.scrollY; S.curveYen = t.dataset.curveYen === "1"; store.set("hivep_curve_yen", S.curveYen ? "1" : "0"); render(); window.scrollTo(0, y); return; }
   if (t.dataset.sigSort) {   // 狙い・危険の並べ替え(勝率・期待値・＋ファクター・−ファクター)
     const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, y = window.scrollY;
