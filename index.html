@@ -3056,10 +3056,11 @@ const DASH_T = [["単勝", "🎯 単勝"], ["馬単", "🐴 馬単"], ["馬連",
 const UNIT_T = ["単勝", "馬単", "馬連", "3連単"], UNIT_DEF = { "単勝": 1000, "馬単": 100, "馬連": 100, "3連単": 100 };
 function unitOf(t) { const v = +((S.units || {})[t]); return v >= 100 ? Math.round(v / 100) * 100 : (UNIT_DEF[t] || 100); }
 function unitInput(t, cls, id) { return `<input class="${cls}" ${id ? `id="${id}"` : ""} data-unit-t="${esc(t)}" type="number" inputmode="numeric" min="100" step="100" value="${unitOf(t)}" aria-label="${esc(t)}の1点の金額">`; }
-function unitPanel() {   // トータルの「それぞれの1点の金額」(2026-11-07 本人の指定・小さくできる)。見る人がこの端末で入れる金額だけ
+function unitPanel(tt) {   // 「1点の金額」(トータルは4券種・ほかはその券種。2026-11-07 本人の指定・どの券種でも小さくできる)。見る人がこの端末で入れる金額だけ
   const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
-  if (S.amtMin) return `<div class="dash-amts min"><div class="da-top"><span class="da-sum">${UNIT_T.map(t => `${t}${unitOf(t).toLocaleString()}`).join("・")}円</span><button type="button" class="da-min" data-amt-min>広げる ▼</button></div></div>`;
-  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">それぞれの1点の金額(トータルはこの金額で計算・100円単位)</span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${UNIT_T.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i></span></div>`).join("")}</div>`;
+  const L = tt && tt !== "total" && UNIT_T.includes(tt) ? [tt] : UNIT_T;
+  if (S.amtMin) return `<div class="dash-amts min"><div class="da-top"><span class="da-sum">${L.map(t => `${t}${unitOf(t).toLocaleString()}`).join("・")}円</span><button type="button" class="da-min" data-amt-min>広げる ▼</button></div></div>`;
+  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">${L.length > 1 ? "それぞれの1点の金額(トータルはこの金額で計算・100円単位)" : "1点の金額(100円単位・ほかの券種に移っても引き継ぎ)"}</span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${L.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i></span></div>`).join("")}</div>`;
 }
 function unitSumText() { return UNIT_T.map(t => `${t}${unitOf(t).toLocaleString()}円`).join("・") + "で買っていたら"; }
 function dashKind(d, PM) {
@@ -3104,7 +3105,7 @@ function perfDashboard(d, rp) {
   const KP = S.snap?.kaime_pub;
   const tbtn = KP ? `<div class="seg dash-t">${DASH_T.map(([v, l]) => { const [ic, ...nm] = l.split(" "); return `<button type="button" data-dash-t="${v}" class="${DK.t === v ? "on" : ""}"><span class="ic">${ic}</span>${nm.join(" ")}</button>`; }).join("")}</div>` : "";
   Object.values(periods).forEach(p => { p.ut = DK.t; if (other) { p.kind = DK.t === "total" ? "トータル" : DK.t; if (!p.n) p.empty = "まだ結果が出ていません"; } });
-  let h = `<section><h2>ひと目でわかる成績<span class="sub">${other ? (DK.t === "total" ? "4券種の合計" : `おすすめ・${DK.t}`) : "おすすめ・単勝"}</span></h2>${tbtn}${DK.t === "total" ? unitPanel() : ""}${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
+  let h = `<section><h2>ひと目でわかる成績<span class="sub">${other ? (DK.t === "total" ? "4券種の合計" : `おすすめ・${DK.t}`) : "おすすめ・単勝"}</span></h2>${tbtn}${KP ? unitPanel(DK.t) : ""}${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
   h += gaugeSvg(today?.n ? today.roi : null, `${esc(d.label)}`, today?.n ? `${today.hit}/${today.n}的中` : (osN ? `結果待ち・おすすめ${osN}頭` : "おすすめなし"));
   h += gaugeSvg(PM.x?.n ? PM.x.roi : null, PM.lab, PM.x?.n ? `${PM.x.hit}/${PM.x.n}的中` : "まだ結果なし");
   h += `</div><div class="dash">`;
