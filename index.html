@@ -47,6 +47,8 @@ html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(
 #kbLoader:not(.intro)>svg{top:calc(50% + 106px)}
 @media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
 .pt-unit-row{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}.pt-unit{width:78px;font:700 14px inherit;padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--soft,transparent);color:var(--ink)}
+/* グラフの見出し: 1行目「収支の推移」+切り替え・2行目に説明(文字が縦にならないように・2026-11-07) */
+.cap.cap-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.cap.cap-row .cap-t{white-space:nowrap}.cap.cap-row .seg{margin-left:auto;flex:none}.cap.cap-row>small{flex:1 1 100%;margin-left:0;order:3}
 .curve-unit{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:2px 0 6px}.curve-unit input{width:96px;font:700 15px inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 tr.tot td{border-top:2px solid var(--line)}
 </style>
@@ -3023,7 +3025,7 @@ function perfDashboard(d, rp) {
   const curvePts = yenMode ? pts.map(p => ({ ...p, value: p.value * unitY })) : pts;
   const seg = ptMode ? `<span class="seg" style="gap:4px"><button data-curve-yen="0" class="${yenMode ? "" : "on"}" style="min-height:28px;padding:2px 10px;font-size:11px">点数</button><button data-curve-yen="1" class="${yenMode ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:11px">円</button></span>` : "";
   const unitBox = yenMode ? `<div class="curve-unit">1点<input id="curve-unit" type="number" inputmode="numeric" min="100" step="100" value="${unitY}">円で買っていたら</div>` : "";
-  h += `</div><div class="card chart-card"><div class="cap" style="display:flex;justify-content:space-between;align-items:center;gap:6px">${ptMode ? (yenMode ? `<span style="white-space:nowrap">収支の推移</span><small>(${other ? "今年" : "この90日"}・累積・1点${unitY.toLocaleString()}円で買っていたら)</small>` : `収支の推移<small>(${other ? "今年" : "この90日"}・累積・1点買うのを1として何点分のプラスか・5点きざみ)</small>`) : "回収率の推移<small>(この90日・累積)</small>"}${seg}</div>${unitBox}${lineSvg(curvePts, ptMode ? { fmt: fmtMD, fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v) + "点"), label: "収支の推移" } : { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
+  h += `</div><div class="card chart-card"><div class="cap cap-row"><span class="cap-t">${ptMode ? "収支の推移" : "回収率の推移"}</span>${seg}<small>${ptMode ? (yenMode ? `(${other ? "今年" : "この90日"}・累積・1点${unitY.toLocaleString()}円で買っていたら)` : `(${other ? "今年" : "この90日"}・累積・1点買うのを1として何点分のプラスか・5点きざみ)`) : "(この90日・累積)"}</small></div>${unitBox}${lineSvg(curvePts, ptMode ? { fmt: fmtMD, fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v) + "点"), label: "収支の推移" } : { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
     <p class="note">※データの権利の関係で、配布用にはオッズ・払戻・金額を載せていません。1日の回収率も、1レースごとの払戻が分からないよう10%きざみにしています。オッズ・払戻はJRA公式の出馬表・レース結果で確認してください。</p></section>`;
   return h;
 }
@@ -3053,7 +3055,7 @@ function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。�
   const pts = H.months.map((m, i) => ({ date: m, value: yenMode ? vals[i] * unitY : vals[i] }));
   const btn = (v, l) => `<button type="button" data-h13="${v}" class="${md === v ? "on" : ""}" style="min-height:28px;padding:2px 8px;font-size:11px">${l}</button>`;
   const seg = `<span class="seg" style="gap:4px"><button data-curve-yen="0" class="${yenMode ? "" : "on"}" style="min-height:28px;padding:2px 10px;font-size:11px">点数</button><button data-curve-yen="1" class="${yenMode ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:11px">円</button></span>`;
-  let h = `<section><h2>過去13年の検証<span class="sub">券種ごと・${esc(String(H.months[0]).slice(0, 4))}〜${esc(String(H.months[H.months.length - 1]).slice(0, 4))}年</span></h2><div class="card chart-card"><div class="cap" style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">収支の推移<small>(${yenMode ? `1点${unitY.toLocaleString()}円で買っていたら` : "1点買うのを1として何点分のプラスか"}・累積)</small>${seg}</div>
+  let h = `<section><h2>過去13年の検証<span class="sub">券種ごと・${esc(String(H.months[0]).slice(0, 4))}〜${esc(String(H.months[H.months.length - 1]).slice(0, 4))}年</span></h2><div class="card chart-card"><div class="cap cap-row"><span class="cap-t">収支の推移</span>${seg}<small>(${yenMode ? `1点${unitY.toLocaleString()}円で買っていたら` : "1点買うのを1として何点分のプラスか"}・累積)</small></div>
     <div class="seg" style="gap:4px;margin:4px 0 6px;flex-wrap:wrap">${btn("total", "トータル")}${T.map(([t]) => btn(t, t)).join("")}</div>
     ${yenMode ? `<div class="curve-unit">1点<input id="curve-unit" type="number" inputmode="numeric" min="100" step="100" value="${unitY}">円で買っていたら</div>` : ""}
     ${lineSvg(pts, { fmt: s => String(s).slice(0, 7).replace("-", "/"), fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v).toLocaleString() + "点"), label: "過去13年の収支の推移", ticks: h13Ticks(H.months) })}</div>
