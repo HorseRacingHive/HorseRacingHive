@@ -46,6 +46,7 @@ html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(
 #kbLoader>svg{position:absolute;left:50%;transform:translateX(-50%);top:calc(50% + min(84vw,54vh,440px) * .47)}   /* ロゴを画面の真ん中に、帽子の巣はロゴのすぐ下(重ならない程度) */
 #kbLoader:not(.intro)>svg{top:calc(50% + 106px)}
 @media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
+.pt-unit-row{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}.pt-unit{width:78px;font:700 14px inherit;padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--soft,transparent);color:var(--ink)}
 .curve-unit{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:2px 0 6px}.curve-unit input{width:96px;font:700 15px inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 tr.tot td{border-top:2px solid var(--line)}
 </style>
@@ -842,6 +843,13 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .pool-strip b { display: block; font-family: var(--f-disp); font-size: 13.5px; font-weight: 900; line-height: 1.3; white-space: nowrap; }
 .pool-strip b.plus { color: var(--good); } .pool-strip b.minus { color: var(--bad); }
 .pool-strip small { display: block; font-size: 9.5px; color: var(--muted); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 帯2本(開催・買い目… と 馬単・馬連…)をくっつけて1つのかたまりに見せる(2026-11-07 本人の指定「もう少しくっつけて」) */
+.ov-strip:has(+ .pool-strip) { margin-bottom: 0 !important; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.ov-strip + .pool-strip { margin-top: -19px !important; border-top-left-radius: 0; border-top-right-radius: 0;   /* main の行の間(18px)+枠1px */
+  margin-left: calc(50% - 50vw + 4px + env(safe-area-inset-left, 0px)); margin-right: calc(50% - 50vw + 4px + env(safe-area-inset-right, 0px));
+  grid-template-columns: .85fr .9fr 1.1fr 1.15fr; }
+.ov-strip + .pool-strip .pc { padding: 4px 2px 5px; }
 .ov-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .ov-strip > div { min-width: 0; padding: 5px 6px 6px; text-align: center; border-left: 1px solid var(--line); }
 .ov-strip > div:first-child { border-left: 0; }
@@ -1530,7 +1538,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
   .top-actions { grid-template-columns: auto auto; align-items: center; column-gap: 0; }
   .top-actions .pcw-btn { grid-row: 1 / span 2; }
   .top-actions .refresh, .top-actions .top-right { grid-column: 2; }
-  .ov-strip { margin-left: 0; margin-right: 0; }   /* 携帯では画面の端まで広げている帯を、中の幅に収める */
+  .ov-strip, .ov-strip + .pool-strip { margin-left: 0; margin-right: 0; }   /* 携帯では画面の端まで広げている帯を、中の幅に収める */
   html:not(.pcw) header.top > .wrap, html:not(.pcw) main.wrap, html:not(.pcw) .site-foot, html:not(.pcw) .sheet .wrap { max-width: 560px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
   html:not(.pcw) nav.tabs { left: max(0px, calc(50% - 280px)); right: max(0px, calc(50% - 280px)); border-left: 1px solid rgba(247,201,72,.35); border-right: 1px solid rgba(247,201,72,.35); border-radius: 14px 14px 0 0; }
   html.pcw header.top > .wrap, html.pcw main.wrap, html.pcw .site-foot, html.pcw .sheet .wrap { max-width: 900px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
@@ -1660,7 +1668,7 @@ function moneyA(periods, cur, attr) {
     <div class="hero"><span class="lab">${esc(a.lab)}の収支</span><span class="big ${has ? (pts >= 0 ? "plus" : "minus") : ""}">${has ? (pts > 0 ? "+" : pts < 0 ? "−" : "±") + Math.abs(pts).toLocaleString("ja-JP") + "点" : "—"}</span></div>
     ${has ? `<div class="hp-wrap">${honeyPool(a.roi)}<div class="hp-side">${hpBadge(a.roi)}
       <span>回収率 <b class="big2 ${ret >= 100 ? "plus" : "minus"}">${ret}%</b></span>
-      <span>1点1,000円なら <b class="yen ${pts >= 0 ? "plus" : "minus"}">${(() => { const y = pts * 1000, sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + (v >= 10000 ? (Math.round(v / 1000) / 10).toLocaleString("ja-JP") + "万円" : v.toLocaleString("ja-JP") + "円"); })()}</b></span>
+      <span class="pt-unit-row">1点<input class="pt-unit" type="number" inputmode="numeric" min="100" step="100" value="${Math.max(100, Math.round((+S.curveUnit || 1000) / 100) * 100)}" aria-label="1点の金額">円なら <b class="yen ${pts >= 0 ? "plus" : "minus"}">${(() => { const y = pts * Math.max(100, Math.round((+S.curveUnit || 1000) / 100) * 100), sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + (v >= 10000 ? (Math.round(v / 1000) / 10).toLocaleString("ja-JP") + "万円" : v.toLocaleString("ja-JP") + "円"); })()}</b></span>
       <span>的中 <b>${a.hit}/${a.n}</b></span><span>${esc(a.kind || "単勝")} ・ 1点買うのを1として</span></div></div>`
     : `<div class="note">${a.loading ? "集計しています…" : a.empty || "まだ結果が出ていません"}</div>`}</div>`;
 }
@@ -3419,7 +3427,7 @@ document.addEventListener("click", e => {   // 札(ボタン)の中の「買っ�
   if (k) { e.preventDefault(); e.stopPropagation(); bkAct(k); }
 }, true);
 document.addEventListener("change", e => {   // 収支の推移の「1点○円」(2026-11-05)
-  if (e.target.id !== "curve-unit") return;
+  if (e.target.id !== "curve-unit" && !(e.target.classList && e.target.classList.contains("pt-unit"))) return;   // 「1点○円なら」(ひと目でわかる成績)も同じ金額・この端末に覚える(2026-11-07)
   const v = Math.max(100, Math.min(1000000, Math.round((+e.target.value || 0) / 100) * 100));
   S.curveUnit = v; store.set("hivep_curve_unit", String(v));
   const y = window.scrollY; render(); window.scrollTo(0, y);
