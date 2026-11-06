@@ -46,6 +46,7 @@ html:has(#kbLoader),html:has(#kbLoader) body{background:#000!important}html:has(
 #kbLoader>svg{position:absolute;left:50%;transform:translateX(-50%);top:calc(50% + min(84vw,54vh,440px) * .47)}   /* ロゴを画面の真ん中に、帽子の巣はロゴのすぐ下(重ならない程度) */
 #kbLoader:not(.intro)>svg{top:calc(50% + 106px)}
 @media (prefers-reduced-motion: reduce){#kbLoader .kb-fall,#kbLoader .kb-sp path{animation:none}#kbLoader .kb-cap{animation:none;transform:translateY(-1px)}#kbLoader .kb-fly,#kbLoader .kb-b,#kbLoader .kb-w,#kbLoader .kb-drop{animation:none}}
+.dash-amts{display:grid;gap:4px;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.08)}.dash-amts .da-cap{font-size:11.5px;opacity:.75}.dash-amts .da-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.dash-amts .da-sum{font-size:12px;font-variant-numeric:tabular-nums;opacity:.85;min-width:0}.dash-amts .da-min{flex:none;border:1px solid rgba(247,201,72,.45);background:rgba(247,201,72,.08);color:#f0c040;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;cursor:pointer}.dash-amts.min{padding:6px 10px}.dash-amts .da-row{display:grid;grid-template-columns:4.6em minmax(0,1fr);align-items:center;gap:2px 8px;font-size:12.5px}.dash-amts .da-n{font-weight:700;white-space:nowrap}.dash-amts .da-ctl{display:inline-flex;align-items:center;gap:4px}.dash-amts .da-ctl i{font-style:normal}.dash-amts .pt-unit{font-size:16px}
 .seg.dash-t{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:0 0 8px}.seg.dash-t button{min-height:40px;padding:3px 2px;font-size:11.5px;line-height:1.15;white-space:nowrap;letter-spacing:-.02em}.seg.dash-t .ic{display:block;font-size:15px;line-height:1.2}
 .pt-unit-row{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}.pt-unit{width:78px;font:700 14px inherit;padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--soft,transparent);color:var(--ink)}
 /* グラフの見出し: 1行目「収支の推移」+切り替え・2行目に説明(文字が縦にならないように・2026-11-07) */
@@ -2056,7 +2057,7 @@ function hvTabOrder(sel) {
 const HMS_SIG_BASE = ["post", "fin"], HMS_DET_BASE = ["no", "fin"];   // それだけで並びが決まる項目(押すとその項目だけに戻る)
 const HOURYOKU_NOTE = "🐝 蜂力度は、オッズを入れない強さだけの順位です。買う順ではありません。";
 const hmsDef = k => k === "post" || k === "fin" || k === "no" || k === "ar" ? "asc" : "desc";   // 最初の向き: 発走順・着順・馬番は小さい方から、ほかは高い方から
-const S = { pw: null, snap: null, demo: false, date: null, curveYen: store.get("hivep_curve_yen") === "1", units: (() => { try { return JSON.parse(store.get("hivep_units") || "{}") || {}; } catch { return {}; } })(), dashT: store.get("hivep_dash_t") || "単勝", tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.start("hivep_sigsort", { key: "post", dir: "asc", then: [] }), venue: null, resVenue: null, venuePicked: false, resPicked: false,
+const S = { pw: null, snap: null, demo: false, date: null, curveYen: store.get("hivep_curve_yen") === "1", amtMin: store.get("hivep_amt_min") === "1", units: (() => { try { return JSON.parse(store.get("hivep_units") || "{}") || {}; } catch { return {}; } })(), dashT: store.get("hivep_dash_t") || "単勝", tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.start("hivep_sigsort", { key: "post", dir: "asc", then: [] }), venue: null, resVenue: null, venuePicked: false, resPicked: false,
   raceOrder: store.get("hivep_race_order") || "asc", raceView: store.get("hivep_race_view") || "order", raceSeq: [],   // レース一覧: レース順・発走順・★あり(携帯と同じ)
   detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: HMS.start("hivep_dsort", { key: "no", dir: "asc", then: [] }),
   allSort: HMS.start("hivep_allsort", { key: "post", dir: "asc", then: [] }), allVenue: store.get("hivep_all_venue") || "" };   // レースタブの「全頭」(2026-10-31)
@@ -3055,6 +3056,11 @@ const DASH_T = [["単勝", "🎯 単勝"], ["馬単", "🐴 馬単"], ["馬連",
 const UNIT_T = ["単勝", "馬単", "馬連", "3連単"], UNIT_DEF = { "単勝": 1000, "馬単": 100, "馬連": 100, "3連単": 100 };
 function unitOf(t) { const v = +((S.units || {})[t]); return v >= 100 ? Math.round(v / 100) * 100 : (UNIT_DEF[t] || 100); }
 function unitInput(t, cls, id) { return `<input class="${cls}" ${id ? `id="${id}"` : ""} data-unit-t="${esc(t)}" type="number" inputmode="numeric" min="100" step="100" value="${unitOf(t)}" aria-label="${esc(t)}の1点の金額">`; }
+function unitPanel() {   // トータルの「それぞれの1点の金額」(2026-11-07 本人の指定・小さくできる)。見る人がこの端末で入れる金額だけ
+  const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
+  if (S.amtMin) return `<div class="dash-amts min"><div class="da-top"><span class="da-sum">${UNIT_T.map(t => `${t}${unitOf(t).toLocaleString()}円`).join("・")}</span><button type="button" class="da-min" data-amt-min>広げる ▼</button></div></div>`;
+  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">それぞれの1点の金額(トータルはこの金額で計算・100円単位)</span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${UNIT_T.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i></span></div>`).join("")}</div>`;
+}
 function unitSumText() { return UNIT_T.map(t => `${t}${unitOf(t).toLocaleString()}円`).join("・") + "で買っていたら"; }
 function dashKind(d, PM) {
   const KP = S.snap?.kaime_pub, t = KP && KP[S.dashT] && S.dashT !== "単勝" ? S.dashT : "単勝";
@@ -3098,7 +3104,7 @@ function perfDashboard(d, rp) {
   const KP = S.snap?.kaime_pub;
   const tbtn = KP ? `<div class="seg dash-t">${DASH_T.map(([v, l]) => { const [ic, ...nm] = l.split(" "); return `<button type="button" data-dash-t="${v}" class="${DK.t === v ? "on" : ""}"><span class="ic">${ic}</span>${nm.join(" ")}</button>`; }).join("")}</div>` : "";
   Object.values(periods).forEach(p => { p.ut = DK.t; if (other) { p.kind = DK.t === "total" ? "トータル" : DK.t; if (!p.n) p.empty = "まだ結果が出ていません"; } });
-  let h = `<section><h2>ひと目でわかる成績<span class="sub">${other ? (DK.t === "total" ? "トータル(単勝+馬単+馬連+3連単)" : `おすすめ・${DK.t}`) : "おすすめ・単勝"}</span></h2>${tbtn}${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
+  let h = `<section><h2>ひと目でわかる成績<span class="sub">${other ? (DK.t === "total" ? "トータル(単勝+馬単+馬連+3連単)" : `おすすめ・${DK.t}`) : "おすすめ・単勝"}</span></h2>${tbtn}${DK.t === "total" ? unitPanel() : ""}${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
   h += gaugeSvg(today?.n ? today.roi : null, `${esc(d.label)}`, today?.n ? `${today.hit}/${today.n}的中` : (osN ? `結果待ち・おすすめ${osN}頭` : "おすすめなし"));
   h += gaugeSvg(PM.x?.n ? PM.x.roi : null, PM.lab, PM.x?.n ? `${PM.x.hit}/${PM.x.n}的中` : "まだ結果なし");
   h += `</div><div class="dash">`;
@@ -3842,6 +3848,7 @@ document.addEventListener("click", e => {
   if (t.dataset.dashT) { const y = window.scrollY; S.dashT = t.dataset.dashT; store.set("hivep_dash_t", S.dashT); render(); window.scrollTo(0, y); return; }
   if (t.dataset.moneyPer) { const y = window.scrollY; S.moneyPer = t.dataset.moneyPer; render(); window.scrollTo(0, y); return; }
   if (t.dataset.h13) { const y = window.scrollY; S.h13 = t.dataset.h13; render(); window.scrollTo(0, y); return; }
+  if (t.hasAttribute && t.hasAttribute("data-amt-min")) { const y = window.scrollY; S.amtMin = !S.amtMin; store.set("hivep_amt_min", S.amtMin ? "1" : "0"); render(); window.scrollTo(0, y); return; }
   if (t.dataset.curveYen) { const y = window.scrollY; S.curveYen = t.dataset.curveYen === "1"; store.set("hivep_curve_yen", S.curveYen ? "1" : "0"); render(); window.scrollTo(0, y); return; }
   if (t.dataset.sigSort) {   // 狙い・危険の並べ替え(勝率・期待値・＋ファクター・−ファクター)
     const bar = t.closest(".horse-sort"), left = bar ? bar.scrollLeft : 0, y = window.scrollY;
