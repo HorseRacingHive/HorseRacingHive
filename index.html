@@ -3186,7 +3186,7 @@ function poolStripPub(r) {   // この日の 馬単・馬連・3連単・トー�
   if (!S.snap || !("pool_days" in S.snap)) return "";
   const cell = (icon, name, a) => a ? `<span class="pc"><i>${icon} ${name}</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b><small>${a[0]}点・${a[1]}的中</small></span>`
     : `<span class="pc"><i>${icon} ${name}</i><b>—</b><small>${r ? "なし" : "結果待ち"}</small></span>`;
-  const tot = r && r["計"] != null ? `<span class="pc tot"><i>🍯 トータル</i><b class="${r["計"] >= 1 ? "plus" : "minus"}">${Math.round(r["計"] * 100)}%</b><small>単勝+3券種${r["検証"] ? "・検証" : ""}</small></span>`
+  const tot = r && r["計"] != null ? `<span class="pc tot"><i>🍯 トータル</i><b class="${r["計"] >= 1 ? "plus" : "minus"}">${Math.round(r["計"] * 100)}%</b><small>単勝+3券種</small></span>`
     : `<span class="pc tot"><i>🍯 トータル</i><b>—</b><small>単勝+3券種</small></span>`;
   return `<div class="pool-strip num">${cell("🐴", "馬単", r?.["馬単"])}${cell("🐎", "馬連", r?.["馬連"])}${cell("🏆", "3連単", r?.["3連単"])}${tot}</div>`;
 }
