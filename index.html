@@ -867,6 +867,10 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .pool-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .pool-strip .pc { min-width: 0; padding: 5px 6px 6px; text-align: center; border-left: 1px solid var(--line); }
 .pool-strip .pc:first-child { border-left: 0; }
+.pool-strip .pc-go { display: block; width: 100%; background: none; border: 0; padding: 0; margin: 0; color: inherit; font: inherit; text-align: inherit; cursor: pointer; }
+.pool-strip .pc-go:active { opacity: .7; }
+.kd-card.flash, .kd-l.flash, #kd-sec.flash { animation: secFlash 1.4s ease-out 1; border-radius: 10px; }
+main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top: -10px; }   /* 狙い・危険の説明と並べ替えの間を詰める(2026-11-07) */
 .pool-strip small.ps-yen { display: block; font-size: 10px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pool-strip small.ps-yen.plus { color: var(--good, #9ee08a); } .pool-strip small.ps-yen.minus { color: var(--bad, #ff9aa8); }
 .us-mini { display: flex; justify-content: flex-end; margin: -14px 2px -10px; }   /* 帯のすぐ下に細く(main の行の間18pxを打ち消す・2026-11-07 本人の指定「やっぱり下で」) */
@@ -2786,7 +2790,7 @@ function viewHome(d) {
   }
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
-    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※待ちが長いので、資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
+    h += `<section id="kd-sec"><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※待ちが長いので、資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
       <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から特定の条件で選んだ組(締切約4分前に決まります)。3連単 = おすすめの中から特定の条件で選んだ馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。<br>1レースあたりの目安(過去13年): 馬単3点 的中率3.5%・回収率138% / 馬連3点 9.7%・116% / 3連単6点 2.1%・170%</p></section>`;
   }
   h += `<p class="note" style="margin-top:0">※オッズは生きてるので予想は締切まで変わります</p>`;
@@ -3273,7 +3277,8 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
   if (!S.snap || !("pool_days" in S.snap)) return "";
   const pl = (t, a) => { const u = unitOf(t); return u > 0 && a && a[0] && a[2] != null ? u * a[0] * (a[2] - 1) : null; };
   const yTag = v => v == null ? "" : `<small class="ps-yen ${v >= 0 ? "plus" : "minus"}">${v === 0 ? "±0円" : yenPM(v)}</small>`;
-  const cell = (icon, name, a) => a ? `<span class="pc"><i>${icon} ${name}</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b><small>${a[0]}点・${a[1]}的中</small>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</span>`
+  // 単勝の段と同じ: 名前と回収率を押す → 成績の「ひと目でわかる」のその券種・この日へ / 点数を押す → 下のその券種の買い目へ(2026-11-07 本人の指定)
+  const cell = (icon, name, a) => a ? `<span class="pc"><button type="button" class="pc-go" data-ps-perf="${name}" aria-label="${name}の成績を見る"><i>${icon} ${name} ›</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b></button><button type="button" class="pc-go" data-ps-buys="${name}" aria-label="${name}の買い目を見る"><small>${a[0]}点・${a[1]}的中 ›</small>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</button></span>`
     : `<span class="pc"><i>${icon} ${name}</i><b>—</b><small>${r ? "なし" : "結果待ち"}</small></span>`;
   // トータル = 券種ごとの1点の金額で重み付け(既定 単勝1,000円・ほか100円。0円の券種は入れない)。単勝の行が無い古いデータは「1点=1」の計
   // 単勝は上の段(回収率)と同じ数字を使う(上と帯で単勝がずれないように)。無ければ送られてきた単勝
@@ -3281,7 +3286,7 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
   const ws = UNIT_T.filter(t => unitOf(t) > 0 && rr[t] && rr[t][0] && rr[t][2] != null);
   const wInv = ws.reduce((s, t) => s + unitOf(t) * rr[t][0], 0), wPay = ws.reduce((s, t) => s + unitOf(t) * rr[t][0] * rr[t][2], 0);
   const tr = wInv ? wPay / wInv : null;
-  const tot = tr != null ? `<span class="pc tot"><i>🍯 トータル</i><b class="${tr >= 1 ? "plus" : "minus"}">${Math.round(tr * 100)}%</b><small>単勝+3券種</small>${wInv ? yTag(wPay - wInv) : ""}</span>`
+  const tot = tr != null ? `<span class="pc tot"><button type="button" class="pc-go" data-ps-perf="total" aria-label="トータルの成績を見る"><i>🍯 トータル ›</i><b class="${tr >= 1 ? "plus" : "minus"}">${Math.round(tr * 100)}%</b><small>単勝+3券種</small>${wInv ? yTag(wPay - wInv) : ""}</button></span>`
     : `<span class="pc tot"><i>🍯 トータル</i><b>—</b><small>単勝+3券種</small></span>`;
   return `<div class="pool-strip num">${cell("🐴", "馬単", r?.["馬単"])}${cell("🐎", "馬連", r?.["馬連"])}${cell("🏆", "3連単", r?.["3連単"])}${tot}</div>`;
 }
@@ -3933,6 +3938,17 @@ document.addEventListener("click", e => {
     return;
   }
   if (t.id === "refresh") { refresh(true); return; }
+  if (t.dataset.psPerf) {   // 帯の回収率 → 成績の「ひと目でわかる」のその券種・この日(2026-11-07)
+    S.dashT = t.dataset.psPerf; store.set("hivep_dash_t", S.dashT); S.moneyPer = "day";
+    S.tab = "perf"; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return;
+  }
+  if (t.dataset.psBuys) {   // 帯の点数 → 下のその券種の買い目(最初に出てくる行を光らせる)
+    const sec = $("#kd-sec"); if (!sec) return;
+    const lab = [...sec.querySelectorAll(".kd-b")].find(x => x.textContent.includes(t.dataset.psBuys));
+    const tgt = lab ? (lab.closest(".kd-card") || sec) : sec;
+    window.scrollTo({ top: tgt.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
+    const fl = lab ? lab.closest(".kd-l") || tgt : tgt; fl.classList.remove("flash"); void fl.offsetWidth; fl.classList.add("flash"); return;
+  }
   if (t.dataset.ov) {
     if (t.dataset.ov === "perf") { S.tab = "perf"; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
     if (t.dataset.ov === "race") { S.tab = "race"; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return; }
