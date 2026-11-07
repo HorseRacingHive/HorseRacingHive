@@ -847,9 +847,12 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .pool-strip .pc:first-child { border-left: 0; }
 .pool-strip small.ps-yen { display: block; font-size: 10px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pool-strip small.ps-yen.plus { color: var(--good, #9ee08a); } .pool-strip small.ps-yen.minus { color: var(--bad, #ff9aa8); }
-.us-mini { display: flex; justify-content: flex-end; margin: 3px 2px 0; }
-.us-mini button { background: none; border: 0; padding: 4px 2px; min-height: 28px; font-size: 11px; color: var(--muted); text-align: right; }
-.us-mini u { color: var(--honey, #e8a317); text-decoration: none; font-weight: 800; margin-left: 4px; }
+.us-mini { display: flex; justify-content: flex-end; margin: -13px 2px -8px; }   /* 帯のすぐ下に詰める(main の行の間18pxを打ち消す・2026-11-07) */
+.us-mini button { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; background: none; border: 0; padding: 2px 0; min-height: 30px; font-size: 11px; color: var(--muted); text-align: right; white-space: nowrap; }
+.us-mini .um-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* 金額が大きくても1行のまま(2026-11-07) */
+.us-mini u { flex: none; }
+.us-mini u { color: var(--honey, #e8a317); text-decoration: none; font-weight: 800; font-size: 11.5px; border: 1px solid var(--honey, #e8a317); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.pool-strip + .dash-amts { margin-top: -10px; }
 .unit-setup { margin: 8px 0 8px; border: 1px solid var(--honey, #e8a317); }
 .unit-setup .us-h { font-weight: 800; font-size: 13.5px; }
 .unit-setup .us-ok { margin-top: 4px; min-height: 40px; border-radius: 10px; border: 0; background: var(--honey, #e8a317); color: #2a1a00; font-weight: 800; font-size: 14px; }
@@ -869,7 +872,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .ov-strip > div:first-child { border-left: 0; }
 .ov-strip span { display: block; font-size: 9.5px; color: var(--muted); font-weight: 700; line-height: 1.2; }
 .ov-strip b { display: block; font-family: var(--f-disp); font-size: 13.5px; font-weight: 900; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ov-strip b.plus { color: var(--good); } .ov-strip b.minus { color: var(--bad); }
+.ov-strip b.plus { color: var(--good); } .ov-strip b.minus { color: var(--bad); } .ov-strip small.plus { color: var(--good); font-weight: 800; } .ov-strip small.minus { color: var(--bad); font-weight: 800; }
 .ov-strip small { display: block; font-size: 9.5px; color: var(--muted); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ov-strip .skip { color: var(--over); }
 .ann-hero { padding: 12px 14px; border: 2px solid var(--evc); box-shadow: 0 0 0 3px var(--evc-soft); display: grid; gap: 8px; }
@@ -2503,7 +2506,7 @@ window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
    時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終判断=締切約4分前 / 共有ページは10分ごとに更新 */
 function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ
-  return `<p class="ann-note">※このページは10分ごとに更新します。<b>締切直前の最終判断は間に合わないことがある</b>ので、すぐ知りたい方はDiscordの通知をオンにしてください。</p>
+  return `<p class="ann-note">※10分ごとの更新です。締切直前の判断をすぐ知りたい方は、<b>Discord「⏰｜AI直前予想」の通知をオン</b>に。</p>
 <details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
@@ -2691,13 +2694,16 @@ function viewHome(d) {
   const done = (act.n || 0) > 0 || (d.perf?.n || 0) > 0;
   const hitN = act.n ? act.hit : (d.perf?.hit ?? 0), roiN = act.n ? act.roi : d.perf?.roi;
   const hitList = os.filter(x => x.fin === 1).length;
+  // 単勝も見る人の1点の金額で収支を出す(2026-11-07 本人の指定「単勝だけ反映されていない」)。帯のトータルにも同じ単勝を使う
+  const winN = act.n || d.perf?.n || 0, winRow = done && roiN != null && winN ? [winN, hitN, roiN] : null;
+  const winYen = winRow && unitOf("単勝") > 0 ? unitOf("単勝") * winN * (roiN - 1) : null;
   h += `<section class="ov-strip num" aria-label="この日の状況">
     <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
     <button type="button" data-ov="buys"><span>買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "単勝"}</small></button>
     <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
-    <button type="button" data-ov="perf" aria-label="成績を見る"><span>回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b><small>単勝</small></button>
+    <button type="button" data-ov="perf" aria-label="成績を見る"><span>回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b>${winYen == null ? "<small>単勝</small>" : `<small class="${winYen >= 0 ? "plus" : "minus"}">単勝 ${winYen === 0 ? "±0円" : yenPM(winYen)}</small>`}</button>
   </section>`;
-  h += poolStripPub(S.snap?.pool_days?.[d.date]);
+  h += poolStripPub(S.snap?.pool_days?.[d.date], winRow);
   h += unitSetupPub();   // 1点の金額は帯のすぐ下に小さく(2026-11-07 本人の指定「目立ちすぎず、気づける位置」)
   if (d.gate?.msg) { const gm = String(d.gate.msg).match(/^(.*?)[(（](.+)[)）]\s*$/);   // 「(午後のレースは12:00から)」は2行目に分けて途中で折れないように(2026-10-31)
     if (!gm) h += `<div class="gate-mini"><span>🕘 ${esc(d.gate.msg.replace("午後のレースのおすすめ", "午後のおすすめ").replace(/公開します$/, "公開"))}</span>${d.gate.at ? openTag(d.date, d.gate.at) : ""}</div>`;   // 午後だけ公開待ち(午前はもう出ている)は1行の小さい帯に(2026-11-01)
@@ -2756,8 +2762,8 @@ function viewHome(d) {
   }
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
-    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から</span></h2><div class="kd-stat"><span>1レースあたりの目安(13年の検証)</span><b>馬単 3点</b><i>的中率 3.5%・回収率 138%</i><b>馬連 3点</b><i>的中率 9.7%・回収率 116%</i><b>3連単 6点</b><i>的中率 2.1%・回収率 170%</i></div><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※馬連・馬単・3連単は待ちが長いので資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
-      <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から選んだ組(締切約4分前に決まります)。3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。</p></section>`;
+    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※馬連・馬単・3連単は待ちが長いので資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
+      <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から特定の条件で選んだ組(締切約4分前に決まります)。3連単 = おすすめの中から特定の条件で選んだ馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。<br>1レースあたりの目安(過去13年): 馬単3点 的中率3.5%・回収率138% / 馬連3点 9.7%・116% / 3連単6点 2.1%・170%</p></section>`;
   }
   h += `<p class="note" style="margin-top:0">※オッズは生きてるので予想は締切まで変わります</p>`;
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
@@ -3192,7 +3198,7 @@ function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。�
   return h;
 }
 
-function poolStripPub(r) {   // この日の 馬単・馬連・3連単・トータル(2026-11-07・携帯と同じ並び。回収率は10%きざみ)
+function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単・トータル(2026-11-07・携帯と同じ並び。回収率は10%きざみ)
   // 収支(円)は、見る人が決めた券種ごとの1点の金額 × 点数 × 回収率で、この端末だけで計算する(金額は送らない・2026-11-07 本人の指定)
   if (!S.snap || !("pool_days" in S.snap)) return "";
   const pl = (t, a) => { const u = unitOf(t); return u > 0 && a && a[0] && a[2] != null ? u * a[0] * (a[2] - 1) : null; };
@@ -3200,9 +3206,11 @@ function poolStripPub(r) {   // この日の 馬単・馬連・3連単・トー�
   const cell = (icon, name, a) => a ? `<span class="pc"><i>${icon} ${name}</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b><small>${a[0]}点・${a[1]}的中</small>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</span>`
     : `<span class="pc"><i>${icon} ${name}</i><b>—</b><small>${r ? "なし" : "結果待ち"}</small></span>`;
   // トータル = 券種ごとの1点の金額で重み付け(既定 単勝1,000円・ほか100円。0円の券種は入れない)。単勝の行が無い古いデータは「1点=1」の計
-  const ws = r && r["単勝"] ? UNIT_T.filter(t => unitOf(t) > 0 && r[t] && r[t][0] && r[t][2] != null) : [];
-  const wInv = ws.reduce((s, t) => s + unitOf(t) * r[t][0], 0), wPay = ws.reduce((s, t) => s + unitOf(t) * r[t][0] * r[t][2], 0);
-  const tr = wInv ? wPay / wInv : (r && !r["単勝"] && r["計"] != null ? r["計"] : null);
+  // 単勝は上の段(回収率)と同じ数字を使う(上と帯で単勝がずれないように)。無ければ送られてきた単勝
+  const rr = { ...(r || {}), ...(winRow ? { "単勝": winRow } : {}) };
+  const ws = UNIT_T.filter(t => unitOf(t) > 0 && rr[t] && rr[t][0] && rr[t][2] != null);
+  const wInv = ws.reduce((s, t) => s + unitOf(t) * rr[t][0], 0), wPay = ws.reduce((s, t) => s + unitOf(t) * rr[t][0] * rr[t][2], 0);
+  const tr = wInv ? wPay / wInv : null;
   const tot = tr != null ? `<span class="pc tot"><i>🍯 トータル</i><b class="${tr >= 1 ? "plus" : "minus"}">${Math.round(tr * 100)}%</b><small>単勝+3券種</small>${wInv ? yTag(wPay - wInv) : ""}</span>`
     : `<span class="pc tot"><i>🍯 トータル</i><b>—</b><small>単勝+3券種</small></span>`;
   return `<div class="pool-strip num">${cell("🐴", "馬単", r?.["馬単"])}${cell("🐎", "馬連", r?.["馬連"])}${cell("🏆", "3連単", r?.["3連単"])}${tot}</div>`;
@@ -3210,7 +3218,7 @@ function poolStripPub(r) {   // この日の 馬単・馬連・3連単・トー�
 function unitSetupPub() {   // おすすめの上の「1点の金額」。初めての人には最初に決めてもらう(2026-11-07 本人の指定・この端末だけに覚える)
   if (!S.snap || !("pool_days" in S.snap)) return "";
   if (!S.unitsNew) return S.amtMin
-    ? `<div class="us-mini"><button type="button" data-amt-min aria-label="1点の金額を変える">⚙️ 1点 ${UNIT_T.map(t => `${t}${unitOf(t).toLocaleString("ja-JP")}`).join("・")}円で計算 <u>変更</u></button></div>`
+    ? `<div class="us-mini"><button type="button" data-amt-min aria-label="1点の金額を変える"><span class="um-t">⚙️ 1点 ${UNIT_T.map(t => `${({ "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" })[t]}${unitOf(t).toLocaleString("ja-JP")}`).join(" ")}円</span><u>✏️ 変更</u></button></div>`
     : unitPanel("total");
   const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
   return `<div class="dash-amts unit-setup"><div class="us-h">💡 まず、1点いくらで買うかを決めましょう</div>
