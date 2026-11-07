@@ -3294,8 +3294,9 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
   if (!S.snap || !("pool_days" in S.snap)) return "";
   const pl = (t, a) => { const u = unitOf(t); return u > 0 && a && a[0] && a[2] != null ? u * a[0] * (a[2] - 1) : null; };
   const yTag = v => v == null ? "" : `<small class="ps-yen ${v >= 0 ? "plus" : "minus"}">${v === 0 ? "±0円" : yenPM(v)}</small>`;
-  // 単勝の段と同じ: 名前と回収率を押す → 成績の「ひと目でわかる」のその券種・この日へ / 点数を押す → 下のその券種の買い目へ(2026-11-07 本人の指定)
-  const cell = (icon, name, a) => a ? `<span class="pc pc-b"><button type="button" class="pc-go" data-ps-perf="${name}" aria-label="${name}の成績を見る"><i>${icon} ${name} ›</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b></button><button type="button" class="pc-go" data-ps-buys="${name}" aria-label="${name}の買い目を見る"><span class="ps-n"><b>${a[0]}点</b><small>・${a[1]}的中</small></span>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</button></span>`
+  // 上半分(券種の名前)を押す → 下のその券種の買い目へ / 下半分 → 成績の「ひと目でわかる」のその券種・この日へ
+  // 2026-11-08 本人の指定で上下の飛ぶ先を入れ替えた(以前は 上=成績・下=買い目)
+  const cell = (icon, name, a) => a ? `<span class="pc pc-b"><button type="button" class="pc-go" data-ps-buys="${name}" aria-label="${name}の買い目を見る"><i>${icon} ${name} ›</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b></button><button type="button" class="pc-go" data-ps-perf="${name}" aria-label="${name}の成績を見る"><span class="ps-n"><b>${a[0]}点</b><small>・${a[1]}的中</small></span>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</button></span>`
     : `<span class="pc"><i>${icon} ${name}</i><b>—</b><small>${r ? "なし" : "結果待ち"}</small></span>`;
   // トータル = 券種ごとの1点の金額で重み付け(既定 単勝1,000円・ほか100円。0円の券種は入れない)。単勝の行が無い古いデータは「1点=1」の計
   // 単勝は上の段(回収率)と同じ数字を使う(上と帯で単勝がずれないように)。無ければ送られてきた単勝
