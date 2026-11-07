@@ -2705,7 +2705,7 @@ function viewHome(d) {
     <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>🎯単勝 結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
     <button type="button" data-ov="perf" aria-label="成績を見る"><span>🎯単勝 回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b>${winYen == null ? "<small>—</small>" : `<small class="${winYen >= 0 ? "plus" : "minus"}">${winYen === 0 ? "±0円" : yenPM(winYen)}</small>`}</button>
   </section>`;
-  h += poolStripPub(S.snap?.pool_days?.[d.date], winRow);
+  h += poolWrap(poolStripPub(S.snap?.pool_days?.[d.date], winRow));
   h += unitSetupPub();   // 1点の金額は帯のすぐ下に細く(2026-11-07 本人の指定「やっぱり下で」)
   if (d.gate?.msg) { const gm = String(d.gate.msg).match(/^(.*?)[(（](.+)[)）]\s*$/);   // 「(午後のレースは12:00から)」は2行目に分けて途中で折れないように(2026-10-31)
     if (!gm) h += `<div class="gate-mini"><span>🕘 ${esc(d.gate.msg.replace("午後のレースのおすすめ", "午後のおすすめ").replace(/公開します$/, "公開"))}</span>${d.gate.at ? openTag(d.date, d.gate.at) : ""}</div>`;   // 午後だけ公開待ち(午前はもう出ている)は1行の小さい帯に(2026-11-01)
@@ -3080,7 +3080,7 @@ function unitPanel(tt, where) {   // where: "osusume" = おすすめの帯の下
   const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
   const L = tt && tt !== "total" && UNIT_T.includes(tt) ? [tt] : UNIT_T;
   if (S.amtMin) return `<div class="dash-amts min"><div class="da-top"><span class="da-sum">${L.map(t => `${t}${unitOf(t).toLocaleString()}`).join("・")}円</span><button type="button" class="da-min" data-amt-min>広げる ▼</button></div></div>`;
-  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">${L.length > 1 ? "それぞれの1点の金額(トータルはこの金額で計算・100円単位・0円でその券種なし)" : "1点の金額(100円単位・ほかの券種に移っても引き継ぎ)"}<span class="da-link">${where === "osusume" ? "✅ ひと目でわかる成績の金額も自動で変わります" : "✅ おすすめの収支の金額も自動で変わります"}</span></span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${L.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i>${unitSelect(t)}</span></div>`).join("")}</div>`;
+  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">${L.length > 1 ? "それぞれの1点の金額(トータルはこの金額で計算・100円単位・0円でその券種なし)" : "1点の金額(100円単位・ほかの券種に移っても引き継ぎ)"}<span class="da-link">${where === "osusume" ? "✅ ひと目でわかる成績の金額も変わります" : "✅ おすすめの収支の金額も変わります"}</span></span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${L.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i>${unitSelect(t)}</span></div>`).join("")}</div>`;
 }
 function unitSumText() { const L = UNIT_T.filter(t => unitOf(t) > 0); return (L.length ? L.map(t => `${t}${unitOf(t).toLocaleString()}円`).join("・") : "どの券種も0円") + "で買っていたら"; }
 function dashKind(d, PM) {
@@ -3198,6 +3198,52 @@ function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。�
     </table></div><p class="note">※その年より前のデータで学習したAIで、締切の数分前に判断した場合の検証です(払戻は実際の払戻)。相手はAIの勝率の上位。馬単・3連単は当たりが少なく、1年近く当たらない時期もあります。過去の成績は将来を約束しません。</p></section>`;
   return h;
 }
+
+// ===== 馬単・馬連・3連単の帯は、ふだん閉じておき、押すと開く(📌で「いつも開く」・この端末に覚える・2026-11-07 本人の指定「A案・※つけて」) =====
+// 単勝は待ちが比較的短く淡々とできる人向け、馬単・馬連・3連単は待ちが長いので資金に余裕がある人向け
+const POOLW_KEY = "hive_pool_pin";
+let POOLW_OPEN = null;   // この画面で開け閉めした状態(null = 決めていない → 📌なら開く・ふだんは閉じる)
+function poolPinned() { try { return localStorage.getItem(POOLW_KEY) === "1"; } catch (e) { return false; } }
+function poolWrap(inner) {
+  if (!inner) return "";
+  const pin = poolPinned(), open = pin ? POOLW_OPEN !== false : POOLW_OPEN === true;
+  return `<div class="pool-wrap${open ? " open" : ""}"><div class="pool-coll">${inner}<div class="pool-note"><span>※待ちが長いので資金に余裕がある方向け</span><button type="button" class="pool-pin${pin ? " on" : ""}" data-pool-pin>${pin ? "📌 固定中" : "📌 いつも開く"}</button></div></div><div class="pool-drawer"><button type="button" data-pool-tg aria-expanded="${open}">馬単・馬連・3連単 <span class="ar">▼</span></button></div></div>`;
+}
+(function () {
+  if (document.getElementById("poolw-style")) return;
+  const st = document.createElement("style"); st.id = "poolw-style";
+  st.textContent = ".ov-strip+.pool-wrap{margin-top:-19px;margin-left:calc(50% - 50vw + 4px + env(safe-area-inset-left, 0px));margin-right:calc(50% - 50vw + 4px + env(safe-area-inset-right, 0px))}@media (min-width:760px){.ov-strip+.pool-wrap{margin-left:0;margin-right:0}}" +
+    ".pool-wrap .pool-strip{margin-top:0!important;border-radius:0;border-top:0;grid-template-columns:.85fr .9fr 1.1fr 1.15fr}" +
+    ".pool-wrap .pool-strip .pc{padding:4px 2px 5px}" +
+    ".pool-coll{max-height:0;overflow:hidden;transition:max-height .28s ease}" +
+    ".pool-wrap.open .pool-coll{max-height:280px}" +
+    ".ov-strip:has(+ .pool-wrap.open){border-bottom-left-radius:0!important;border-bottom-right-radius:0!important}" +
+    ".pool-note{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:11px;line-height:1.35;color:var(--muted,#a8977a);background:var(--panel,#1d150a);border:1px solid var(--line,#3a2a12);border-top:1px dashed var(--line,#3a2a12);border-radius:0 0 12px 12px}" +
+    ".pool-note span{flex:1;text-align:left}" +
+    ".pool-pin{flex:none;border:1px solid var(--line,#3a2a12);background:none;color:var(--muted,#a8977a);font:inherit;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;cursor:pointer}" +
+    ".pool-pin.on{color:var(--honey,#f7c948);border-color:var(--honey,#f7c948);background:rgba(247,201,72,.1)}" +
+    ".pool-drawer{display:flex;justify-content:center;margin-top:-1px}" +
+    ".pool-drawer button{border:1px solid var(--line,#3a2a12);border-top:0;background:var(--panel,#1d150a);color:var(--honey,#f7c948);font:inherit;font-size:11.5px;font-weight:800;padding:3px 14px 5px;border-radius:0 0 10px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}" +
+    ".pool-drawer .ar{display:inline-block;transition:transform .25s}.pool-wrap.open .pool-drawer .ar{transform:rotate(180deg)}" +
+    "@media (prefers-reduced-motion:reduce){.pool-coll,.pool-drawer .ar{transition:none}}";
+  document.head.appendChild(st);
+  document.addEventListener("click", e => {
+    const tg = e.target.closest && e.target.closest("[data-pool-tg]");
+    const pn = e.target.closest && e.target.closest("[data-pool-pin]");
+    if (!tg && !pn) return;
+    e.preventDefault(); e.stopPropagation();
+    const w = (tg || pn).closest(".pool-wrap"); if (!w) return;
+    if (tg) {
+      POOLW_OPEN = !w.classList.contains("open");
+      w.classList.toggle("open", POOLW_OPEN); tg.setAttribute("aria-expanded", String(POOLW_OPEN));
+    } else {
+      const v = !poolPinned();
+      try { localStorage.setItem(POOLW_KEY, v ? "1" : "0"); } catch (e2) { /* 覚えられない端末でもこの画面では効く */ }
+      pn.classList.toggle("on", v); pn.textContent = v ? "📌 固定中" : "📌 いつも開く";
+      if (v) { POOLW_OPEN = true; w.classList.add("open"); }
+    }
+  }, true);
+})();
 
 function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単・トータル(2026-11-07・携帯と同じ並び。回収率は10%きざみ)
   // 収支(円)は、見る人が決めた券種ごとの1点の金額 × 点数 × 回収率で、この端末だけで計算する(金額は送らない・2026-11-07 本人の指定)
