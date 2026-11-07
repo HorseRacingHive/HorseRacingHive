@@ -4195,5 +4195,70 @@ body { min-height: 100vh; min-height: 100lvh; box-sizing: border-box; }
   }, true);
 })();
 </script>
+<script>
+// ===== おすすめ: 終わったレースは下へ・次に発走するレースに金枠(2026-11-07 本人の指定「終わったレースは下にして、1番最新のに金枠、単勝もそのほかのけんしゅも」) =====
+// 単勝のカード(.picks の .pick)と 馬単・馬連・3連単のカード(.kd-grid の .kd-card)が対象。並べ替えと枠だけで、中身は変えない
+(function () {
+  if (window.__hvNextGold) return;
+  window.__hvNextGold = true;
+  const st = document.createElement("style");
+  st.textContent = ".hv-next{border:2px solid #f7c948 !important;box-shadow:0 0 0 2px rgba(247,201,72,.28),0 0 16px rgba(247,201,72,.32) !important;position:relative}" +
+    ".hv-next-tag{position:absolute;top:-9px;right:10px;font-size:10.5px;font-weight:800;line-height:1;padding:3px 7px;border-radius:999px;background:#f7c948;color:#1d150a;pointer-events:none;z-index:2}";
+  document.head.appendChild(st);
+  const isDone = el => el.classList.contains("kd-done") || el.classList.contains("done-hit") || el.classList.contains("done-place") || el.classList.contains("done-miss");
+  const info = el => {
+    const t = (el.querySelector(".kd-h, .where") || el).textContent || "";
+    const m = t.match(/(\d{1,2}):(\d{2})\s*発走/);
+    const r = t.match(/(札幌|函館|福島|新潟|東京|中山|中京|京都|阪神|小倉)\s*(\d{1,2})R/);
+    return { post: m ? (+m[1]) * 60 + (+m[2]) : null, race: r ? r[1] + r[2] : "" };
+  };
+  const isToday = () => {
+    try { return !(typeof S !== "undefined" && S && S.date && typeof todayStr === "function" && S.date !== todayStr()); } catch (e) { return true; }
+  };
+  let busy = false;
+  function run() {
+    if (busy) return;
+    busy = true;
+    try {
+      const boxes = [...document.querySelectorAll(".picks, .kd-grid")].filter(b => !b.closest(".skip-box"));
+      const cards = [];
+      for (const box of boxes) {
+        const kids = [...box.children].filter(c => c.classList.contains("pick") || c.classList.contains("kd-card"));
+        if (!kids.length) continue;
+        const want = kids.filter(c => !isDone(c)).concat(kids.filter(isDone));   // 終わったレースは下へ(順番はそのまま)
+        if (want.some((c, i) => c !== kids[i])) for (const c of want) box.appendChild(c);
+        cards.push(...kids);
+      }
+      const now = new Date(), nm = now.getHours() * 60 + now.getMinutes();
+      let next = null;
+      if (isToday()) {
+        for (const c of cards) {
+          if (isDone(c) || c.classList.contains("skip-card")) continue;
+          const f = info(c);
+          if (f.post == null || f.post < nm) continue;   // 発走済み(結果待ち)は除く
+          if (!next || f.post < next.post) next = f;
+        }
+      }
+      for (const c of cards) {
+        const f = next && !isDone(c) && !c.classList.contains("skip-card") ? info(c) : null;
+        const on = !!(f && f.post === next.post && f.race === next.race);
+        c.classList.toggle("hv-next", on);
+        const tag = c.querySelector(":scope > .hv-next-tag");
+        if (on && !tag) { const s = document.createElement("span"); s.className = "hv-next-tag"; s.textContent = "次のレース"; c.appendChild(s); }
+        if (!on && tag) tag.remove();
+      }
+    } catch (e) { /* 表示の補助なので失敗しても何もしない */ }
+    setTimeout(() => { busy = false; }, 0);
+  }
+  let tm = null;
+  const kick = () => { if (busy) return; clearTimeout(tm); tm = setTimeout(run, 60); };
+  const start = () => {
+    new MutationObserver(kick).observe(document.body, { childList: true, subtree: true });
+    setInterval(run, 30000);
+    run();
+  };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
+})();
+</script>
 
 </body></html>
