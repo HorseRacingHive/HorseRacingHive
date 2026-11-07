@@ -847,11 +847,11 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .pool-strip .pc:first-child { border-left: 0; }
 .pool-strip small.ps-yen { display: block; font-size: 10px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pool-strip small.ps-yen.plus { color: var(--good, #9ee08a); } .pool-strip small.ps-yen.minus { color: var(--bad, #ff9aa8); }
-.us-mini { display: flex; justify-content: flex-end; margin: -13px 2px -8px; }   /* 帯のすぐ下に詰める(main の行の間18pxを打ち消す・2026-11-07) */
-.us-mini button { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; background: none; border: 0; padding: 2px 0; min-height: 30px; font-size: 11px; color: var(--muted); text-align: right; white-space: nowrap; }
+.us-mini { display: flex; justify-content: flex-end; margin: -14px 2px -10px; }   /* 帯のすぐ下に細く(main の行の間18pxを打ち消す・2026-11-07 本人の指定「やっぱり下で」) */
+.us-mini button { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; background: none; border: 0; padding: 0; min-height: 22px; font-size: 10px; color: var(--muted); text-align: right; white-space: nowrap; }
 .us-mini .um-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* 金額が大きくても1行のまま(2026-11-07) */
 .us-mini u { flex: none; }
-.us-mini u { color: var(--honey, #e8a317); text-decoration: none; font-weight: 800; font-size: 11.5px; border: 1px solid var(--honey, #e8a317); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.us-mini u { color: var(--honey, #e8a317); text-decoration: none; font-weight: 800; font-size: 10px; line-height: 18px; border: 1px solid var(--honey, #e8a317); border-radius: 999px; padding: 0 8px; white-space: nowrap; }
 .pool-strip + .dash-amts { margin-top: -10px; }
 .unit-setup { margin: 8px 0 8px; border: 1px solid var(--honey, #e8a317); }
 .unit-setup .us-h { font-weight: 800; font-size: 13.5px; }
@@ -2699,12 +2699,12 @@ function viewHome(d) {
   const winYen = winRow && unitOf("単勝") > 0 ? unitOf("単勝") * winN * (roiN - 1) : null;
   h += `<section class="ov-strip num" aria-label="この日の状況">
     <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
-    <button type="button" data-ov="buys"><span>買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "単勝"}</small></button>
-    <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
-    <button type="button" data-ov="perf" aria-label="成績を見る"><span>回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b>${winYen == null ? "<small>単勝</small>" : `<small class="${winYen >= 0 ? "plus" : "minus"}">単勝 ${winYen === 0 ? "±0円" : yenPM(winYen)}</small>`}</button>
+    <button type="button" data-ov="buys"><span>🎯単勝 買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "おすすめ"}</small></button>
+    <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>🎯単勝 結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
+    <button type="button" data-ov="perf" aria-label="成績を見る"><span>🎯単勝 回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b>${winYen == null ? "<small>—</small>" : `<small class="${winYen >= 0 ? "plus" : "minus"}">${winYen === 0 ? "±0円" : yenPM(winYen)}</small>`}</button>
   </section>`;
   h += poolStripPub(S.snap?.pool_days?.[d.date], winRow);
-  h += unitSetupPub();   // 1点の金額は帯のすぐ下に小さく(2026-11-07 本人の指定「目立ちすぎず、気づける位置」)
+  h += unitSetupPub();   // 1点の金額は帯のすぐ下に細く(2026-11-07 本人の指定「やっぱり下で」)
   if (d.gate?.msg) { const gm = String(d.gate.msg).match(/^(.*?)[(（](.+)[)）]\s*$/);   // 「(午後のレースは12:00から)」は2行目に分けて途中で折れないように(2026-10-31)
     if (!gm) h += `<div class="gate-mini"><span>🕘 ${esc(d.gate.msg.replace("午後のレースのおすすめ", "午後のおすすめ").replace(/公開します$/, "公開"))}</span>${d.gate.at ? openTag(d.date, d.gate.at) : ""}</div>`;   // 午後だけ公開待ち(午前はもう出ている)は1行の小さい帯に(2026-11-01)
     else h += `<div class="card empty gate-note"><span class="gn-main">🕘 ${esc(gm ? gm[1] : d.gate.msg)}</span>${gm ? `<span class="gn-sub">${esc(gm[2])}</span>` : ""}${d.gate.at ? `<br>${openTag(d.date, d.gate.at)}` : ""}</div>`; }   // 当日のおすすめの公開時刻(9:00/12:00)
