@@ -3215,6 +3215,14 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
     : `<span class="pc tot"><i>🍯 トータル</i><b>—</b><small>単勝+3券種</small></span>`;
   return `<div class="pool-strip num">${cell("🐴", "馬単", r?.["馬単"])}${cell("🐎", "馬連", r?.["馬連"])}${cell("🏆", "3連単", r?.["3連単"])}${tot}</div>`;
 }
+function bkUnitFromWin(v) {   // 単勝の1点の金額(おすすめの帯の下・ひと目の成績)→ おすすめの札の「買った」の金額にも反映(2026-11-07 本人の指定)
+  v = Math.round(+v / 100) * 100;
+  if (!(v >= 100) || v === BK.unit) return "";
+  const cur = bkStreaks(BK.bets).cur;
+  if (v > BK.unit * 1.5 && cur >= 3) return `<br>いま${cur}連敗中なので「買った」の金額は変えていません(資金タブで変えられます)`;   // 追い上げ防止は資金タブと同じ
+  if (v > BK.day) return `<br>今日の予算(${yen(BK.day)})より大きいので「買った」の金額は変えていません`;
+  BK.unit = v; bkSave(); return `<br>「買った」の金額も <b>${yen(v)}</b> にしました`;
+}
 function unitSetupPub() {   // おすすめの上の「1点の金額」。初めての人には最初に決めてもらう(2026-11-07 本人の指定・この端末だけに覚える)
   if (!S.snap || !("pool_days" in S.snap)) return "";
   if (!S.unitsNew) return S.amtMin
@@ -3521,7 +3529,9 @@ function bkAct(k) {
   if (a === "unit") {   // 連敗中に金額を大きく上げる時は、もう一度押してもらう(追い上げ防止)
     const cur = bkStreaks(BK.bets).cur;
     if (v > BK.unit * 1.5 && cur >= 3 && S.bkConfirm !== "unit" + v) { S.bkConfirm = "unit" + v; toast(`いま<b>${cur}連敗</b>中です。取り返そうと金額を上げるのは危険です。<br>それでも上げるなら、もう一度押してください`); return; }
-    S.bkConfirm = null; BK.unit = v; bkSave(); if (k.dataset.bk === "unit" && !k.closest) toast(`1点の金額を <b>${yen(v)}</b> にしました`); return bkRerender();
+    S.bkConfirm = null; BK.unit = v; bkSave();
+    S.units = { ...(S.units || {}), "単勝": v }; store.set("hivep_units", JSON.stringify(S.units));   // 資金タブで変えたら、おすすめ・ひと目の単勝の1点も同じに(2026-11-07)
+    if (k.dataset.bk === "unit" && !k.closest) toast(`1点の金額を <b>${yen(v)}</b> にしました(おすすめ・ひと目の単勝も)`); return bkRerender();
   }
   if (a === "unitset") {   // 1点の金額を自由な金額で(100円単位・2026-10-31)。連敗中に大きく上げる時の確認は上のボタンと同じ
     const n = Math.round(Number($("#bk-unit-in")?.value || 0) / 100) * 100;
@@ -3587,8 +3597,9 @@ document.addEventListener("change", e => {   // 収支の推移の「1点○円�
   const v = Math.max(0, Math.min(1000000, Math.round((+e.target.value || 0) / 100) * 100));   // 0円 = その券種を入れない(2026-11-07)
   const t = e.target.dataset.unitT || "単勝";   // 券種ごとに覚える(2026-11-07)
   S.units = { ...(S.units || {}), [t]: v }; store.set("hivep_units", JSON.stringify(S.units));
+  const bm = t === "単勝" ? bkUnitFromWin(v) : "";   // おすすめの札の「買った」の金額も同じに(2026-11-07)
   const y = window.scrollY; render(); window.scrollTo(0, y);
-  if (!S.unitsNew) toast(`${esc(t)}の1点を<b>${v ? v.toLocaleString("ja-JP") + "円" : "買わない(0円)"}</b>にしました<br>おすすめの収支と<b>ひと目の成績</b>に反映されます`);
+  if (!S.unitsNew) toast(`${esc(t)}の1点を<b>${v ? v.toLocaleString("ja-JP") + "円" : "買わない(0円)"}</b>にしました<br>おすすめの収支と<b>ひと目の成績</b>に反映されます${bm}`);
 });
 document.addEventListener("change", async e => {
   if (e.target.id !== "bk-file") return;
