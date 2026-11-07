@@ -854,7 +854,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .money-a .hp-side { grid-template-columns: 1fr 1fr; column-gap: 10px; row-gap: 3px; align-content: center; }
 .money-a .hp-side > :nth-child(1), .money-a .hp-side > :nth-child(2) { grid-column: 1 / -1; }
 .money-a .hp-side > span { white-space: nowrap; }
-.money-a .hp-side .hp-unit { grid-column: 1 / -1; }
+.money-a .hp-side .hp-unit, .money-a .hp-side .pt-unit-row, .money-a .hp-side > span:last-child { grid-column: 1 / -1; }
 .dash { gap: 6px; margin-bottom: 6px; }
 .dash .gauge { padding: 4px 4px 6px; }
 .dash .gauge svg { max-width: 112px; }
@@ -3307,7 +3307,8 @@ function unitSetupPub() {   // おすすめの上の「1点の金額」。初め
 function viewPerf(d) {
   const p0 = d.perf || {};
   const rp = d.rec_perf || (p0.n ? { source: "app", actual: { n: p0.n, hit: p0.hit, hit_rate: p0.hit / p0.n, roi: p0.roi, profit: p0.roi == null ? null : (p0.roi - 1) * p0.n * 1000 } } : null);
-  let h = perfDashboard(d, rp) + hist13Block() + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2>${hvEmpty(`${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}`, { fill: false, next: false })}</section>`);
+  let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2>${hvEmpty(`${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}`, { fill: false, next: false })}</section>`);
+  h += hist13Block();   // その日のおすすめの成績(見送り)のすぐ下に過去13年の検証(携帯と同じ並び・2026-11-07 本人の指定)
   const per = S.snap.period, PM = pubMonth();
   if (per) {
     h += `<section><h2>${PM.lab}・今年のおすすめ成績<span class="sub">★2〜5・単勝</span></h2>${PM.x ? periodCard(PM.lab, PM.x) : ""}${periodCard("今年", per.year)}
