@@ -3239,18 +3239,20 @@ function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。�
 // 単勝は待ちが比較的短く淡々とできる人向け、馬単・馬連・3連単は待ちが長いので資金に余裕がある人向け
 const POOLW_KEY = "hive_pool_pin";
 let POOLW_OPEN = null;   // この画面で開け閉めした状態(null = 決めていない → 📌なら開く・ふだんは閉じる)
+function poolWarnSeen() { try { return localStorage.getItem("hive_pool_warn_seen") === "1"; } catch (e) { return false; } }   // 帯の注意は✕で消したらこの端末では出さない(下の買い目の見出しにはいつも出る・2026-11-07 本人の指定)
 function poolPinned() { try { return localStorage.getItem(POOLW_KEY) === "1"; } catch (e) { return false; } }
 function poolWrap(inner) {
   if (!inner) return "";
   const pin = poolPinned(), open = pin ? POOLW_OPEN !== false : POOLW_OPEN === true;
-  return `<div class="pool-wrap${open ? " open" : ""}"><div class="pool-coll">${inner}<div class="pool-note"><span>※待ちが長いので資金に余裕がある方向け</span><button type="button" class="pool-pin${pin ? " on" : ""}" data-pool-pin>${pin ? "📌 固定中" : "📌 いつも開く"}</button></div></div><div class="pool-drawer"><button type="button" data-pool-tg aria-expanded="${open}">馬単・馬連・3連単 <span class="ar">▼</span></button></div></div>`;
+  return `<div class="pool-wrap${open ? " open" : ""}"><div class="pool-coll">${inner}<div class="pool-note">${poolWarnSeen() ? "" : `<span class="pool-warn">※待ちが長いので資金に余裕がある方向け<button type="button" class="pool-warn-x" data-pool-warn-x aria-label="この注意を消す">✕</button></span>`}<button type="button" class="pool-pin${pin ? " on" : ""}" data-pool-pin>${pin ? "📌 固定中" : "📌 いつも開く"}</button></div></div><div class="pool-drawer"><button type="button" data-pool-tg aria-expanded="${open}">馬単・馬連・3連単 <span class="ar">▼</span></button></div></div>`;
 }
 (function () {
   if (document.getElementById("poolw-style")) return;
   const st = document.createElement("style"); st.id = "poolw-style";
   st.textContent = ".ov-strip+.pool-wrap{margin-top:-19px;margin-left:calc(50% - 50vw + 4px + env(safe-area-inset-left, 0px));margin-right:calc(50% - 50vw + 4px + env(safe-area-inset-right, 0px))}@media (min-width:760px){.ov-strip+.pool-wrap{margin-left:0;margin-right:0}}" +
     ".pool-wrap .pool-strip{margin-top:0!important;border-radius:0;border-top:0;grid-template-columns:.85fr .9fr 1.1fr 1.15fr}" +
-    ".pool-wrap .pool-strip .pc{padding:4px 2px 5px}" +
+    ".pool-wrap .pool-strip .pc{padding:4px 2px 5px}.pool-wrap .pool-strip .pc.pc-b{padding:0}" +
+    ".pool-note .pool-pin{margin-left:auto}.pool-warn{display:inline-flex;align-items:center;gap:6px}.pool-warn-x{background:none;border:0;color:var(--muted,#a8977a);font-size:12px;padding:2px 6px;min-height:24px;cursor:pointer}" +
     ".pool-coll{max-height:0;overflow:hidden;transition:max-height .28s ease}" +
     ".pool-wrap.open .pool-coll{max-height:280px}" +
     ".ov-strip:has(+ .pool-wrap.open){border-bottom-left-radius:0!important;border-bottom-right-radius:0!important}" +
@@ -3264,6 +3266,8 @@ function poolWrap(inner) {
     "@media (prefers-reduced-motion:reduce){.pool-coll,.pool-drawer .ar{transition:none}}";
   document.head.appendChild(st);
   document.addEventListener("click", e => {
+    const wx = e.target.closest && e.target.closest("[data-pool-warn-x]");
+    if (wx) { e.preventDefault(); e.stopPropagation(); try { localStorage.setItem("hive_pool_warn_seen", "1"); } catch (e2) { /* この画面だけ消す */ } const sp = wx.closest(".pool-warn"); if (sp) sp.remove(); return; }
     const tg = e.target.closest && e.target.closest("[data-pool-tg]");
     const pn = e.target.closest && e.target.closest("[data-pool-pin]");
     if (!tg && !pn) return;
