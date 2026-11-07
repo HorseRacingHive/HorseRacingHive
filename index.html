@@ -3423,7 +3423,8 @@ function bkYearLimit() {   // 自分が今年買っている★の今年の最�
   const { lim } = bkStarLimits();
   const sts = [...new Set(bkIn("y").map(b => String(b.st)))].filter(s => lim[s] != null);
   const all = Object.values(lim).filter(v => v != null);
-  const v = sts.length ? Math.max(...sts.map(s => lim[s])) : (S.snap?.period?.year?.streak || (all.length ? Math.max(...all) : 10));
+  const yTot = S.snap?.period?.year?.streak;   // ★2〜5まとめた今年の最大連敗(連敗メーターは★をまたいで数えるので、目安もこれ・2026-11-07)
+  const v = yTot != null ? yTot : sts.length ? Math.max(...sts.map(s => lim[s])) : (all.length ? Math.max(...all) : 10);
   return Math.max(3, v);
 }
 const bkSpent = () => BK.bets.filter(b => b.d === todayStr()).reduce((a, b) => a + b.amt, 0);
