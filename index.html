@@ -844,6 +844,11 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .pool-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .pool-strip .pc { min-width: 0; padding: 5px 6px 6px; text-align: center; border-left: 1px solid var(--line); }
 .pool-strip .pc:first-child { border-left: 0; }
+.pool-strip small.ps-yen { display: block; font-size: 10px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pool-strip small.ps-yen.plus { color: var(--good, #9ee08a); } .pool-strip small.ps-yen.minus { color: var(--bad, #ff9aa8); }
+.unit-setup { margin: 4px 0 8px; border: 1px solid var(--honey, #e8a317); }
+.unit-setup .us-h { font-weight: 800; font-size: 13.5px; }
+.unit-setup .us-ok { margin-top: 4px; min-height: 40px; border-radius: 10px; border: 0; background: var(--honey, #e8a317); color: #2a1a00; font-weight: 800; font-size: 14px; }
 .pool-strip i { display: block; font-style: normal; font-size: 9.5px; color: var(--muted); font-weight: 700; line-height: 1.2; }
 .pool-strip b { display: block; font-family: var(--f-disp); font-size: 13.5px; font-weight: 900; line-height: 1.3; white-space: nowrap; }
 .pool-strip b.plus { color: var(--good); } .pool-strip b.minus { color: var(--bad); }
@@ -2057,7 +2062,7 @@ function hvTabOrder(sel) {
 const HMS_SIG_BASE = ["post", "fin"], HMS_DET_BASE = ["no", "fin"];   // それだけで並びが決まる項目(押すとその項目だけに戻る)
 const HOURYOKU_NOTE = "🐝 蜂力度は、オッズを入れない強さだけの順位です。買う順ではありません。";
 const hmsDef = k => k === "post" || k === "fin" || k === "no" || k === "ar" ? "asc" : "desc";   // 最初の向き: 発走順・着順・馬番は小さい方から、ほかは高い方から
-const S = { pw: null, snap: null, demo: false, date: null, curveYen: store.get("hivep_curve_yen") === "1", amtMin: store.get("hivep_amt_min") === "1", units: (() => { try { return JSON.parse(store.get("hivep_units") || "{}") || {}; } catch { return {}; } })(), dashT: store.get("hivep_dash_t") || "単勝", tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.start("hivep_sigsort", { key: "post", dir: "asc", then: [] }), venue: null, resVenue: null, venuePicked: false, resPicked: false,
+const S = { pw: null, snap: null, demo: false, date: null, curveYen: store.get("hivep_curve_yen") === "1", amtMin: store.get("hivep_amt_min") === "1", unitsNew: store.get("hivep_units") == null, units: (() => { try { return JSON.parse(store.get("hivep_units") || "{}") || {}; } catch { return {}; } })(), dashT: store.get("hivep_dash_t") || "単勝", tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.start("hivep_sigsort", { key: "post", dir: "asc", then: [] }), venue: null, resVenue: null, venuePicked: false, resPicked: false,
   raceOrder: store.get("hivep_race_order") || "asc", raceView: store.get("hivep_race_view") || "order", raceSeq: [],   // レース一覧: レース順・発走順・★あり(携帯と同じ)
   detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: HMS.start("hivep_dsort", { key: "no", dir: "asc", then: [] }),
   allSort: HMS.start("hivep_allsort", { key: "post", dir: "asc", then: [] }), allVenue: store.get("hivep_all_venue") || "" };   // レースタブの「全頭」(2026-10-31)
@@ -2682,6 +2687,7 @@ function viewHome(d) {
   const done = (act.n || 0) > 0 || (d.perf?.n || 0) > 0;
   const hitN = act.n ? act.hit : (d.perf?.hit ?? 0), roiN = act.n ? act.roi : d.perf?.roi;
   const hitList = os.filter(x => x.fin === 1).length;
+  h += unitSetupPub();
   h += `<section class="ov-strip num" aria-label="この日の状況">
     <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
     <button type="button" data-ov="buys"><span>買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "単勝"}</small></button>
@@ -3182,13 +3188,29 @@ function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。�
   return h;
 }
 
-function poolStripPub(r) {   // この日の 馬単・馬連・3連単・トータル(2026-11-07・携帯と同じ並び。金額なし・回収率は10%きざみ)
+function poolStripPub(r) {   // この日の 馬単・馬連・3連単・トータル(2026-11-07・携帯と同じ並び。回収率は10%きざみ)
+  // 収支(円)は、見る人が決めた券種ごとの1点の金額 × 点数 × 回収率で、この端末だけで計算する(金額は送らない・2026-11-07 本人の指定)
   if (!S.snap || !("pool_days" in S.snap)) return "";
-  const cell = (icon, name, a) => a ? `<span class="pc"><i>${icon} ${name}</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b><small>${a[0]}点・${a[1]}的中</small></span>`
+  const pl = (t, a) => { const u = unitOf(t); return u > 0 && a && a[0] && a[2] != null ? u * a[0] * (a[2] - 1) : null; };
+  const yTag = v => v == null ? "" : `<small class="ps-yen ${v >= 0 ? "plus" : "minus"}">${v === 0 ? "±0円" : yenPM(v)}</small>`;
+  const cell = (icon, name, a) => a ? `<span class="pc"><i>${icon} ${name}</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b><small>${a[0]}点・${a[1]}的中</small>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</span>`
     : `<span class="pc"><i>${icon} ${name}</i><b>—</b><small>${r ? "なし" : "結果待ち"}</small></span>`;
-  const tot = r && r["計"] != null ? `<span class="pc tot"><i>🍯 トータル</i><b class="${r["計"] >= 1 ? "plus" : "minus"}">${Math.round(r["計"] * 100)}%</b><small>単勝+3券種</small></span>`
+  // トータル = 券種ごとの1点の金額で重み付け(既定 単勝1,000円・ほか100円。0円の券種は入れない)。単勝の行が無い古いデータは「1点=1」の計
+  const ws = r && r["単勝"] ? UNIT_T.filter(t => unitOf(t) > 0 && r[t] && r[t][0] && r[t][2] != null) : [];
+  const wInv = ws.reduce((s, t) => s + unitOf(t) * r[t][0], 0), wPay = ws.reduce((s, t) => s + unitOf(t) * r[t][0] * r[t][2], 0);
+  const tr = wInv ? wPay / wInv : (r && !r["単勝"] && r["計"] != null ? r["計"] : null);
+  const tot = tr != null ? `<span class="pc tot"><i>🍯 トータル</i><b class="${tr >= 1 ? "plus" : "minus"}">${Math.round(tr * 100)}%</b><small>単勝+3券種</small>${wInv ? yTag(wPay - wInv) : ""}</span>`
     : `<span class="pc tot"><i>🍯 トータル</i><b>—</b><small>単勝+3券種</small></span>`;
   return `<div class="pool-strip num">${cell("🐴", "馬単", r?.["馬単"])}${cell("🐎", "馬連", r?.["馬連"])}${cell("🏆", "3連単", r?.["3連単"])}${tot}</div>`;
+}
+function unitSetupPub() {   // おすすめの上の「1点の金額」。初めての人には最初に決めてもらう(2026-11-07 本人の指定・この端末だけに覚える)
+  if (!S.snap || !("pool_days" in S.snap)) return "";
+  if (!S.unitsNew) return unitPanel("total");
+  const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
+  return `<div class="dash-amts unit-setup"><div class="us-h">💡 まず、1点いくらで買うかを決めましょう</div>
+    <div class="da-cap">券種ごとの1点の金額です。おすすめの収支と「ひと目でわかる成績」をこの金額で計算します(100円単位・0円でその券種は買わない・あとで変えられます)</div>
+    ${UNIT_T.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i>${unitSelect(t)}</span></div>`).join("")}
+    <button type="button" class="us-ok" data-unit-ok>この金額で見る</button></div>`;
 }
 
 function viewPerf(d) {
@@ -3552,6 +3574,7 @@ document.addEventListener("change", e => {   // 収支の推移の「1点○円�
   const t = e.target.dataset.unitT || "単勝";   // 券種ごとに覚える(2026-11-07)
   S.units = { ...(S.units || {}), [t]: v }; store.set("hivep_units", JSON.stringify(S.units));
   const y = window.scrollY; render(); window.scrollTo(0, y);
+  if (!S.unitsNew) toast(`${esc(t)}の1点を<b>${v ? v.toLocaleString("ja-JP") + "円" : "買わない(0円)"}</b>にしました。おすすめの収支と<b>ひと目でわかる成績</b>に反映されます`);
 });
 document.addEventListener("change", async e => {
   if (e.target.id !== "bk-file") return;
@@ -3867,6 +3890,14 @@ document.addEventListener("click", e => {
   if (t.dataset.dashT) { const y = window.scrollY; S.dashT = t.dataset.dashT; store.set("hivep_dash_t", S.dashT); render(); window.scrollTo(0, y); return; }
   if (t.dataset.moneyPer) { const y = window.scrollY; S.moneyPer = t.dataset.moneyPer; render(); window.scrollTo(0, y); return; }
   if (t.dataset.h13) { const y = window.scrollY; S.h13 = t.dataset.h13; render(); window.scrollTo(0, y); return; }
+  if (t.hasAttribute && t.hasAttribute("data-unit-ok")) {   // 初めての金額の決定(2026-11-07)
+    const y = window.scrollY;
+    S.units = Object.fromEntries(UNIT_T.map(k => [k, unitOf(k)])); store.set("hivep_units", JSON.stringify(S.units));
+    S.unitsNew = false; S.amtMin = true; store.set("hivep_amt_min", "1");
+    render(); window.scrollTo(0, y);
+    toast(`1点の金額を決めました(${UNIT_T.map(k => `${k}${unitOf(k).toLocaleString("ja-JP")}`).join("・")}円)。おすすめの収支と<b>ひと目でわかる成績</b>に反映されます`);
+    return;
+  }
   if (t.hasAttribute && t.hasAttribute("data-amt-min")) { const y = window.scrollY; S.amtMin = !S.amtMin; store.set("hivep_amt_min", S.amtMin ? "1" : "0"); render(); window.scrollTo(0, y); return; }
   if (t.dataset.curveYen) { const y = window.scrollY; S.curveYen = t.dataset.curveYen === "1"; store.set("hivep_curve_yen", S.curveYen ? "1" : "0"); render(); window.scrollTo(0, y); return; }
   if (t.dataset.sigSort) {   // 狙い・危険の並べ替え(勝率・期待値・＋ファクター・−ファクター)
