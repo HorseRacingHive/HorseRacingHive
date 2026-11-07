@@ -855,6 +855,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .money-a .hp-side > :nth-child(1), .money-a .hp-side > :nth-child(2) { grid-column: 1 / -1; }
 .money-a .hp-side > span { white-space: nowrap; }
 .money-a .hp-side .hp-unit, .money-a .hp-side .pt-unit-row, .money-a .hp-side > span:last-child { grid-column: 1 / -1; }
+.money-a .hp-side .pt-unit-row, .money-a .hp-side > span:last-child { white-space: normal; min-width: 0; }   /* 長い文は折り返す(見切れないように) */
 .dash { gap: 6px; margin-bottom: 6px; }
 .dash .gauge { padding: 4px 4px 6px; }
 .dash .gauge svg { max-width: 112px; }
@@ -1708,7 +1709,7 @@ function moneyA(periods, cur, attr) {
     <div class="hero"><span class="lab">${esc(a.lab)}の収支</span><span class="big ${has ? (pts >= 0 ? "plus" : "minus") : ""}">${has ? (pts > 0 ? "+" : pts < 0 ? "−" : "±") + Math.abs(pts).toLocaleString("ja-JP") + "点" : "—"}</span></div>
     ${has ? `<div class="hp-wrap">${honeyPool(a.roi)}<div class="hp-side">${hpBadge(a.roi)}
       <span>回収率 <b class="big2 ${ret >= 100 ? "plus" : "minus"}">${ret}%</b></span>
-      <span class="pt-unit-row">${(a.ut || "単勝") === "total" ? `<small>${unitSumText()}なら</small>` : `1点${unitInput(a.ut || "単勝", "pt-unit")}円なら`} <b class="yen ${(a.yen ?? pts) >= 0 ? "plus" : "minus"}">${(() => { const y = a.yen != null ? Math.round(a.yen) : pts * unitOf(a.ut || "単勝"), sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + (v >= 10000 ? (Math.round(v / 1000) / 10).toLocaleString("ja-JP") + "万円" : v.toLocaleString("ja-JP") + "円"); })()}</b></span>
+      <span class="pt-unit-row">${(a.ut || "単勝") === "total" ? `<small>設定した1点の金額なら</small>` : `1点${unitInput(a.ut || "単勝", "pt-unit")}円なら`} <b class="yen ${(a.yen ?? pts) >= 0 ? "plus" : "minus"}">${(() => { const y = a.yen != null ? Math.round(a.yen) : pts * unitOf(a.ut || "単勝"), sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + (v >= 10000 ? (Math.round(v / 1000) / 10).toLocaleString("ja-JP") + "万円" : v.toLocaleString("ja-JP") + "円"); })()}</b></span>
       <span>的中 <b>${a.hit}/${a.n}</b></span><span>${esc(a.kind || "単勝")} ・ 1点買うのを1として</span></div></div>`
     : `<div class="note">${a.loading ? "集計しています…" : a.empty || "まだ結果が出ていません"}</div>`}</div>`;
 }
