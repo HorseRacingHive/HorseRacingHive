@@ -4260,5 +4260,70 @@ body { min-height: 100vh; min-height: 100lvh; box-sizing: border-box; }
   if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
 })();
 </script>
+<script>
+// ===== 馬単・馬連・3連単の「見送り」も単勝と同じく開閉・📌固定(2026-11-07 本人の指定) =====
+// 全部の買い目が見送り(線で消えた組だけ)になったレースのカードを、カード一覧の下の「見送り」の箱へ移す。
+// 箱の開閉と📌固定は、単勝の「直前で見送った馬」と同じ仕組み・同じ固定(.skip-box をそのまま使う)
+(function () {
+  if (window.__hvKdSkip) return;
+  window.__hvKdSkip = true;
+  const st = document.createElement("style");
+  st.textContent = ".kd-skip-box{margin-top:12px}.kd-skip-box .kd-skip-grid .kd-card{opacity:.6}";
+  document.head.appendChild(st);
+  const isSkipped = c => {
+    if (c.querySelector(".kd-wait")) return false;
+    const ks = [...c.querySelectorAll(".kd-k span")];
+    if (ks.some(s => !s.classList.contains("sk"))) return false;
+    return ks.length > 0 || !!c.querySelector(".kd-ax s");
+  };
+  let busy = false;
+  function run() {
+    if (busy) return;
+    busy = true;
+    try {
+      for (const grid of document.querySelectorAll(".kd-grid")) {
+        if (grid.closest(".skip-box")) continue;
+        const sk = [...grid.children].filter(c => c.classList.contains("kd-card") && isSkipped(c));
+        let box = grid.parentElement && [...grid.parentElement.children].find(x => x.classList && x.classList.contains("kd-skip-box"));
+        if (!sk.length) continue;
+        if (!box) {
+          box = document.createElement("div");
+          box.className = "skip-box kd-skip-box";
+          box.innerHTML = `<h3 class="skip-head">直前で見送ったレース<small></small></h3><div class="kd-grid kd-skip-grid"></div>`;
+          const g2 = box.querySelector(".kd-skip-grid");
+          sk.forEach(c => g2.appendChild(c));
+          grid.after(box);
+        } else {
+          const g2 = box.querySelector(".kd-skip-grid");
+          sk.forEach(c => g2.appendChild(c));
+        }
+        const n = box.querySelectorAll(".kd-skip-grid .kd-card").length;
+        const sm = box.querySelector(".skip-head small");
+        if (sm) sm.textContent = `馬単・馬連・3連単 ${n}レース・成績には入れません`;
+      }
+    } catch (e) { /* 表示の補助なので失敗しても何もしない */ }
+    setTimeout(() => { busy = false; }, 0);
+  }
+  let tm = null;
+  const kick = () => { if (busy) return; clearTimeout(tm); tm = setTimeout(run, 40); };
+  const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); run(); };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
+})();
+</script>
+<script>
+// ===== 見送りの箱の「開く/閉じる」をそろえて見やすく(2026-11-07 本人の指定「単勝とその他の買い目の閉じるボタンを同じ位置関係に・少しだけ見やすく」) =====
+// 見出しの文字の長さで「▼開く」の位置がずれていたので、開く/閉じると📌固定を右端にまとめ、頭数の説明は下の行へ
+(function () {
+  if (window.__hvSkipHead) return;
+  window.__hvSkipHead = true;
+  const st = document.createElement("style");
+  st.textContent =
+    ".skip-box .skip-head{display:grid !important;grid-template-columns:minmax(0,1fr) auto auto;column-gap:6px;row-gap:2px;align-items:start}" +
+    ".skip-box .skip-head small{order:9;grid-column:1/-1;margin:0}" +
+    ".skip-box .skip-head .sk-arrow{margin-left:0;font-size:12px;font-weight:800;color:var(--honey,#f7c948);border:1px solid var(--honey,#f7c948);background:rgba(247,201,72,.12);border-radius:999px;padding:3px 11px;line-height:1.3;white-space:nowrap}" +
+    ".skip-box .skip-head .sk-pin{margin-left:0;white-space:nowrap}";
+  document.head.appendChild(st);
+})();
+</script>
 
 </body></html>
