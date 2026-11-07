@@ -590,6 +590,7 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
   padding: 9px 16px; border-radius: 999px; background: var(--comb); color: var(--comb-ink); border: 1px solid rgba(247,201,72,.5); box-shadow: 0 6px 18px rgba(0,0,0,.35);
   font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast { white-space: normal; text-align: center; border-radius: 16px; line-height: 1.45; width: max-content; }   /* 長い知らせも切れずに2行で(2026-11-07) */
 .toast b { color: var(--honey); }
 /* ---------- 追加の部品(携帯版と同じ) */
 .summary div { min-width: 0; padding-left: 4px; padding-right: 4px; }
@@ -846,7 +847,10 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .pool-strip .pc:first-child { border-left: 0; }
 .pool-strip small.ps-yen { display: block; font-size: 10px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pool-strip small.ps-yen.plus { color: var(--good, #9ee08a); } .pool-strip small.ps-yen.minus { color: var(--bad, #ff9aa8); }
-.unit-setup { margin: 4px 0 8px; border: 1px solid var(--honey, #e8a317); }
+.us-mini { display: flex; justify-content: flex-end; margin: 3px 2px 0; }
+.us-mini button { background: none; border: 0; padding: 4px 2px; min-height: 28px; font-size: 11px; color: var(--muted); text-align: right; }
+.us-mini u { color: var(--honey, #e8a317); text-decoration: none; font-weight: 800; margin-left: 4px; }
+.unit-setup { margin: 8px 0 8px; border: 1px solid var(--honey, #e8a317); }
 .unit-setup .us-h { font-weight: 800; font-size: 13.5px; }
 .unit-setup .us-ok { margin-top: 4px; min-height: 40px; border-radius: 10px; border: 0; background: var(--honey, #e8a317); color: #2a1a00; font-weight: 800; font-size: 14px; }
 .pool-strip i { display: block; font-style: normal; font-size: 9.5px; color: var(--muted); font-weight: 700; line-height: 1.2; }
@@ -2687,7 +2691,6 @@ function viewHome(d) {
   const done = (act.n || 0) > 0 || (d.perf?.n || 0) > 0;
   const hitN = act.n ? act.hit : (d.perf?.hit ?? 0), roiN = act.n ? act.roi : d.perf?.roi;
   const hitList = os.filter(x => x.fin === 1).length;
-  h += unitSetupPub();
   h += `<section class="ov-strip num" aria-label="この日の状況">
     <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
     <button type="button" data-ov="buys"><span>買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "単勝"}</small></button>
@@ -2695,6 +2698,7 @@ function viewHome(d) {
     <button type="button" data-ov="perf" aria-label="成績を見る"><span>回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b><small>単勝</small></button>
   </section>`;
   h += poolStripPub(S.snap?.pool_days?.[d.date]);
+  h += unitSetupPub();   // 1点の金額は帯のすぐ下に小さく(2026-11-07 本人の指定「目立ちすぎず、気づける位置」)
   if (d.gate?.msg) { const gm = String(d.gate.msg).match(/^(.*?)[(（](.+)[)）]\s*$/);   // 「(午後のレースは12:00から)」は2行目に分けて途中で折れないように(2026-10-31)
     if (!gm) h += `<div class="gate-mini"><span>🕘 ${esc(d.gate.msg.replace("午後のレースのおすすめ", "午後のおすすめ").replace(/公開します$/, "公開"))}</span>${d.gate.at ? openTag(d.date, d.gate.at) : ""}</div>`;   // 午後だけ公開待ち(午前はもう出ている)は1行の小さい帯に(2026-11-01)
     else h += `<div class="card empty gate-note"><span class="gn-main">🕘 ${esc(gm ? gm[1] : d.gate.msg)}</span>${gm ? `<span class="gn-sub">${esc(gm[2])}</span>` : ""}${d.gate.at ? `<br>${openTag(d.date, d.gate.at)}` : ""}</div>`; }   // 当日のおすすめの公開時刻(9:00/12:00)
@@ -3205,7 +3209,9 @@ function poolStripPub(r) {   // この日の 馬単・馬連・3連単・トー�
 }
 function unitSetupPub() {   // おすすめの上の「1点の金額」。初めての人には最初に決めてもらう(2026-11-07 本人の指定・この端末だけに覚える)
   if (!S.snap || !("pool_days" in S.snap)) return "";
-  if (!S.unitsNew) return unitPanel("total");
+  if (!S.unitsNew) return S.amtMin
+    ? `<div class="us-mini"><button type="button" data-amt-min aria-label="1点の金額を変える">⚙️ 1点 ${UNIT_T.map(t => `${t}${unitOf(t).toLocaleString("ja-JP")}`).join("・")}円で計算 <u>変更</u></button></div>`
+    : unitPanel("total");
   const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
   return `<div class="dash-amts unit-setup"><div class="us-h">💡 まず、1点いくらで買うかを決めましょう</div>
     <div class="da-cap">券種ごとの1点の金額です。おすすめの収支と「ひと目でわかる成績」をこの金額で計算します(100円単位・0円でその券種は買わない・あとで変えられます)</div>
@@ -3574,7 +3580,7 @@ document.addEventListener("change", e => {   // 収支の推移の「1点○円�
   const t = e.target.dataset.unitT || "単勝";   // 券種ごとに覚える(2026-11-07)
   S.units = { ...(S.units || {}), [t]: v }; store.set("hivep_units", JSON.stringify(S.units));
   const y = window.scrollY; render(); window.scrollTo(0, y);
-  if (!S.unitsNew) toast(`${esc(t)}の1点を<b>${v ? v.toLocaleString("ja-JP") + "円" : "買わない(0円)"}</b>にしました。おすすめの収支と<b>ひと目でわかる成績</b>に反映されます`);
+  if (!S.unitsNew) toast(`${esc(t)}の1点を<b>${v ? v.toLocaleString("ja-JP") + "円" : "買わない(0円)"}</b>にしました<br>おすすめの収支と<b>ひと目の成績</b>に反映されます`);
 });
 document.addEventListener("change", async e => {
   if (e.target.id !== "bk-file") return;
@@ -3895,7 +3901,7 @@ document.addEventListener("click", e => {
     S.units = Object.fromEntries(UNIT_T.map(k => [k, unitOf(k)])); store.set("hivep_units", JSON.stringify(S.units));
     S.unitsNew = false; S.amtMin = true; store.set("hivep_amt_min", "1");
     render(); window.scrollTo(0, y);
-    toast(`1点の金額を決めました(${UNIT_T.map(k => `${k}${unitOf(k).toLocaleString("ja-JP")}`).join("・")}円)。おすすめの収支と<b>ひと目でわかる成績</b>に反映されます`);
+    toast(`1点の金額を決めました<br>おすすめの収支と<b>ひと目の成績</b>に反映されます`);
     return;
   }
   if (t.hasAttribute && t.hasAttribute("data-amt-min")) { const y = window.scrollY; S.amtMin = !S.amtMin; store.set("hivep_amt_min", S.amtMin ? "1" : "0"); render(); window.scrollTo(0, y); return; }
