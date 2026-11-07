@@ -3241,10 +3241,14 @@ const POOLW_KEY = "hive_pool_pin";
 let POOLW_OPEN = null;   // この画面で開け閉めした状態(null = 決めていない → 📌なら開く・ふだんは閉じる)
 function poolWarnSeen() { try { return localStorage.getItem("hive_pool_warn_seen") === "1"; } catch (e) { return false; } }   // 帯の注意は✕で消したらこの端末では出さない(下の買い目の見出しにはいつも出る・2026-11-07 本人の指定)
 function poolPinned() { try { return localStorage.getItem(POOLW_KEY) === "1"; } catch (e) { return false; } }
+let POOL_PEEK = null;   // 閉じた時の1行に出す回収率(帯を作るときに入れる・2026-11-08 本人の指定「B案」)
 function poolWrap(inner) {
   if (!inner) return "";
   const pin = poolPinned(), open = pin ? POOLW_OPEN !== false : POOLW_OPEN === true;
-  return `<div class="pool-wrap${open ? " open" : ""}"><div class="pool-coll">${inner}<div class="pool-note">${poolWarnSeen() ? "" : `<span class="pool-warn">※待ちが長いので資金に余裕がある方向け<button type="button" class="pool-warn-x" data-pool-warn-x aria-label="この注意を消す">✕</button></span>`}<button type="button" class="pool-pin${pin ? " on" : ""}" data-pool-pin>${pin ? "📌 固定中" : "📌 いつも開く"}</button></div></div><div class="pool-drawer"><button type="button" data-pool-tg aria-expanded="${open}">馬単・馬連・3連単 <span class="ar">▼</span></button></div></div>`;
+  const pk = (POOL_PEEK || []).map(([ic, v, c]) => `<span class="pb-v"><i>${ic}</i><b class="${c || ""}">${v}</b></span>`).join("");
+  return `<div class="pool-wrap${open ? " open" : ""}"><div class="pool-coll">${inner}</div><div class="pool-bar">`
+    + `<button type="button" class="pb-peek" data-pool-tg aria-expanded="false" aria-label="馬単・馬連・3連単を詳しく見る">${pk || `<span class="pb-v">🐴🐎🏆 馬単・馬連・3連単</span>`}<span class="pb-ar">▼ 詳しく</span></button>`
+    + `<span class="pb-open"><button type="button" class="pool-pin${pin ? " on" : ""}" data-pool-pin>${pin ? "📌 固定中" : "📌 いつも開く"}</button><button type="button" class="pb-close" data-pool-tg aria-expanded="true">▲ 閉じる</button></span></div></div>`;
 }
 (function () {
   if (document.getElementById("poolw-style")) return;
@@ -3252,18 +3256,18 @@ function poolWrap(inner) {
   st.textContent = ".ov-strip+.pool-wrap{margin-top:-19px;margin-left:calc(50% - 50vw + 4px + env(safe-area-inset-left, 0px));margin-right:calc(50% - 50vw + 4px + env(safe-area-inset-right, 0px))}@media (min-width:760px){.ov-strip+.pool-wrap{margin-left:0;margin-right:0}}" +
     ".pool-wrap .pool-strip{margin-top:0!important;border-radius:0;border-top:0;grid-template-columns:.85fr .9fr 1.1fr 1.15fr}" +
     ".pool-wrap .pool-strip .pc{padding:4px 2px 5px}.pool-wrap .pool-strip .pc.pc-b{padding:0}" +
-    ".pool-note .pool-pin{margin-left:auto}.pool-warn{display:inline-flex;align-items:center;gap:6px}.pool-warn-x{background:none;border:0;color:var(--muted,#a8977a);font-size:12px;padding:2px 6px;min-height:24px;cursor:pointer}" +
-    ".pool-coll{max-height:0;overflow:hidden;transition:max-height .28s ease}" +
-    ".pool-wrap.open .pool-coll{max-height:280px}" +
-    ".ov-strip:has(+ .pool-wrap.open){border-bottom-left-radius:0!important;border-bottom-right-radius:0!important}" +
-    ".pool-note{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:11px;line-height:1.35;color:var(--muted,#a8977a);background:var(--panel,#1d150a);border:1px solid var(--line,#3a2a12);border-top:1px dashed var(--line,#3a2a12);border-radius:0 0 12px 12px}" +
-    ".pool-note span{flex:1;text-align:left}" +
-    ".pool-pin{flex:none;border:1px solid var(--line,#3a2a12);background:none;color:var(--muted,#a8977a);font:inherit;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;cursor:pointer}" +
+    ".pool-coll{max-height:0;overflow:hidden;transition:max-height .28s ease}.pool-wrap.open .pool-coll{max-height:280px}" +
+    ".ov-strip:has(+ .pool-wrap){border-bottom-left-radius:0!important;border-bottom-right-radius:0!important}" +
+    ".pool-bar{display:flex;align-items:center;min-height:34px;background:var(--panel,#1d150a);border:1px solid var(--line,#3a2a12);border-top:1px dashed var(--line,#3a2a12);border-radius:0 0 12px 12px;font-size:12px}" +
+    ".pool-bar button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}" +
+    ".pb-peek{flex:1;display:flex;align-items:center;gap:12px;background:none;border:0;padding:6px 12px;color:var(--ink,#fbf1dc);text-align:left;min-width:0;white-space:nowrap;overflow:hidden}" +
+    ".pb-v{display:inline-flex;align-items:baseline;gap:3px}.pb-v i{font-style:normal;font-size:12px}.pb-v b{font-weight:800;font-size:12.5px}.pb-v b.plus{color:var(--good,#7fd28a)}.pb-v b.minus{color:var(--bad,#ff8fa0)}" +
+    ".pb-ar{margin-left:auto;color:var(--honey,#f7c948);font-weight:800;font-size:11.5px;flex:none}" +
+    ".pb-open{display:none;flex:1;align-items:center;justify-content:space-between;padding:4px 10px}.pool-wrap.open .pb-peek{display:none}.pool-wrap.open .pb-open{display:flex}" +
+    ".pool-pin{border:1px solid var(--line,#3a2a12);background:none;color:var(--muted,#a8977a);font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}" +
     ".pool-pin.on{color:var(--honey,#f7c948);border-color:var(--honey,#f7c948);background:rgba(247,201,72,.1)}" +
-    ".pool-drawer{display:flex;justify-content:center;margin-top:-1px}" +
-    ".pool-drawer button{border:1px solid var(--line,#3a2a12);border-top:0;background:var(--panel,#1d150a);color:var(--honey,#f7c948);font:inherit;font-size:11.5px;font-weight:800;padding:3px 14px 5px;border-radius:0 0 10px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}" +
-    ".pool-drawer .ar{display:inline-block;transition:transform .25s}.pool-wrap.open .pool-drawer .ar{transform:rotate(180deg)}" +
-    "@media (prefers-reduced-motion:reduce){.pool-coll,.pool-drawer .ar{transition:none}}";
+    ".pb-close{background:none;border:0;color:var(--honey,#f7c948);font-weight:800;font-size:11.5px;padding:4px 2px}" +
+    "@media (prefers-reduced-motion:reduce){.pool-coll{transition:none}}";
   document.head.appendChild(st);
   document.addEventListener("click", e => {
     const wx = e.target.closest && e.target.closest("[data-pool-warn-x]");
@@ -3275,7 +3279,7 @@ function poolWrap(inner) {
     const w = (tg || pn).closest(".pool-wrap"); if (!w) return;
     if (tg) {
       POOLW_OPEN = !w.classList.contains("open");
-      w.classList.toggle("open", POOLW_OPEN); tg.setAttribute("aria-expanded", String(POOLW_OPEN));
+      w.classList.toggle("open", POOLW_OPEN);
     } else {
       const v = !poolPinned();
       try { localStorage.setItem(POOLW_KEY, v ? "1" : "0"); } catch (e2) { /* 覚えられない端末でもこの画面では効く */ }
@@ -3301,6 +3305,8 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
   const tr = wInv ? wPay / wInv : null;
   const tot = tr != null ? `<span class="pc tot pc-b"><button type="button" class="pc-go" data-ps-perf="total" aria-label="トータルの成績を見る"><i>🍯 トータル ›</i><b class="${tr >= 1 ? "plus" : "minus"}">${Math.round(tr * 100)}%</b><small>単勝+3券種</small>${wInv ? yTag(wPay - wInv) : ""}</button></span>`
     : `<span class="pc tot"><i>🍯 トータル</i><b>—</b><small>単勝+3券種</small></span>`;
+  POOL_PEEK = [...[["🐴", "馬単"], ["🐎", "馬連"], ["🏆", "3連単"]].map(([ic, nm]) => { const a = r?.[nm]; return a ? [ic, `${Math.round(a[2] * 100)}%`, a[2] >= 1 ? "plus" : "minus"] : [ic, "—", ""]; }),
+    tr != null ? ["🍯", `${Math.round(tr * 100)}%`, tr >= 1 ? "plus" : "minus"] : ["🍯", "—", ""]];   // 閉じた時の1行
   return `<div class="pool-strip num">${cell("🐴", "馬単", r?.["馬単"])}${cell("🐎", "馬連", r?.["馬連"])}${cell("🏆", "3連単", r?.["3連単"])}${tot}</div>`;
 }
 function bkUnitFromWin(v) {   // 単勝の1点の金額(おすすめの帯の下・ひと目の成績)→ おすすめの札の「買った」の金額にも反映(2026-11-07 本人の指定)
