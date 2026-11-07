@@ -2741,6 +2741,7 @@ function viewHome(d) {
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
     h += `<div class="skip-box"><h3 class="skip-head">直前で見送った馬<small>${sk.length}頭・成績には入れません</small></h3>
+      ${won ? `<div class="skip-peek">${sk.filter(x => x.fin === 1).map(x => `<button type="button" class="sk-peek" data-skip-go="${esc(x.id)}|${x.hno ?? ""}"><span class="pk-no">${x.hno ?? "—"}</span><span class="pk-nm">${esc(x.name)}<small>${esc(x.venue)}${x.no}R ${esc(x.post || "")}発走・${esc(x.stage || "")}に見送り</small></span><span class="pk-r">1着</span><span class="pk-go">›</span></button>`).join("")}</div>` : ""}
       ${won ? `<div class="skip-alert">見送った馬が${won}頭 1着でした(成績には入れません)</div>` : ""}
       <div class="picks">${sk.map(x => `<button class="pick skip-card${x.fin === 1 ? " skip-won" : ""}" data-race="${esc(x.id)}" data-race-group="skipped" data-hno="${x.hno ?? ""}">
         <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge dim">急遽</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post || "")}発走</span>
@@ -4243,6 +4244,12 @@ body { min-height: 100vh; min-height: 100lvh; box-sizing: border-box; }
     ".skip-box .skip-head .sk-pin{margin-left:auto;border:1px solid var(--line,#444);background:none;color:var(--muted,#9a8f7a);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;cursor:pointer;line-height:1.4}" +
     ".skip-box .skip-head .sk-pin.on{color:var(--accent,#f7c948);border-color:var(--accent,#f7c948);background:rgba(247,201,72,.12)}" +
     ".skip-box.sk-closed .skip-body{display:none}" +
+    ".skip-box:not(.sk-closed) .skip-peek{display:none}.skip-peek{display:grid;gap:6px;margin:8px 0 2px}" +
+    ".sk-peek{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:inherit;border:1px dashed rgba(247,201,72,.55);border-radius:12px;padding:7px 12px;background:rgba(247,201,72,.06);cursor:pointer}" +
+    ".sk-peek .pk-no{flex:none;width:30px;height:34px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:#3a2c12;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#d8cbb0}" +
+    ".sk-peek .pk-nm{flex:1;min-width:0;font-weight:800;font-size:14px}.sk-peek .pk-nm small{display:block;font-size:11px;font-weight:600;color:var(--muted,#a8977a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}" +
+    ".sk-peek .pk-r{font-size:12px;font-weight:900;color:#2a1c00;background:linear-gradient(180deg,#ffe07a,#f0a800);border-radius:999px;padding:1px 9px;white-space:nowrap}.sk-peek .pk-go{color:var(--muted,#a8977a)}" +
+    ".skip-card.sk-flash{box-shadow:0 0 0 3px rgba(247,201,72,.65)!important;transition:box-shadow .3s}" +
     /* おすすめタブの光り(2026-11-07 本人の指定「0と1と6・重くなりすぎないように」): 蜜のしずくが落ちてはじけたら、キラッと大きくなって星が回り、
        ふわっと持ち上がって上に光の柱。動かすのは transform と opacity だけ(影やぼかしは動かさない)・押した時だけ小さな部品を足して1.3秒で消す・動きを減らす設定では出さない */
     "@keyframes hvDrop{0%{opacity:0;transform:translateY(0) scale(.5)}12%{opacity:1;transform:translateY(0) scale(1,1.15)}85%{opacity:1;transform:translateY(40px) scale(.9,1.2)}100%{opacity:0;transform:translateY(44px) scale(1.7,.3)}}" +
@@ -4267,7 +4274,7 @@ body { min-height: 100vh; min-height: 100lvh; box-sizing: border-box; }
     box.dataset.skReady = "1";
     const body = document.createElement("div"); body.className = "skip-body";
     let n = head.nextSibling;
-    while (n) { const nx = n.nextSibling; body.appendChild(n); n = nx; }
+    while (n) { const nx = n.nextSibling; if (!(n.classList && n.classList.contains("skip-peek"))) body.appendChild(n); n = nx; }
     box.appendChild(body);
     const arrow = document.createElement("span"); arrow.className = "sk-arrow";
     const pinBtn = document.createElement("button"); pinBtn.type = "button"; pinBtn.className = "sk-pin";
@@ -4279,6 +4286,15 @@ body { min-height: 100vh; min-height: 100lvh; box-sizing: border-box; }
       pinBtn.textContent = pin ? "📌 固定中(次の日も開いたまま)" : "📌 固定";
       pinBtn.title = pin ? "押すと固定をやめます(ふだんは閉じた状態に戻ります)" : "押すと、次の日や開き直しのあとも開いたままにします";
     };
+    const peek = box.querySelector(".skip-peek");   // 閉じたままでも、1着に来た見送りの馬だけ小さく(押すと開いてその馬が光る・2026-11-07 本人の指定 C案)
+    if (peek) peek.addEventListener("click", e => {
+      const b = e.target.closest("[data-skip-go]"); if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      open = true; paint();
+      const [rid, hno] = b.dataset.skipGo.split("|");
+      const card = [...body.querySelectorAll(".skip-card")].find(c => c.dataset.race === rid && String(c.dataset.hno) === hno);
+      if (card) { card.scrollIntoView({ behavior: "smooth", block: "center" }); card.classList.add("sk-flash"); setTimeout(() => card.classList.remove("sk-flash"), 1500); }
+    });
     head.addEventListener("click", e => {
       if (e.target.closest(".sk-pin")) {
         e.preventDefault(); e.stopPropagation();
