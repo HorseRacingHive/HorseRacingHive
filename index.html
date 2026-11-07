@@ -840,6 +840,27 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .money-a .seg button { min-height: 30px; padding: 3px 12px; font-size: 12px; }
 .pick .pay-line { display: block; color: var(--good); font-weight: 800; font-size: 12.5px; animation: riseIn .7s ease-out .5s both; }
 @media (prefers-reduced-motion: reduce) { .money-a .fill, .pick .pay-line { animation: none; } }
+/* ひと目でわかる成績の上のカード(この日・○月・今年の収支)を小さく(2026-11-07 本人の指定「画面いっぱい取りすぎ」) */
+.money-a { gap: 6px; padding: 10px 12px; }
+.money-a .hero .big { font-size: 26px; }
+.money-a .hp-wrap { grid-template-columns: minmax(96px, 34%) 1fr; gap: 8px; }
+.money-a .hp-svg { max-height: 110px; }
+.money-a .hp-side { gap: 2px; font-size: 12px; }
+.money-a .hp-side .big2 { font-size: 19px; line-height: 1.1; }
+.money-a .hp-side b.yen { font-size: 17px; line-height: 1.15; }
+.money-a .seg button { min-height: 28px; padding: 2px 11px; }
+
+/* 右の数字を2列にして空白をなくす・メーターも小さく(2026-11-07 本人の指定「変に空白」「下のメーターもコンパクトに」) */
+.money-a .hp-side { grid-template-columns: 1fr 1fr; column-gap: 10px; row-gap: 3px; align-content: center; }
+.money-a .hp-side > :nth-child(1), .money-a .hp-side > :nth-child(2) { grid-column: 1 / -1; }
+.money-a .hp-side > span { white-space: nowrap; }
+.money-a .hp-side .hp-unit { grid-column: 1 / -1; }
+.dash { gap: 6px; margin-bottom: 6px; }
+.dash .gauge { padding: 4px 4px 6px; }
+.dash .gauge svg { max-width: 112px; }
+.dash .gauge .g-cap { font-size: 12px; line-height: 1.3; }
+.dash .gauge .g-cap small { font-size: 10.5px; }
+
 /* ---- 2026-10-28 携帯用と同じ: 帯・お知らせ(2段・ランプ)・新しいお知らせの知らせ */
 /* ホーム: 4つの箱を1行の帯に・最新のお知らせを大きな札に */
 .pool-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
