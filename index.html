@@ -964,7 +964,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .ann-help .ah-s { margin: 8px 0 0; font-size: 10.5px; }
 /* 時刻は色つきの小さな札・説明はまとめて折り返す(1文字だけ次の行に残らないように・2026-11-03) */
 .ann-help .ah-t { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: var(--good); background: var(--good-soft); border: 1px solid currentColor; white-space: nowrap; }
-.ann-help .ah-d { display: inline-block; }
+.ann-help .ah-d { display: block; }   /* 説明は札の下に1行ずつ(見やすく・2026-11-07) */
 
 .fz { display: grid; justify-items: center; gap: 1px; min-width: 42px; }
 .fz-hex { width: 40px; height: 35px; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); display: grid; place-items: center;
@@ -2511,10 +2511,10 @@ function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知ら�
 <details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
-<li><b>直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">おすすめのレースを「そのまま買い」か「見送り」</span></li>
+<li><b>直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">おすすめのレースを「そのまま買い」か「見送り」に</span></li>
 <li><b>🚨 急遽</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">新しくおすすめに入った馬</span></li>
-<li><b>✅ やっぱり買い</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">一度見送った馬が戻った</span></li>
-<li><b>締切直前</b> <span class="ah-t">締切約4分前</span> <span class="ah-d">全レースを締切4分前にチェックしているので、入る予定がなかったレースに急遽買いが入ることも、見送りになることもあります</span> <span class="ah-d">ここで新しく入った馬・大穴は 🆕</span></li>
+<li><b>✅ やっぱり買い</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">一度見送った馬が買いに戻った</span></li>
+<li><b>締切直前</b> <span class="ah-t">締切約4分前</span> <span class="ah-d">全レースの最終チェック</span> <span class="ah-d">予定外の急遽買いや見送りもあります</span> <span class="ah-d">🆕 ＝ ここで新しく入った馬・大穴</span></li>
 </ul>
 </div></details>`;
 }
@@ -2736,7 +2736,6 @@ function viewHome(d) {
     h += `${hvEmpty(`${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}`)}`;
   }
   if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから(約30分前・約10分前の見直し)、直前のオッズで新しく おすすめ に入った馬。Discordの ⏰｜AI直前予想 にも届きます。</p>`;
-  if (os.some(x => x.back)) h += `<p class="note">✅やっぱり買い = 約30分前の直前予想で一度見送りにしたが、約10分前の見直しか締切約4分前の最終判断で買いに戻った馬。Discordの ⏰｜AI直前予想 にも届きます。</p>`;
   const sk = d.skipped || [];
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
@@ -2763,7 +2762,7 @@ function viewHome(d) {
   }
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
-    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※馬連・馬単・3連単は待ちが長いので資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
+    h += `<section><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※待ちが長いので、資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
       <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から特定の条件で選んだ組(締切約4分前に決まります)。3連単 = おすすめの中から特定の条件で選んだ馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。<br>1レースあたりの目安(過去13年): 馬単3点 的中率3.5%・回収率138% / 馬連3点 9.7%・116% / 3連単6点 2.1%・170%</p></section>`;
   }
   h += `<p class="note" style="margin-top:0">※オッズは生きてるので予想は締切まで変わります</p>`;
