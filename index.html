@@ -853,6 +853,7 @@ h2.c-aim::before { background: var(--aim); } h2.c-dang::before { background: var
 .us-mini u { flex: none; }
 .us-mini u { color: var(--honey, #e8a317); text-decoration: none; font-weight: 800; font-size: 10px; line-height: 18px; border: 1px solid var(--honey, #e8a317); border-radius: 999px; padding: 0 8px; white-space: nowrap; }
 .pool-strip + .dash-amts { margin-top: -10px; }
+.dash-amts .da-link { display: block; margin-top: 2px; color: var(--honey, #e8a317); font-weight: 700; opacity: 1; }
 .unit-setup { margin: 8px 0 8px; border: 1px solid var(--honey, #e8a317); }
 .unit-setup .us-h { font-weight: 800; font-size: 13.5px; }
 .unit-setup .us-ok { margin-top: 4px; min-height: 40px; border-radius: 10px; border: 0; background: var(--honey, #e8a317); color: #2a1a00; font-weight: 800; font-size: 14px; }
@@ -2506,14 +2507,14 @@ window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
    時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終判断=締切約4分前 / 共有ページは10分ごとに更新 */
 function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ
-  return `<p class="ann-note">※10分ごとの更新です。締切直前の判断をすぐ知りたい方は、<b>Discord「⏰｜AI直前予想」の通知をオン</b>に。</p>
+  return `<p class="ann-note">※10分ごとの更新です。締切直前の判断をすぐ知りたい方は、<b style="white-space:nowrap">Discord「⏰｜AI直前予想」</b>の通知をオンに。</p>
 <details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
 <li><b>直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">おすすめのレースを「そのまま買い」か「見送り」</span></li>
 <li><b>🚨 急遽</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">新しくおすすめに入った馬</span></li>
 <li><b>✅ やっぱり買い</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">一度見送った馬が戻った</span></li>
-<li><b>締切直前</b> <span class="ah-t">締切約4分前</span> <span class="ah-d">最終判断。変わらなくても毎回送ります</span> <span class="ah-d">ここで新しく入った馬・大穴は 🆕</span></li>
+<li><b>締切直前</b> <span class="ah-t">締切約4分前</span> <span class="ah-d">全レースを締切4分前にチェックしているので、入る予定がなかったレースに急遽買いが入ることも、見送りになることもあります</span> <span class="ah-d">ここで新しく入った馬・大穴は 🆕</span></li>
 </ul>
 </div></details>`;
 }
@@ -3075,11 +3076,11 @@ function unitOf(t) { const r = (S.units || {})[t], v = +r; return r !== undefine
 function unitInput(t, cls, id) { return `<input class="${cls}" ${id ? `id="${id}"` : ""} data-unit-t="${esc(t)}" type="number" inputmode="numeric" min="0" step="100" value="${unitOf(t)}" aria-label="${esc(t)}の1点の金額">`; }
 const UNIT_OPTS = [0, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000];   // 一覧からも選べる(携帯と同じ・2026-11-07)
 function unitSelect(t) { return `<select class="pt-unit" data-unit-t="${esc(t)}" aria-label="${esc(t)}の金額を一覧から"><option value="">一覧</option>${UNIT_OPTS.map(v => `<option value="${v}">${v ? v.toLocaleString("ja-JP") + "円" : "0円(買わない)"}</option>`).join("")}</select>`; }
-function unitPanel(tt) {   // 「1点の金額」(トータルは4券種・ほかはその券種。2026-11-07 本人の指定・どの券種でも小さくできる)。見る人がこの端末で入れる金額だけ
+function unitPanel(tt, where) {   // where: "osusume" = おすすめの帯の下 / 無し = ひと目の成績   // 「1点の金額」(トータルは4券種・ほかはその券種。2026-11-07 本人の指定・どの券種でも小さくできる)。見る人がこの端末で入れる金額だけ
   const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
   const L = tt && tt !== "total" && UNIT_T.includes(tt) ? [tt] : UNIT_T;
   if (S.amtMin) return `<div class="dash-amts min"><div class="da-top"><span class="da-sum">${L.map(t => `${t}${unitOf(t).toLocaleString()}`).join("・")}円</span><button type="button" class="da-min" data-amt-min>広げる ▼</button></div></div>`;
-  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">${L.length > 1 ? "それぞれの1点の金額(トータルはこの金額で計算・100円単位・0円でその券種なし)" : "1点の金額(100円単位・ほかの券種に移っても引き継ぎ)"}</span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${L.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i>${unitSelect(t)}</span></div>`).join("")}</div>`;
+  return `<div class="dash-amts"><div class="da-top"><span class="da-cap">${L.length > 1 ? "それぞれの1点の金額(トータルはこの金額で計算・100円単位・0円でその券種なし)" : "1点の金額(100円単位・ほかの券種に移っても引き継ぎ)"}<span class="da-link">${where === "osusume" ? "✅ ひと目でわかる成績の金額も自動で変わります" : "✅ おすすめの収支の金額も自動で変わります"}</span></span><button type="button" class="da-min" data-amt-min>小さく ▲</button></div>${L.map(t => `<div class="da-row"><span class="da-n">${IC[t]} ${t}</span><span class="da-ctl">${unitInput(t, "pt-unit")}<i>円</i>${unitSelect(t)}</span></div>`).join("")}</div>`;
 }
 function unitSumText() { const L = UNIT_T.filter(t => unitOf(t) > 0); return (L.length ? L.map(t => `${t}${unitOf(t).toLocaleString()}円`).join("・") : "どの券種も0円") + "で買っていたら"; }
 function dashKind(d, PM) {
@@ -3218,8 +3219,8 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
 function unitSetupPub() {   // おすすめの上の「1点の金額」。初めての人には最初に決めてもらう(2026-11-07 本人の指定・この端末だけに覚える)
   if (!S.snap || !("pool_days" in S.snap)) return "";
   if (!S.unitsNew) return S.amtMin
-    ? `<div class="us-mini"><button type="button" data-amt-min aria-label="1点の金額を変える"><span class="um-t">⚙️ 1点 ${UNIT_T.map(t => `${({ "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" })[t]}${unitOf(t).toLocaleString("ja-JP")}`).join(" ")}円</span><u>✏️ 変更</u></button></div>`
-    : unitPanel("total");
+    ? `<div class="us-mini"><button type="button" data-amt-min aria-label="1点の金額を変える"><span class="um-t">⚙️ 1点 ${UNIT_T.map(t => `${({ "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" })[t]}${unitOf(t).toLocaleString("ja-JP")}`).join(" ")}円</span><u>✏️ 設定金額の変更</u></button></div>`
+    : unitPanel("total", "osusume");
   const IC = { "単勝": "🎯", "馬単": "🐴", "馬連": "🐎", "3連単": "🏆" };
   return `<div class="dash-amts unit-setup"><div class="us-h">💡 まず、1点いくらで買うかを決めましょう</div>
     <div class="da-cap">券種ごとの1点の金額です。おすすめの収支と「ひと目でわかる成績」をこの金額で計算します(100円単位・0円でその券種は買わない・あとで変えられます)</div>
