@@ -1881,7 +1881,7 @@ function biasNote(b) {
 }
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
-  if (!rows.length) return upcoming ? `${hvEmpty(`※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます`, { fill: false, next: false, cls: "race-ann-empty" })}` : "";
+  if (!rows.length) return upcoming ? `${hvEmpty(`※締切約30分前・約10分前の見直し(見送り・やっぱり買い・急遽の買い)と、発走5分前の最終予想がここに出ます`, { fill: false, next: false, cls: "race-ann-empty" })}` : "";
   if (!upcoming) {   // レースが終わった後(過去の日も)は、おすすめのお知らせと同じく1行にたたんで、押すと全部開く(2026-10-31)
     const a = rows[0];
     const flat = String(a.text || "").replace(/\s*\n\s*/g, " ／ ");
@@ -1895,7 +1895,7 @@ function raceAnnounce(list, raceId, upcoming) {
 }
 function announceBlock(list, showEmpty) {
   if (!list || !list.length) {
-    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2>${hvEmpty(`※締切約30分前・約10分前の見直し結果(見送り・やっぱり買い・急遽の買い)がここに出ます`, { fill: false, next: false, style: "font-size:12px" })}${annHelp()}</section>` : "";
+    return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2>${hvEmpty(`※締切約30分前・約10分前の見直し(見送り・やっぱり買い・急遽の買い)と、発走5分前の最終予想がここに出ます`, { fill: false, next: false, style: "font-size:12px" })}${annHelp()}</section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
     <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
