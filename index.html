@@ -1867,7 +1867,7 @@ function annBurst(list, annKey, seen) {
   annBurstTimer = setTimeout(() => { const y = window.scrollY; render(); window.scrollTo(0, y); }, left + 500);
   return fresh;
 }
-const ANN_KIND = { "直前": "30分前", "最終": "締切直前", "急遽": "🚨急遽", "変更": "📢取消・乗替" };
+const ANN_KIND = { "直前": "⚡直前速報", "最終": "🔒最終予想", "確定": "🔒最終予想", "急遽": "🚨急遽", "見送り": "❌見送り", "やっぱり": "✅やっぱり買い", "大穴": "🎲大穴", "変更": "📢取消・乗替" };   // 2026-11-13 Discordと同じ呼び方
 
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
 // 馬場の偏り(前日と同じ馬場のときの内有利/外有利)。買い条件・期待値には入れていない参考表示(2026-10-28 公開ページにも)
@@ -1912,7 +1912,7 @@ function announceBlock(list, showEmpty) {
   const open = !!S.annOpen;
   const annKey = `${S.date}|${a.time}|${a.race || ""}|${a.kind}`;
   const seen = store.get("hivep_ann_seen") === annKey;
-  const lampColor = urgent ? "red" : a.kind === "最終" ? "green" : a.kind === "直前" ? "blue" : "honey";
+  const lampColor = urgent ? "red" : a.kind === "最終" || a.kind === "確定" ? "green" : a.kind === "直前" ? "blue" : "honey";
   const ageMin = (() => { const m = String(a.time || "").match(/(\d+):(\d+)/); if (!m || S.date !== todayStr()) return 999;
     const now = new Date(Date.now() + 9 * 3600e3); return now.getUTCHours() * 60 + now.getUTCMinutes() - (+m[1] * 60 + +m[2]); })();
   const lampCls = !seen ? `on ${lampColor} blink` : ageMin <= 30 ? `on ${lampColor}` : "off";
@@ -2545,14 +2545,14 @@ window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
    時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終判断=締切約4分前 / 共有ページは10分ごとに更新 */
 function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ
-  return `<p class="ann-note">※10分ごとの更新です。締切直前の判断をすぐ知りたい方は、<b style="white-space:nowrap">Discord「⏰｜AI直前予想」</b>の通知をオンに。</p>
+  return `<p class="ann-note">※10分ごとの更新です。最終の判断をすぐ知りたい方は、<b style="white-space:nowrap">Discord「🔒｜ＡＩ最終予想」</b>の通知をオンに(1レース1回)。</p>
 <details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
-<li><b>直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">おすすめのレースを「そのまま買い」か「見送り」に</span></li>
+<li><b>⚡ 直前速報</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">変わったときだけ(❌見送り・🎲大穴など)</span></li>
 <li><b>🚨 急遽</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">新しくおすすめに入った馬</span></li>
 <li><b>✅ やっぱり買い</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">一度見送った馬が買いに戻った</span></li>
-<li><b>締切直前</b> <span class="ah-t">締切約4分前</span> <span class="ah-d">全レースの最終チェック</span> <span class="ah-d">予定外の急遽買いや見送りもあります</span> <span class="ah-d">🆕 ＝ ここで新しく入った馬・🎲大穴</span></li>
+<li><b>🔒 最終予想</b> <span class="ah-t">発走5分前</span> <span class="ah-d">全レース1回ずつ、最終の判断</span> <span class="ah-d">予定外の急遽買いや見送りもあります</span> <span class="ah-d">🆕 ＝ ここで新しく入った馬・🎲大穴</span></li>
 </ul>
 </div></details>`;
 }
@@ -2640,7 +2640,7 @@ function viewOverseas(onDate) {
 <li><b>🔎 見直し</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">🚨急遽・✅やっぱり買い(ある時だけ)</span></li>
 <li><b>🔔 締切直前</b> <span class="ah-t">発走約4分前</span> <span class="ah-d">最終判断。変わらなくても毎回送ります</span></li>
 </ul>
-<p class="ah-s">日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⏰AI直前予想に届きます。発走後は送りません。</p>
+<p class="ah-s">日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⚡ＡＩ直前速報に届きます。発走後は送りません。</p>
 </div></details></div>${resBox}${box}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
@@ -2773,7 +2773,7 @@ function viewHome(d) {
   } else {
     h += `${hvEmpty(`${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}`)}`;
   }
-  if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから(約30分前・約10分前の見直し)、直前のオッズで新しく おすすめ に入った馬。Discordの ⏰｜AI直前予想 にも届きます。</p>`;
+  if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから(約30分前・約10分前の見直し)、直前のオッズで新しく おすすめ に入った馬。Discordの ⚡｜ＡＩ直前速報 にも届きます。</p>`;
   const sk = d.skipped || [];
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
