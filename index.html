@@ -2355,6 +2355,8 @@ function babaGoing(g) {   // 馬場状態を正式表記に(JRA-VANのコード1
   const m = { "1": "良", "2": "稍重", "3": "重", "4": "不良", "良": "良", "稍": "稍重", "稍重": "稍重", "重": "重", "不": "不良", "不良": "不良" };
   return m[x] || m[x.replace(/^0+/, "")] || "";
 }
+const VENUE_ORDER = ["東京", "中山", "京都", "阪神", "中京", "新潟", "福島", "小倉", "札幌", "函館"];
+function venueRank(day, v) { const i = (day?.venues || []).findIndex(x => x.venue === v); return i >= 0 ? i : 50 + VENUE_ORDER.indexOf(v); }
 function babaStripHtml(venues) {   // 馬場の帯(携帯用と同じ): 東京 芝良｜ダ稍重 を1段で。選択中の会場名だけ明るい金
   const cls = { "良": "g1", "稍重": "g2", "重": "g3", "不良": "g4" };
   const going = (kind, raw) => { const g = babaGoing(raw); return `<span class="bk">${kind}</span><span class="bg ${cls[g] || "g0"}" title="${kind === "ダ" ? "ダート" : "芝"} ${esc(g || "未発表")}">${g || "－"}</span>`; };
@@ -2392,7 +2394,7 @@ function ledBabaHtml(venues) {
 function renderWeather() {
   const el = $("#weather");
   const day = curDay();
-  const venues = ((day?.baba || []).length ? day.baba : babaFromRaces(day)).slice().sort((a, b) => ["東京", "京都", "新潟"].indexOf(a.venue) - ["東京", "京都", "新潟"].indexOf(b.venue));
+  const venues = ((day?.baba || []).length ? day.baba : babaFromRaces(day)).slice().sort((a, b) => venueRank(day, a.venue) - venueRank(day, b.venue));
   el.innerHTML = "";   // 馬場は電光板の中に出す(案B)
   S.ledBaba = ledBabaHtml(venues);
   const box = $("#days .dn-baba"); if (box && box.innerHTML !== S.ledBaba) box.innerHTML = S.ledBaba;
@@ -3217,7 +3219,7 @@ function h13Years(H, md, yenMode, sign) {
 function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。金額なし: 1点を1として何点分か・10点きざみ。円は見る人が入れた1点の金額×点数で、この端末だけで計算)
   const H = S.snap?.hist13; if (!H || !H.months?.length) return "";
   const T = [["単勝", "🎯 単勝", "おすすめ(★2〜5)を1点"], ["馬単", "🐴 馬単", "選んだおすすめの馬を1着に・相手3頭(3点)"], ["馬連", "🐎 馬連", "おすすめ-相手3頭(3点)"], ["3連単", "🏆 3連単", "おすすめ1着→相手3頭→3頭(6点)"]];
-  const md = ["total", ...T.map(x => x[0])].includes(S.h13) ? S.h13 : "total";
+  const md = ["total", ...T.map(x => x[0])].includes(S.h13) ? S.h13 : "単勝";   // 並び・最初の券種は「ひと目でわかる成績」と同じ(2026-11-13 本人)
   const yenMode = !!S.curveYen, isTot = md === "total", unitY = isTot ? null : unitOf(md);
   const vals = H.months.map((m, i) => (isTot ? T.map(x => x[0]).filter(t => unitOf(t) > 0) : [md]).reduce((s, t) => s + ((H.curve[t] || [])[i] || 0) * (yenMode ? unitOf(t) : 1), 0));   // 円はそれぞれの券種の1点の金額で・トータルは0円の券種を入れない
   const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "±");
@@ -3225,7 +3227,7 @@ function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。�
   const btn = (v, l) => `<button type="button" data-h13="${v}" class="${md === v ? "on" : ""}" style="min-height:28px;padding:2px 8px;font-size:11px">${l}</button>`;
   const seg = `<span class="seg" style="gap:4px"><button data-curve-yen="0" class="${yenMode ? "" : "on"}" style="min-height:28px;padding:2px 10px;font-size:11px">点数</button><button data-curve-yen="1" class="${yenMode ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:11px">円</button></span>`;
   let h = `<section><h2>過去13年の検証<span class="sub">券種ごと・${esc(String(H.months[0]).slice(0, 4))}〜${esc(String(H.months[H.months.length - 1]).slice(0, 4))}年</span></h2><div class="card chart-card"><div class="cap cap-row"><span class="cap-t">収支の推移</span>${seg}<small>(${yenMode ? (isTot ? "それぞれの1点の金額で買っていたら" : `1点${unitY.toLocaleString()}円で買っていたら`) : "1点買うのを1として何点分のプラスか"}・累積)</small></div>
-    <div class="seg" style="gap:4px;margin:4px 0 6px;flex-wrap:wrap">${btn("total", "トータル")}${T.map(([t]) => btn(t, t)).join("")}</div>
+    <div class="seg" style="gap:4px;margin:4px 0 6px;flex-wrap:wrap">${T.map(([t, l]) => btn(t, l)).join("")}${btn("total", "🍯 トータル")}</div>
     ${yenMode ? (isTot ? `<div class="curve-unit">${unitSumText()}</div>` : `<div class="curve-unit">1点${unitInput(md, "", "curve-unit")}円で買っていたら</div>`) : ""}
     ${lineSvg(pts, { fmt: s => String(s).slice(0, 7).replace("-", "/"), fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v).toLocaleString() + "点"), label: "過去13年の収支の推移", ticks: h13Ticks(H.months) })}</div>
     ${h13Years(H, md, yenMode, sign)}
