@@ -1867,7 +1867,7 @@ function annBurst(list, annKey, seen) {
   annBurstTimer = setTimeout(() => { const y = window.scrollY; render(); window.scrollTo(0, y); }, left + 500);
   return fresh;
 }
-const ANN_KIND = { "直前": "⚡直前速報", "最終": "🔒最終予想", "確定": "🔒最終予想", "急遽": "🚨急遽", "見送り": "❌見送り", "やっぱり": "✅やっぱり買い", "大穴": "🎲大穴", "変更": "📢取消・乗替" };   // 2026-11-13 Discordと同じ呼び方
+const ANN_KIND = { "直前": "⚡直前速報", "最終": "🏁最終予想", "確定": "🏁最終予想", "急遽": "🚨急遽", "見送り": "❌見送り", "やっぱり": "✅やっぱり買い", "大穴": "🎲大穴", "変更": "📢取消・乗替" };   // 2026-11-13 Discordと同じ呼び方
 
 // そのレースの直前お知らせ(直前30分前・発走約10分前の最終確認・急遽の買い)。出馬表の上に出す
 // 馬場の偏り(前日と同じ馬場のときの内有利/外有利)。買い条件・期待値には入れていない参考表示(2026-10-28 公開ページにも)
@@ -2545,14 +2545,14 @@ window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
    時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終判断=締切約4分前 / 共有ページは10分ごとに更新 */
 function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ
-  return `<p class="ann-note">※10分ごとの更新です。最終の判断をすぐ知りたい方は、<b style="white-space:nowrap">Discord「🔒｜ＡＩ最終予想」</b>の通知をオンに(1レース1回)。</p>
+  return `<p class="ann-note">※10分ごとの更新です。最終の判断をすぐ知りたい方は、<b style="white-space:nowrap">Discord「🏁｜ＡＩ最終予想」</b>の通知をオンに(1レース1回)。</p>
 <details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
 <li><b>⚡ 直前速報</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">変わったときだけ(❌見送り・🎲大穴など)</span></li>
 <li><b>🚨 急遽</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">新しくおすすめに入った馬</span></li>
 <li><b>✅ やっぱり買い</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">一度見送った馬が買いに戻った</span></li>
-<li><b>🔒 最終予想</b> <span class="ah-t">発走5分前</span> <span class="ah-d">全レース1回ずつ、最終の判断</span> <span class="ah-d">予定外の急遽買いや見送りもあります</span> <span class="ah-d">🆕 ＝ ここで新しく入った馬・🎲大穴</span></li>
+<li><b>🏁 最終予想</b> <span class="ah-t">発走5分前</span> <span class="ah-d">全レース1回ずつ、最終の判断</span> <span class="ah-d">予定外の急遽買いや見送りもあります</span> <span class="ah-d">🆕 ＝ ここで新しく入った馬・🎲大穴</span></li>
 </ul>
 </div></details>`;
 }
