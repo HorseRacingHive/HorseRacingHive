@@ -2543,7 +2543,7 @@ function wmUpdate() {
 }
 window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__wmRs = setTimeout(wmUpdate, 300); });   // 窓の幅を変えたら透かしの濃さも合わせる
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
-   時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終判断=締切約4分前 / 共有ページは10分ごとに更新 */
+   時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終予想=発走5分前 / 共有ページは10分ごとに更新 */
 function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ
   return `<p class="ann-note">※10分ごとの更新です。最終の判断をすぐ知りたい方は、<b style="white-space:nowrap">Discord「🏁｜ＡＩ最終予想」</b>の通知をオンに(1レース1回)。</p>
 <details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
@@ -2803,7 +2803,7 @@ function viewHome(d) {
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
     h += `<section id="kd-sec"><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※待ちが長いので、資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
-      <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から特定の条件で選んだ組(締切約4分前に決まります)。3連単 = おすすめの中から特定の条件で選んだ馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。<br>1レースあたりの目安(過去13年): 馬単3点 的中率3.5%・回収率138% / 馬連3点 9.7%・116% / 3連単6点 2.1%・170%</p></section>`;
+      <p class="note" style="margin-bottom:0">馬単 = おすすめの中から特定の条件で選んだ馬を1着に、相手3頭。馬連 = おすすめの馬を含む組から特定の条件で選んだ組(発走5分前に決まります)。3連単 = おすすめの中から特定の条件で選んだ馬を1着に、2・3着は相手3頭の6点(締切約1分前に決まります)。どれも1点同じ金額で。<br>1レースあたりの目安(過去13年): 馬単3点 的中率3.5%・回収率138% / 馬連3点 9.7%・116% / 3連単6点 2.1%・170%</p></section>`;
   }
   h += `<p class="note" style="margin-top:0">※オッズは生きてるので予想は締切まで変わります</p>`;
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
@@ -2848,7 +2848,7 @@ function kdRender(races, opt) {
     const lines = NAMES.map(([b, lab]) => {
       const ts = (r.bets || {})[b] || [];
       if (!ts.length) {
-        if (b === "馬連" && r.umaren_wait) return `<div class="kd-l"><span class="kd-b">${lab}</span><span class="kd-wait">締切約4分前の最終判断で決まります</span></div>`;
+        if (b === "馬連" && r.umaren_wait) return `<div class="kd-l"><span class="kd-b">${lab}</span><span class="kd-wait">発走5分前の最終予想で決まります</span></div>`;
         return "";
       }
       const plan = ts.some(t => t.plan);
