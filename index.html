@@ -1018,6 +1018,14 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 .horse.fzx { opacity: 1; }   /* 着外は暗くしない(案1) */
 .horse.fz1::before { content: "👑"; position: absolute; top: -10px; left: 14px; font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .fz.f1 .fz-hex { animation: none; } }
+/* おすすめのカードの着順は、馬番の六角と見分けやすい丸い札「2着」に(11/14 本人「馬番と着順が一緒で分かりづらい」) */
+.pick .fz { display: inline-flex !important; align-items: baseline; gap: 1px; min-width: 0; padding: 3px 11px 3px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); justify-self: start; align-self: center; }
+.pick .fz .fz-hex { clip-path: none; width: auto !important; height: auto !important; background: none !important; color: var(--ink, #f3e7c8); font-size: 17px; font-weight: 900; animation: none; }
+.pick .fz small { font-size: 11px !important; color: var(--muted); }
+.pick .fz.f1 { background: linear-gradient(135deg, var(--honey), var(--amber)); border-color: transparent; } .pick .fz.f1 .fz-hex, .pick .fz.f1 small { color: var(--comb) !important; }
+.pick .fz.f2 { background: var(--silver); border-color: transparent; } .pick .fz.f2 .fz-hex, .pick .fz.f2 small { color: #111 !important; }
+.pick .fz.f3 { background: var(--bronze); border-color: transparent; } .pick .fz.f3 .fz-hex, .pick .fz.f3 small { color: #fff !important; }
+
 
 .pick.has-fz { grid-template-columns: auto 1fr auto auto; }
 .pick.pz1 { border-color: var(--honey); border-left-color: var(--honey); background: linear-gradient(90deg, rgba(247,201,72,.2), var(--panel) 62%); box-shadow: 0 0 0 2px rgba(247,201,72,.28), 0 0 18px rgba(247,201,72,.18); }
