@@ -1882,7 +1882,10 @@ function biasNote(b) {
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
   if (!rows.length) return upcoming ? `${hvEmpty(`※締切約30分前・約10分前の見直し(見送り・やっぱり買い・急遽の買い)と、発走5分前の最終予想がここに出ます`, { fill: false, next: false, cls: "race-ann-empty" })}` : "";
-  if (!upcoming) {   // レースが終わった後(過去の日も)は、おすすめのお知らせと同じく1行にたたんで、押すと全部開く(2026-10-31)
+  const newest = (() => { const m = String(rows[0].time || "").match(/(\d+):(\d+)/); if (!m || S.date !== todayStr()) return 999;
+    const now = new Date(Date.now() + 9 * 3600e3); return now.getUTCHours() * 60 + now.getUTCMinutes() - (+m[1] * 60 + +m[2]); })();
+  // 新しく来たお知らせ(5分以内)がある間だけ大きく全部出す。それ以外(少したったら・レースが終わったら)は1行にたたむ(11/14 本人「終わったら小さく」)
+  if (!upcoming || newest > 5) {   // レースが終わった後(過去の日も)は、おすすめのお知らせと同じく1行にたたんで、押すと全部開く(2026-10-31)
     const a = rows[0];
     const flat = String(a.text || "").replace(/\s*\n\s*/g, " ／ ");
     return `<details class="card ann-tick race-ann race-ann-fold k-${esc(a.kind)}"><summary><div class="at-row">
