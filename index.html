@@ -1456,6 +1456,10 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .buy-chip { grid-column: 1 / -1; justify-self: end; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 6px 14px; border-radius: 14px; background: #ffc94a; color: #2a1a02; font-size: 13px; font-weight: 800; }
 .buy-chip.done { background: #3a2808; color: #ffd866; border: 1px solid #e8a317; }
 .buy-chip.off { background: #3a2808; color: #a8894a; }
+/* 札を詰める(携帯用と同じ形・2026-11-15 本人「スペース空きすぎ」): AI勝率は左下、「買った」はその右 */
+.pick:not(.has-fz) .buy-chip { grid-row: 3; grid-column: 3; justify-self: end; align-self: center; margin-top: 0; }
+.pick:not(.has-fz).longname .figs { grid-row: 3; grid-column: 1 / 3; justify-content: flex-start; align-items: baseline; }
+.pick:not(.has-fz).longname .figs .fig { text-align: left; }
 /* ===== HIVE 空表示(共通部品 2026-10-30) =====
    空のときだけ、中身エリアをヘッダーの下〜下のタブバーの上の高さいっぱい(100dvh基準・safe-area込み)にして、空メッセージの箱を上下の中央に置く。
    --hv-top / --hv-bot は JS がヘッダーとタブバー(または body の下余白)を測って入れる。測る前は下の初期値。中身がある時は何も変わらない。 */
@@ -2882,12 +2886,12 @@ function viewHome(d) {
   const pickSub = x => { const r = raceOf[x.id], h = r && (r.horses || []).find(z => String(z.no) === String(x.hno));
     return [h && h.mark ? `<b class="pk-mark">${esc(h.mark)}</b>` : "", r && r.course ? esc(r.course) : "", r && r.field ? `${r.field}頭` : ""].filter(Boolean).join(" ・ "); };
   const card = x => `
-    <button class="pick s${x.st} ${[...String(x.name || "")].length >= 9 ? "longname" : ""} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">${x.fin === 1 ? hitFx() : ""}
+    <button class="pick s${x.st} ${true ? "longname" : ""} ${x.fin != null ? (x.fin === 1 ? "done-hit" : x.fin <= 3 ? "done-place" : "done-miss") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">${x.fin === 1 ? hitFx() : ""}
       <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}${x.back ? `<span class="urg-badge back">✅やっぱり買い</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>${pickSub(x)}</small></div>
-      ${[...String(x.name || "")].length >= 9 ? `<div class="figs">` : ""}<div class="fig num"><div class="e">AI勝率</div><div class="o">${pct(x.p, 0)}</div></div>${[...String(x.name || "")].length >= 9 ? `</div>` : ""}${x.fin != null ? fzBlock(x.fin) : ""}${bkChip(x)}
+      ${true ? `<div class="figs">` : ""}<div class="fig num"><div class="e">AI勝率</div><div class="o">${pct(x.p, 0)}</div></div>${true ? `</div>` : ""}${x.fin != null ? fzBlock(x.fin) : ""}${bkChip(x)}
     </button>`;
   h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5${(() => { const left = os.filter(x => x.fin == null).length; return `<span class="sub os-count"><span class="osc-n"><b>${os.length}</b>頭</span><span class="osc-split"><span>残り <b class="left">${left}</b></span><span>確定 <b>${os.length - left}</b></span></span></span>`; })()}</h2>`;
   if (os.length) {
