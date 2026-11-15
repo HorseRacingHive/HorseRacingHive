@@ -2996,7 +2996,7 @@ function viewHome(d) {
   const oa = d.oana || [];   // 🎲大穴(単勝100倍超・おすすめとは別枠 2026-11-01)
   if (oa.length) {
     h += `<div class="oana-box"><h3 class="oana-head">🎲 大穴<small>${oa.length}頭・おすすめとは別枠</small></h3>
-      <div class="picks">${oa.map(x => `<button class="pick oana-card${x.fin === 1 ? " done-hit" : ""}" data-race="${esc(x.id)}" data-race-group="oana" data-hno="${x.hno ?? ""}">
+      <div class="picks">${oa.map(x => `<button class="pick oana-card${x.fin === 1 ? " done-hit" : x.fin != null ? " done-sm" : ""}" data-race="${esc(x.id)}" data-race-group="oana" data-hno="${x.hno ?? ""}">
         <div class="where"><span class="oana-tag">🎲 大穴</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post || "")}発走</span>
           <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">${x.fin}着</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
         <span class="hex">${x.hno ?? "—"}</span>
