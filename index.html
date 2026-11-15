@@ -1524,6 +1524,10 @@ main > .hmsbar + .hms-chips { margin-top: -10px; }   /* 並べ替えの段と札
 .done-head .dn-pin { border: 1px solid var(--line, #444); background: none; color: var(--muted, #9a8f7a); border-radius: 999px; padding: 2px 9px; font-size: 11px; font-weight: 700; cursor: pointer; line-height: 1.4; }
 .done-head .dn-pin.on { color: var(--accent, #f7c948); border-color: var(--accent, #f7c948); background: rgba(247,201,72,.12); }
 .done-box .picks { margin-top: 4px; }
+.cmp-t { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 4px 0 6px; }
+.cmp-t th { font-size: 11px; color: var(--muted); font-weight: 700; text-align: right; padding: 2px 4px; }
+.cmp-t td { text-align: right; padding: 4px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; font-weight: 700; }
+.cmp-t td:first-child, .cmp-t th:first-child { text-align: left; font-weight: 800; }
 /* はずれた札は小さく1段に(2026-11-15 本人「場所とりすぎ・空白が多い」): 印・コース・AI勝率・オッズは隠して、馬名と着順だけ */
 .pick.done-sm { grid-template-columns: auto 1fr auto !important; padding: 7px 12px; gap: 2px 10px; }
 .pick.done-sm .hex { grid-row: 2; grid-column: 1; transform: scale(.78); margin: -4px -2px; }
@@ -1894,11 +1898,17 @@ function factorLine(x) {
   return `<div class="bar fcount"><span class="fc plus">＋ファクター ${factorSum(x, "fplus")}</span><span class="fc minus">−ファクター ${factorSum(x, "fminus")}</span></div>`;
 }
 // おすすめの単勝成績: 直前の見送りを反映した「実際」をメインに、見送らなかった場合を下に
+function cmpBlock(cm) {   // 買った/見送ったの比べ(単勝・1頭同じ金額)。5分前の判断で比べる(管理用は1分前も) 2026-11-15 本人
+  if (!cm || !cm.some(r => r.n)) return "";
+  const row = r => `<tr><td>${esc(r.k)}</td><td>${r.n || 0}</td><td>${r.n ? `${r.hit}` : "—"}</td><td>${r.n ? pct(r.hit / r.n, 0) : "—"}</td><td class="${r.n ? roiCls(r.ret / (r.n * 100)) : ""}">${r.n ? pct(r.ret / (r.n * 100), 0) : "—"}</td></tr>`;
+  return `<div class="cap alt2">買った馬と見送った馬<small>(結果が出た馬・単勝)</small></div>
+    <table class="cmp-t"><thead><tr><th></th><th>頭数</th><th>1着</th><th>的中率</th><th>回収率</th></tr></thead><tbody>${cm.map(row).join("")}</tbody></table>`;
+}
 function recPerfBlock(rp, title) {
   if (!rp) return "";
   const a = rp.actual || {}, all = rp.all || {}, sk = rp.skipped || {};
   const hasSkip = rp.source === "discord";
-  const cap = hasSkip ? "見送りを反映した実際の成績<small>(直前・締切直前に見送った馬を除く)</small>" : "最新オッズでの判定<small>(この日は見送りの記録がありません)</small>";
+  const cap = hasSkip ? "見送りを反映した実際の成績<small>(直前・締切直前に見送った馬を除く)</small>" : rp.cmp ? "実際の成績<small>(買った馬)</small>" : "最新オッズでの判定<small>(この日は見送りの記録がありません)</small>";
   let h = `<section><h2>${title}<span class="sub big">単勝</span></h2><div class="card perf2"><div class="cap">${cap}</div>
     <div class="summary num">
       <div><span>頭数</span><b>${a.n ?? "—"}</b></div>
@@ -1914,6 +1924,7 @@ function recPerfBlock(rp, title) {
       <div><span>回収率</span><b class="${roiCls(all.roi)}">${all.roi == null ? "—" : pct(all.roi, 0)}</b></div></div>`;
     if (sk.n) h += `<div class="alt">見送った${sk.n}頭のうち1着 <b>${sk.hit}頭</b></div>`;
   }
+  h += cmpBlock(rp.cmp);
   if (rp.pending) h += `<div class="alt">結果待ち ${rp.pending}頭</div>`;
   return h + `<div class="alt">単勝・1頭同じ金額で計算(1日の回収率は10%きざみ)</div></div></section>`;
 }
@@ -2949,14 +2960,14 @@ function viewHome(d) {
     h += `${hvEmpty(`${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}`)}`;
   }
   if (os.some(x => x.urg)) h += `<p class="note">🚨急遽 = 発走35分前を切ってから(約30分前・約10分前の見直し)、直前のオッズで新しく おすすめ に入った馬。Discordの ⚡｜ＡＩ直前速報 にも届きます。</p>`;
-  const sk = d.skipped || [];
+  const sk = (d.skipped || []).filter(x => x.w5 !== "pre5");   // 5分前より前から外れていた馬は出さない(裏の記録だけ・2026-11-15 本人)
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
     // 見送りを「5分前で見送り」(直前の見直しでは買いだった)と「5分前より前から外れ」に分ける。成績も混ぜない(2026-11-15 本人)
     const w30L = x => x.w5 === "at5" ? "5分前で見送り" : x.w5 === "pre5" ? "5分前より前から外れ" : `${esc(x.stage || "")}に見送り`;   // 5分前の判断で見送ったかだけ(2026-11-15 本人)
     const w30S = k => { const g = sk.filter(x => x.w5 === k), dn = g.filter(x => x.fin != null); return g.length ? `<span><b>${k === "at5" ? "5分前で見送り" : "5分前より前から外れ"}</b> ${g.length}頭${dn.length ? `・1着 ${dn.filter(x => x.fin === 1).length}/${dn.length}` : ""}</span>` : ""; };
-    const w30Sum = sk.some(x => x.w5) ? `<div class="sk30">${w30S("at5")}${w30S("pre5")}</div>` : "";
-    h += `<div class="skip-box"><h3 class="skip-head">直前で見送った馬<small>${sk.length}頭・成績には入れません</small>${w30Sum}</h3>
+    const w30Sum = "";
+    h += `<div class="skip-box"><h3 class="skip-head">5分前で見送った馬<small>${sk.length}頭・成績には入れません</small>${w30Sum}</h3>
       ${won ? `<div class="skip-peek">${sk.filter(x => x.fin === 1).map(x => `<button type="button" class="sk-peek" data-skip-go="${esc(x.id)}|${x.hno ?? ""}"><span class="pk-no">${x.hno ?? "—"}</span><span class="pk-nm">${esc(x.name)}<small>${esc(x.venue)}${x.no}R ${esc(x.post || "")}発走・${w30L(x)}</small></span><span class="pk-r">1着</span><span class="pk-go">›</span></button>`).join("")}</div>` : ""}
       ${won ? `<div class="skip-alert">見送った馬が${won}頭 1着でした(成績には入れません)</div>` : ""}
       <div class="picks">${sk.map(x => `<button class="pick skip-card${x.fin === 1 ? " skip-won" : ""}" data-race="${esc(x.id)}" data-race-group="skipped" data-hno="${x.hno ?? ""}">
