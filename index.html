@@ -458,7 +458,7 @@ html, body { overscroll-behavior-x: none; }   /* 横に払っても、ページ�
 .next.near { box-shadow: 0 0 0 2px var(--honey) inset, 0 0 14px rgba(247,201,72,.35); }
 .next.soon { box-shadow: 0 0 0 2px #ff7d92 inset, 0 0 16px rgba(255,125,146,.35); animation: nextPulse 1.6s ease-in-out infinite; }
 .next.soon .cd { color: #ff7d92; }
-.next .nx-lab { display: block; margin-top: 1px; color: var(--honey); white-space: nowrap; } .next.soon .nx-lab { color: #ff7d92; }
+.next .nx-lab { display: block; margin-top: 1px; color: var(--honey); white-space: nowrap; } .next .nx-what { display: block; font-size: 10px; opacity: .7; white-space: nowrap; } .next.soon .nx-lab { color: #ff7d92; }
 .next .nx-shime { font-size: .85em; opacity: .8; margin-left: 2px; white-space: nowrap; } .next.soon .nx-shime { color: #ff7d92; opacity: 1; font-weight: 700; }
 @keyframes nextPulse { 50% { box-shadow: 0 0 0 2px #ff7d92 inset, 0 0 4px rgba(255,125,146,.15); } }
 @media (prefers-reduced-motion: reduce) { .next.soon { animation: none; } }
@@ -2845,9 +2845,10 @@ function viewHome(d) {
     const pd0 = n ? postDate(n.post) : null;
     const shime = pd0 ? pubHM(pd0.getTime() - 2 * 60e3) : "";
     let nxLab = "";
-    if (pd0 && nf) { const nxs = [["m30", -30, "次の見直し"], ["m10", -10, "次の見直し"], ["final", -5, "最終予想"]].find(([k]) => !nf[k]);
-      if (nxs) nxLab = `${nxs[2]} ${pubHM(pd0.getTime() + nxs[1] * 60e3)}`; }
-    const top = n ? `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで${nxLab ? `<span class="nx-lab">${nxLab}</span>` : ""}</small></div>
+    let nxWhat = "";
+    if (pd0 && nf) { const nxs = [["m30", -30, "次の見直し", "発走30分前の見直し"], ["m10", -10, "次の見直し", "発走10分前の見直し"], ["final", -5, "最終予想", "発走5分前の最終予想"]].find(([k]) => !nf[k]);
+      if (nxs) { nxLab = `${nxs[2]} ${pubHM(pd0.getTime() + nxs[1] * 60e3)}`; nxWhat = nxs[3]; } }
+    const top = n ? `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで${nxLab ? `<span class="nx-lab">${nxLab}</span>` : ""}${nxWhat ? `<span class="nx-what">(${nxWhat})</span>` : ""}</small></div>
       <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走${shime ? `<span class="nx-shime">(締切 ${shime})</span>` : ""}<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars t${n.st}">${starStr(n.st)}</span></div>${nf ? pubFlowSteps(nf) : ""}</button>` : "";
     const grid = fl.length ? pubFlowGrid(d, os) : "";
     if (top || grid) h += `<div class="nx-wrap">${top}${grid}</div>`;
