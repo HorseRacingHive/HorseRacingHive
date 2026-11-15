@@ -2958,7 +2958,19 @@ const KD_YEN = n => Math.round(n || 0).toLocaleString("ja-JP") + "円";
     ".kd-k span.won{background:rgba(61,214,155,.16);border-color:var(--good,#3dd69b);color:var(--good,#3dd69b)}" +
     ".kd-k span.sk{text-decoration:line-through;opacity:.55}" +
     ".kd-m{grid-column:2;font-size:11px;color:var(--muted,#a8977a)}.kd-m b.plus{color:var(--good,#3dd69b)}" +
-    ".kd-wait{font-size:12px;color:var(--muted,#a8977a)}";
+    ".kd-wait{font-size:12px;color:var(--muted,#a8977a)}" +
+    ".kd-card .kd-h .pill.hit.kd-won{margin-left:auto;background:linear-gradient(110deg,var(--amber),var(--honey) 40%,#fff6c4 50%,var(--honey) 60%,var(--amber));background-size:250% 100%;color:var(--comb);font-weight:900;box-shadow:0 0 12px rgba(247,201,72,.65);animation:pillShine 2.2s linear infinite,hitPop .6s cubic-bezier(.2,1.5,.4,1) both}" +
+    ".kd-card.kd-hit{position:relative;overflow:visible;opacity:1;border:2px solid transparent;border-left-width:5px;" +
+      "background:linear-gradient(100deg,rgba(247,201,72,.30),rgba(232,150,43,.10) 45%,transparent 75%) padding-box,linear-gradient(var(--panel),var(--panel)) padding-box," +
+      "conic-gradient(from var(--hang),#fff6c4,var(--honey),var(--amber),#fff6c4 25%,var(--honey) 50%,#b8741a 62%,#fff6c4 75%,var(--honey)) border-box;" +
+      "box-shadow:0 0 0 3px rgba(247,201,72,.22),0 6px 26px rgba(247,201,72,.38);animation:hitSpin 4s linear infinite,hitBreath 2.4s ease-in-out infinite}" +
+    ".kd-card.kd-hit::after{content:'👑';position:absolute;top:-19px;left:-8px;font-size:24px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));animation:crownBob 1.8s ease-in-out infinite;transform-origin:50% 100%}" +
+    ".kd-card .hit-fx{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:0}" +
+    ".kd-card.kd-hit>:not(.hit-fx){position:relative;z-index:1}" +
+    ".kd-card.kd-hit .kd-h b{color:var(--honey);text-shadow:0 0 12px rgba(247,201,72,.45)}" +
+    ".kd-k span.won{background:linear-gradient(135deg,var(--honey),var(--amber));border-color:var(--honey);color:var(--comb);box-shadow:0 0 10px rgba(247,201,72,.6);animation:hitPop .5s cubic-bezier(.2,1.5,.4,1) both}" +
+    ".kd-m b.plus{color:var(--honey);font-size:13px;text-shadow:0 0 10px rgba(247,201,72,.55)}" +
+    "@media (prefers-reduced-motion:reduce){.kd-card.kd-hit,.kd-card.kd-hit::after,.kd-h .kd-won,.kd-k span.won{animation:none!important}}";
   document.head.appendChild(st);
 })();
 function kdRender(races, opt) {
@@ -2970,7 +2982,7 @@ function kdRender(races, opt) {
   return `<div class="kd-grid">${races.map(r => {
     const all = [].concat(...NAMES.map(([b]) => (r.bets || {})[b] || []));
     const hit = all.filter(t => pub ? t.hit : t.pay);
-    const tag = r.result ? (hit.length ? `<span class="kd-tag won">的中</span>` : `<span class="kd-tag">はずれ</span>`) : `<span class="pill wait kd-cd" data-cd="${KD_ESC(r.post)}" data-fallback="結果待ち"></span>`;   // 単勝と同じく 発走まで◯分 → 結果待ち(2026-11-15)
+    const tag = r.result ? (hit.length ? `<span class="pill hit kd-won">🎉 的中！</span>` : `<span class="kd-tag">はずれ</span>`) : `<span class="pill wait kd-cd" data-cd="${KD_ESC(r.post)}" data-fallback="結果待ち"></span>`;   // 単勝と同じく 発走まで◯分 → 結果待ち(2026-11-15)
     const ax = (r.axes || []).map(a => { const t = `<b>${a.no}</b> ${KD_ESC(a.name)}${a.stars ? ` <span class="stars t${a.stars}">${"★".repeat(a.stars)}</span>` : ""}`; return a.skip ? `<s>${t}</s>(見送り)` : t; }).join("・");
     const lines = NAMES.map(([b, lab]) => {
       const ts = (r.bets || {})[b] || [];
@@ -2990,7 +3002,8 @@ function kdRender(races, opt) {
       return `<div class="kd-l"><span class="kd-b">${lab}</span><span class="kd-k">${ts.map(t => `<span class="${(pub ? t.hit : t.pay) ? "won" : ""}${t.skip ? " sk" : ""}">${KD_ESC(t.kumi)}</span>`).join("")}</span><span class="kd-m">${m}</span></div>`;
     }).join("");
     const link = opt.link ? opt.link(r) : "";
-    return `<div class="kd-card${r.result ? " kd-done" : ""}"><div class="kd-h">${link ? `<a ${link}><b>${KD_ESC(r.venue)}${r.no}R</b></a>` : `<b>${KD_ESC(r.venue)}${r.no}R</b>`}<span class="kd-post">${KD_ESC(r.post)}発走</span>${tag}</div>${ax ? `<div class="kd-ax">軸 ${ax}</div>` : ""}${lines}</div>`;
+    const kHit = r.result && hit.length;   // 的中は単勝の1着と同じく金色に(2026-11-15)
+    return `<div class="kd-card${r.result ? " kd-done" : ""}${kHit ? " kd-hit" : ""}">${kHit ? hitFx() : ""}<div class="kd-h">${link ? `<a ${link}><b>${KD_ESC(r.venue)}${r.no}R</b></a>` : `<b>${KD_ESC(r.venue)}${r.no}R</b>`}<span class="kd-post">${KD_ESC(r.post)}発走</span>${tag}</div>${ax ? `<div class="kd-ax">軸 ${ax}</div>` : ""}${lines}</div>`;
   }).join("")}</div>`;
 }
 function kdCopyText(races) {   // 管理用: 買い目をコピー(単勝も含む・見送りは除く)
