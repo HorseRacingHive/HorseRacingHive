@@ -2719,7 +2719,7 @@ window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
    時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終予想=発走5分前 / 共有ページは10分ごとに更新 */
 document.addEventListener("click", e => {   // 見出しの「お知らせの種類」で下の説明を開け閉め(2026-11-15)。ほかの処理で描き直されないよう先に拾って止める
-  const b = e.target.closest && e.target.closest("[data-ann-toggle]"); if (!b) return;
+  const b = e.target.closest && e.target.closest("[data-ann-kind]"); if (!b) return;   // お知らせの行(data-ann-toggle)とは別の目印(2026-11-15 本人「お知らせを押すと種類が開く」)
   e.preventDefault(); e.stopImmediatePropagation();
   window.__annHelpOpen = !window.__annHelpOpen;   // 描き直しても開いたまま
   const det = b.closest("section")?.querySelector(".ann-help.hd");
@@ -2727,7 +2727,7 @@ document.addEventListener("click", e => {   // 見出しの「お知らせの種
   b.classList.toggle("open", window.__annHelpOpen);
 }, true);
 function annHelp(head) {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ。head = ボタンは見出しの右(2026-11-15)
-  const kbtn = head ? "" : `<button type="button" class="ann-kind-btn${window.__annHelpOpen ? " open" : ""}" data-ann-toggle>ℹ️ お知らせの種類</button>`;   // お知らせが出ている日は見出しが無いので、この行の右に(2026-11-15)
+  const kbtn = head ? "" : `<button type="button" class="ann-kind-btn${window.__annHelpOpen ? " open" : ""}" data-ann-kind>ℹ️ お知らせの種類</button>`;   // お知らせが出ている日は見出しが無いので、この行の右に(2026-11-15)
   return `<div class="ann-line hd"><div class="ann-left"><p class="ann-note ann-n1"><span class="nw">※直前のお知らせは</span><span class="nw">10分ごとに更新</span>${kbtn}</p><p class="ann-note ann-n2"><span class="nw">すぐ知りたい方は</span> <b class="nw">Discord「🏁ＡＩ最終予想」</b><span class="nw">の通知をオン📢</span></p></div>
 <details class="ann-help hd"${window.__annHelpOpen ? " open" : ""}><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
@@ -2994,15 +2994,20 @@ function viewHome(d) {
       </button>`).join("")}</div></div>`;
   }
   const oa = d.oana || [];   // 🎲大穴(単勝100倍超・おすすめとは別枠 2026-11-01)
-  if (oa.length) {
-    h += `<div class="oana-box"><h3 class="oana-head">🎲 大穴<small>${oa.length}頭・おすすめとは別枠</small></h3>
-      <div class="picks">${oa.map(x => `<button class="pick oana-card${x.fin === 1 ? " done-hit" : x.fin != null ? " done-sm" : ""}" data-race="${esc(x.id)}" data-race-group="oana" data-hno="${x.hno ?? ""}">
+  const oaCard = x => `<button class="pick oana-card${x.fin === 1 ? " done-hit" : x.fin != null ? " done-sm" : ""}" data-race="${esc(x.id)}" data-race-group="oana" data-hno="${x.hno ?? ""}">
         <div class="where"><span class="oana-tag">🎲 大穴</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post || "")}発走</span>
           <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">${x.fin}着</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
         <span class="hex">${x.hno ?? "—"}</span>
         <div class="ph"><b>${esc(x.name)}</b><small>単勝100倍をこえる穴馬</small></div>
         <div class="fig num"><div class="e">AI勝率</div><div class="o">${pct(x.p, 1)}</div></div>
-      </button>`).join("")}</div>
+      </button>`;
+  if (oa.length) {
+    h += `<div class="oana-box"><h3 class="oana-head">🎲 大穴<small>${oa.length}頭・おすすめとは別枠</small></h3>
+      <div class="picks">${oa.filter(x => !(x.fin != null && x.fin !== 1)).map(oaCard).join("")}</div>${(() => {   // はずれた大穴は畳む(2026-11-15 本人)
+        const outs = oa.filter(x => x.fin != null && x.fin !== 1); if (!outs.length) return "";
+        const pin = (() => { try { return localStorage.getItem("hive_oanadone_pin") === "1"; } catch { return false; } })();
+        const opn = (window.__dn || {}).oanadone != null ? window.__dn.oanadone : pin;
+        return `<details class="done-box" data-pk="oanadone"${opn ? " open" : ""}><summary class="done-head">はずれた大穴<small>${outs.length}頭</small><span class="dn-arrow"></span><button type="button" class="dn-pin${pin ? " on" : ""}">📌 ${pin ? "固定中" : "固定"}</button></summary><div class="picks">${outs.map(oaCard).join("")}</div></details>`; })()}
       <p class="note">🎲大穴 = おすすめと同じ条件で、単勝が100倍をこえる馬。当たりは数年に1本の見込みなので、買うならおすすめとは別に<b>1点100円</b>で(金額は増やさない)。成績はおすすめに入れません。直前のオッズで100倍を切ると対象外になります。</p></div>`;
   }
   h += `</section>`;
