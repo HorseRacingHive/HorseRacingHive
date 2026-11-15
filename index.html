@@ -1528,6 +1528,12 @@ main > .hmsbar + .hms-chips { margin-top: -10px; }   /* 並べ替えの段と札
 .cmp-t th { font-size: 11px; color: var(--muted); font-weight: 700; text-align: right; padding: 2px 4px; }
 .cmp-t td { text-align: right; padding: 4px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; font-weight: 700; }
 .cmp-t td:first-child, .cmp-t th:first-child { text-align: left; font-weight: 800; }
+/* 直前のお知らせの下(携帯用と同じ形・2026-11-15 本人) */
+.ann-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 4px 2px 0; } .ann-line .ann-note { flex: 1 1 180px; margin: 0; } .ann-note .nw { white-space: nowrap; } .ann-note.ann-n2 { margin: 8px 2px 0; } .ann-line .ann-left { flex: 1 1 180px; min-width: 0; } .ann-line .ann-left .ann-note { margin: 0; } .ann-line .ann-left .ann-note.ann-n2 { margin-top: 8px; } .ann-line .ann-help { margin: 0; } .ann-line .ann-help[open] { flex-basis: 100%; }
+.ann-n1 { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 0; } .ann-n1 .ann-kind-btn { margin-left: auto; }
+h2.ann-h2 { display: flex; align-items: center; gap: 8px; } .ann-kind-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border: 1px solid rgba(247,201,72,.4); border-radius: 999px; background: none; color: var(--honey); font-weight: 700; font-size: 11.5px; font-family: inherit; white-space: nowrap; cursor: pointer; }
+.ann-kind-btn::after { content: "▼"; font-size: 9px; } .ann-kind-btn.open::after { content: "▲"; }
+.ann-line.hd .ann-left { flex-basis: 100%; } .ann-help.hd > summary { display: none; } .ann-help.hd { flex-basis: 100%; } .ann-help.hd .ah-body { margin-top: 4px; }
 /* はずれた札は小さく1段に(2026-11-15 本人「場所とりすぎ・空白が多い」): 印・コース・AI勝率・オッズは隠して、馬名と着順だけ */
 .pick.done-sm { grid-template-columns: auto 1fr auto !important; padding: 7px 12px; gap: 2px 10px; }
 .pick.done-sm .hex { grid-row: 2; grid-column: 1; transform: scale(.78); margin: -4px -2px; }
@@ -2711,9 +2717,18 @@ function wmUpdate() {
 window.addEventListener("resize", () => { clearTimeout(window.__wmRs); window.__wmRs = setTimeout(wmUpdate, 300); });   // 窓の幅を変えたら透かしの濃さも合わせる
 /* 直前のお知らせの下の説明(2026-11-02 21:55 本人指定: いつ見直すか・Discordに何が届くかを共有用に詳しく)。
    時刻は hive_discord.py に合わせる: 見直し=発走約30分前(25〜33分前)・約10分前(8〜13分前) / 直前予想=発走20〜32分前 / 最終予想=発走5分前 / 共有ページは10分ごとに更新 */
-function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ
-  return `<p class="ann-note">※10分ごとの更新です。最終の判断をすぐ知りたい方は、<b style="white-space:nowrap">Discord「🏁｜ＡＩ最終予想」</b>の通知をオンに(1レース1回)。</p>
-<details class="ann-help"><summary>ℹ️ お知らせの種類</summary>
+document.addEventListener("click", e => {   // 見出しの「お知らせの種類」で下の説明を開け閉め(2026-11-15)。ほかの処理で描き直されないよう先に拾って止める
+  const b = e.target.closest && e.target.closest("[data-ann-toggle]"); if (!b) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  window.__annHelpOpen = !window.__annHelpOpen;   // 描き直しても開いたまま
+  const det = b.closest("section")?.querySelector(".ann-help.hd");
+  if (det) det.open = window.__annHelpOpen;
+  b.classList.toggle("open", window.__annHelpOpen);
+}, true);
+function annHelp(head) {   // 2026-11-03 本人の指定で短く: 上のお知らせに出る種類と時刻だけ。head = ボタンは見出しの右(2026-11-15)
+  const kbtn = head ? "" : `<button type="button" class="ann-kind-btn${window.__annHelpOpen ? " open" : ""}" data-ann-toggle>ℹ️ お知らせの種類</button>`;   // お知らせが出ている日は見出しが無いので、この行の右に(2026-11-15)
+  return `<div class="ann-line hd"><div class="ann-left"><p class="ann-note ann-n1"><span class="nw">※直前のお知らせは</span><span class="nw">10分ごとに更新</span>${kbtn}</p><p class="ann-note ann-n2"><span class="nw">すぐ知りたい方は</span> <b class="nw">Discord「🏁ＡＩ最終予想」</b><span class="nw">の通知をオン📢</span></p></div>
+<details class="ann-help hd"${window.__annHelpOpen ? " open" : ""}><summary>ℹ️ お知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
 <li><b>⚡ 直前速報</b> <span class="ah-t">発走約30分前・10分前</span> <span class="ah-d">全レースを見直して、変わったときだけ</span></li>
@@ -2722,7 +2737,7 @@ function annHelp() {   // 2026-11-03 本人の指定で短く: 上のお知ら�
 <li><b>❌ 見送り</b> <span class="ah-t">発走約30分前・10分前・5分前</span> <span class="ah-d">条件から外れた馬(買わない)</span></li>
 <li><b>🏁 最終予想</b> <span class="ah-t">発走5分前</span> <span class="ah-d">おすすめの馬がいるレースだけ1回、最終の判断</span> <span class="ah-d">🆕 ＝ ここで新しく入った馬・🎲大穴</span></li>
 </ul>
-</div></details>`;
+</div></details></div>`;
 }
 /* 🌏海外(2026-11-03): JRAが馬券を売る海外のレース。HIVEのAIは海外の馬を学習していないので、現地の市場(地元の大口が動かす)の見立ての勝率と、
    日本のプール(日本独自)のオッズを比べ、日本のオッズの方が割に合う馬を出す。オッズ・期待値の数字は出さず、判定・見立ての勝率(整数%)・蜜のしずくだけ */
