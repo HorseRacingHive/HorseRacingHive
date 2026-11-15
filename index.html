@@ -2949,7 +2949,7 @@ const KD_YEN = n => Math.round(n || 0).toLocaleString("ja-JP") + "円";
     ".kd-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px}.kd-h b{font-size:15px}.kd-h .kd-post{color:var(--muted,#a8977a);font-size:12px}" +
     ".kd-h a{color:inherit;text-decoration:none}" +
     ".kd-h .kd-tag{margin-left:auto;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;border:1px solid var(--line,#3a2a12);color:var(--muted,#a8977a)}" +
-    ".kd-h .kd-tag.won{color:var(--good,#3dd69b);border-color:var(--good,#3dd69b)}" +
+    ".kd-h .kd-cd{margin-left:auto}.kd-h .kd-tag.won{color:var(--good,#3dd69b);border-color:var(--good,#3dd69b)}" +
     ".kd-ax{font-size:12.5px;color:var(--muted,#a8977a);margin-bottom:6px}.kd-ax b{color:var(--ink,#fbf1dc)}.kd-ax s{opacity:.7}" +
     ".kd-l{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:start;padding:5px 0;border-top:1px dashed var(--line,#3a2a12)}" +
     ".kd-b{font-size:12px;font-weight:800;white-space:nowrap;padding-top:2px}" +
@@ -2970,7 +2970,7 @@ function kdRender(races, opt) {
   return `<div class="kd-grid">${races.map(r => {
     const all = [].concat(...NAMES.map(([b]) => (r.bets || {})[b] || []));
     const hit = all.filter(t => pub ? t.hit : t.pay);
-    const tag = r.result ? (hit.length ? `<span class="kd-tag won">的中</span>` : `<span class="kd-tag">はずれ</span>`) : "";
+    const tag = r.result ? (hit.length ? `<span class="kd-tag won">的中</span>` : `<span class="kd-tag">はずれ</span>`) : `<span class="pill wait kd-cd" data-cd="${KD_ESC(r.post)}" data-fallback="結果待ち"></span>`;   // 単勝と同じく 発走まで◯分 → 結果待ち(2026-11-15)
     const ax = (r.axes || []).map(a => { const t = `<b>${a.no}</b> ${KD_ESC(a.name)}${a.stars ? ` <span class="stars t${a.stars}">${"★".repeat(a.stars)}</span>` : ""}`; return a.skip ? `<s>${t}</s>(見送り)` : t; }).join("・");
     const lines = NAMES.map(([b, lab]) => {
       const ts = (r.bets || {})[b] || [];
