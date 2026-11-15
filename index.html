@@ -454,6 +454,44 @@ html, body { overscroll-behavior-x: none; }   /* 横に払っても、ページ�
 .next .cd small { display: block; font-size: 10px; color: rgba(251,241,220,.6); font-weight: 700; margin-top: 4px; }
 .next .what { min-width: 0; font-size: 13px; }
 .next .what b { display: block; font-size: 15px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.next { transition: box-shadow .4s, background .4s; }
+.next.near { box-shadow: 0 0 0 2px var(--honey) inset, 0 0 14px rgba(247,201,72,.35); }
+.next.soon { box-shadow: 0 0 0 2px #ff7d92 inset, 0 0 16px rgba(255,125,146,.35); animation: nextPulse 1.6s ease-in-out infinite; }
+.next.soon .cd { color: #ff7d92; }
+.next .nx-lab { display: block; margin-top: 1px; color: var(--honey); white-space: nowrap; } .next.soon .nx-lab { color: #ff7d92; }
+.next .nx-shime { font-size: .85em; opacity: .8; margin-left: 2px; white-space: nowrap; } .next.soon .nx-shime { color: #ff7d92; opacity: 1; font-weight: 700; }
+@keyframes nextPulse { 50% { box-shadow: 0 0 0 2px #ff7d92 inset, 0 0 4px rgba(255,125,146,.15); } }
+@media (prefers-reduced-motion: reduce) { .next.soon { animation: none; } }
+.nx-wrap { background: var(--comb); border-radius: var(--r); overflow: hidden; } .nx-wrap .next { border-radius: 0; flex-wrap: wrap; }
+.nx-steps { flex: 1 0 100%; display: flex; justify-content: space-between; margin-top: 2px; }
+.nx-st { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: rgba(251,241,220,.45); position: relative; }
+.nx-st i { width: 10px; height: 10px; border-radius: 50%; background: #4a3d22; position: relative; z-index: 1; }
+.nx-st + .nx-st::before { content: ""; position: absolute; top: 4px; right: 50%; width: 100%; height: 2px; background: #4a3d22; }
+.nx-st.ok i { background: #3dd69b; } .nx-st.ok + .nx-st::before, .nx-st.ok + .nx-st.ok::before { background: #3dd69b; } .nx-st.ok { color: rgba(251,241,220,.75); }
+.nx-st.now i { background: #f7c948; box-shadow: 0 0 6px rgba(247,201,72,.7); } .nx-st.now { color: #f7c948; font-weight: 700; }
+.nx-st.go::before { background: linear-gradient(90deg, #f7c948 var(--p, 0%), #4a3d22 var(--p, 0%)) !important; }
+.nx-st.due i { background: #f7c948; animation: nxDue 1s ease-in-out infinite; } .nx-st.due { color: #f7c948; } .nx-st.due::after { content: "確認中…"; font-size: 9px; color: #f7c948; }
+@keyframes nxDue { 50% { opacity: .35; } } @media (prefers-reduced-motion: reduce) { .nx-st.due i { animation: none; } }
+.fg { border-top: 1px dashed rgba(247,201,72,.25); padding: 6px 12px 8px; }
+.fg-h { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.fg-tg { border: 1px solid rgba(247,201,72,.5); background: rgba(247,201,72,.08); border-radius: 999px; color: #f7c948; font-weight: 800; font-size: 13px; padding: 4px 12px; min-height: 30px; cursor: pointer; font-family: inherit; white-space: nowrap; }   /* 押せると分かる囲い(2026-11-15) */
+.fg-h { justify-content: space-between; }
+.fg-tg::after { content: " ▼"; font-size: 9px; } .fg.open .fg-tg::after { content: " ▲"; }
+.fg-tg small { color: rgba(251,241,220,.6); font-weight: 600; font-size: 11px; } .fg-u { color: #ff7d92; }
+.fg-next { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0; overflow-x: auto; white-space: nowrap; font-size: 11px; color: rgba(251,241,220,.6); scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(90deg, #000 88%, transparent); -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 14px; }   /* 全レースのボタンの右に1行・左右にスクロール(2026-11-15) */
+.fg-next::-webkit-scrollbar { display: none; } .fg-next .fg-nl { margin-right: 6px; opacity: .8; }
+.fg { padding: 4px 10px 6px !important; } .fg-h { gap: 8px !important; } .fg-tg { font-size: 12px !important; padding: 2px 10px !important; min-height: 26px !important; } .fg-tg small { font-size: 10.5px !important; } .fg-pin { min-height: 24px !important; min-width: 26px !important; font-size: 11px !important; }
+.fg-ev { white-space: nowrap; color: rgba(251,241,220,.85); } .fg-ev b { color: #f7c948; } .fg-ev.rec { color: #f7c948; } .fg-sep { margin: 0 5px; opacity: .5; }
+.fg-pin { border: 1px solid rgba(247,201,72,.35); background: none; border-radius: 999px; min-width: 30px; min-height: 26px; font-size: 12px; opacity: .55; cursor: pointer; } .fg-pin.on { opacity: 1; background: rgba(247,201,72,.2); }
+.fg-b { display: none; } .fg.open .fg-b { display: block; }
+.fg-row { display: grid; grid-template-columns: 34px repeat(12, minmax(0, 1fr)); gap: 3px; align-items: center; margin-top: 4px; }
+.fg-v { font-size: 11px; color: #c9a24a; font-weight: 700; }
+.fg-c { height: 20px; border-radius: 5px; border: 0; padding: 0; font-size: 10px; font-weight: 700; font-family: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.fg-done { background: #1d4d36; color: #9ff0c9; } .fg-now { background: #f7c948; color: #3a2600; } .fg-wait { background: #3a2f1a; color: #a08b5c; } .fg-none { background: none; }
+.fg-rec { box-shadow: inset 0 0 0 2px #f7c948; } .fg-urg { box-shadow: inset 0 0 0 2px #ff7d92; } .fg-rec.fg-urg { box-shadow: inset 0 0 0 2px #ff7d92, 0 0 0 1px #f7c948; }
+.fg-lg { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 8px 0 4px; font-size: 10px; color: rgba(251,241,220,.55); }
+.fg-lg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
+
 
 /* ---------- おすすめ・買い目のカード */
 .picks { display: grid; gap: 10px; }
@@ -1366,9 +1404,10 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 /* マイナスのまま的中で回収率が上がった時: 蜂が蜜を落として少し増える(控えめ・1回だけ) */
 .bk-jar { overflow: visible; }
 .bk-jar .bk-bee, .bk-jar .bk-bdrop { opacity: 0; }
-.bk-jar.bee .bk-bee { animation: bkBee 1.9s ease-in-out both; }
-.bk-jar.bee .bk-bdrop { animation: bkBdrop 1.9s ease-in both; }
-.bk-jar.bee .bk-honey { animation: bkRise .5s ease-out both 1.25s; }
+/* 2026-11-15 本人「もう落とされた状態で固定」: 蜂は壺の横に止まったまま・蜜は増えた後の高さで止める(飛んで落とす動きはしない) */
+.bk-jar.bee .bk-bee { animation: none; opacity: 1; transform: translate(0, 0); }
+.bk-jar.bee .bk-bdrop { animation: none; opacity: 0; }
+.bk-jar.bee .bk-honey { animation: none; }
 @keyframes bkBee { 0% { opacity: 0; transform: translate(46px, -22px); } 30%, 62% { opacity: 1; transform: translate(0, 0); } 100% { opacity: 0; transform: translate(-40px, -26px); } }
 @keyframes bkBdrop { 0%, 40% { opacity: 0; transform: translateY(0); } 45% { opacity: 1; } 66% { opacity: 1; transform: translateY(26px); } 72%, 100% { opacity: 0; transform: translateY(30px); } }
 @keyframes bkRise { from { transform: translateY(5px); } }
@@ -2281,7 +2320,67 @@ function openLeft(ms) {
   return h ? `あと${h}時間${m}分` : `あと${m}分${String(s % 60).padStart(2, "0")}秒`;
 }
 const openTag = (date, hm) => hm ? `<b class="open-left num${jstAt(date, hm) - Date.now() < 3600e3 ? " soon" : ""}" data-open="${esc(date)}|${esc(hm)}">${esc(openLeft(jstAt(date, hm) - Date.now()))}</b>` : "";
-function tick() { if (new Date().getSeconds() === 0) { dayNavInfo(); wmUpdate(); } document.querySelectorAll("[data-cd]").forEach(el => { el.textContent = untilText(el.dataset.cd) || el.dataset.fallback || ""; });
+
+// ---- 次のおすすめの進み具合と全レースのマス(2026-11-15・管理用 admin.html の flowSteps/flowGrid の共有用。自動購入は出さない)
+const pubHM = t => { const x = new Date(t + 9 * 3600e3); return `${x.getUTCHours()}:${String(x.getUTCMinutes()).padStart(2, "0")}`; };
+const pubStepPct = (t0, t1) => Math.max(0, Math.min(100, Math.round((Date.now() - t0) / Math.max(1, t1 - t0) * 100)));
+function pubFlowSteps(f) {
+  const st = [["m30", "30分前", -30], ["m10", "10分前", -10], ["final", "最終予想", -5], ["result", "結果", 5]];
+  const nxt = st.findIndex(([k]) => !f[k]), last = nxt < 0 ? st.length - 1 : nxt - 1;
+  const pd = postDate(f.post), at = i => pd ? pd.getTime() + st[i][2] * 60e3 : null;
+  return `<span class="nx-steps">${st.map(([k, l], i) => {
+    let cls = f[k] ? "ok" : "", extra = "";
+    if (i === last) cls += " now";
+    if (i === nxt && i > 0 && at(i - 1) != null) { cls += " go"; extra = ` data-t0="${at(i - 1)}" data-t1="${at(i)}" style="--p:${pubStepPct(at(i - 1), at(i))}%"`; }
+    return `<span class="nx-st ${cls}"${extra}><i></i>${l}</span>`;
+  }).join("")}</span>`;
+}
+const PUB_FLOW_VO = ["東京", "中山", "京都", "阪神", "中京", "新潟", "福島", "小倉", "札幌", "函館"];
+function pubFlowGrid(d, os) {
+  const fl = d.flow || [];
+  const recIds = new Set((os || []).map(x => String(x.id)));
+  const urg = new Set((d.announce || []).filter(a => a.kind === "急遽").map(a => String(a.id)));
+  const vs = {};
+  for (const f of fl) { const m = String(f.name || "").match(/^(.+?)(\d+)R$/); if (!m) continue; (vs[m[1]] = vs[m[1]] || {})[Number(m[2])] = f; }
+  const vix = v => { const i = PUB_FLOW_VO.indexOf(v); return i < 0 ? 99 : i; };
+  const order = Object.keys(vs).sort((a, b) => vix(a) - vix(b));
+  const done = fl.filter(f => f.result).length;
+  const evs = [];
+  if (d.date === todayStr()) for (const f of fl) {
+    const pd = postDate(f.post); if (!pd || f.result) continue;
+    for (const [k, mm, lab] of [["m30", 30, "30分前"], ["m10", 10, "10分前"], ["final", 5, "最終予想"]]) {
+      if (f[k] || (k === "final" && !recIds.has(String(f.id)))) continue;
+      const t = pd.getTime() - mm * 60e3; if (t < Date.now() - 3 * 60e3) continue;
+      evs.push({ t, f, lab });
+    }
+  }
+  evs.sort((a, b) => a.t - b.t);
+  const rows = order.map(v => `<div class="fg-row"><span class="fg-v">${esc(v)}</span>${Array.from({ length: 12 }, (_, i) => {
+    const f = vs[v][i + 1]; if (!f) return `<span class="fg-c fg-none"></span>`;
+    const id = String(f.id), cls = f.result ? "fg-done" : f.m30 ? "fg-now" : "fg-wait";
+    return `<button type="button" class="fg-c ${cls}${recIds.has(id) ? " fg-rec" : ""}${urg.has(id) ? " fg-urg" : ""}" data-race="${esc(id)}" data-race-group="race" aria-label="${esc(f.name)}">${i + 1}</button>`;
+  }).join("")}</div>`).join("");
+  const nextLine = evs.length ? `<div class="fg-next"><span class="fg-nl">次の判断</span>${evs.slice(0, 8).map(e => `<span class="fg-ev${recIds.has(String(e.f.id)) ? " rec" : ""}"><b>${pubHM(e.t)}</b> ${esc(e.f.name)} ${e.lab}</span>`).join(`<span class="fg-sep">›</span>`)}</div>` : d.date === todayStr() && done < fl.length ? `<div class="fg-next">今日の見直しは済み</div>` : "";
+  return `<div class="fg${pubFlowOpen() ? " open" : ""}"><div class="fg-h"><button type="button" class="fg-tg" data-flow-tg>全レース <small>${done}/${fl.length}終わり${urg.size ? `・<span class="fg-u">急遽${urg.size}</span>` : ""}</small></button>
+    ${nextLine}<button type="button" class="fg-pin${pubFlowPin() ? " on" : ""}" data-flow-pin aria-label="全レースをいつも開く">📌</button></div>
+    <div class="fg-b">${rows}<div class="fg-lg"><span><i class="fg-done"></i>終わった</span><span><i class="fg-now"></i>見直し中</span><span><i class="fg-wait"></i>まだ</span><span><i class="fg-wait fg-rec"></i>おすすめ</span><span><i class="fg-wait fg-urg"></i>急遽 買い候補</span></div></div></div>`;
+}
+const pubFlowPin = () => { try { return localStorage.getItem("hive_flow_pin") === "1"; } catch { return false; } };
+const pubFlowOpen = () => window.__flowOpen ?? pubFlowPin();
+document.addEventListener("click", e => {
+  const tg = e.target.closest && e.target.closest("[data-flow-tg],[data-flow-pin]"); if (!tg) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const box = tg.closest(".fg");
+  if (tg.hasAttribute("data-flow-pin")) {
+    const on = !pubFlowPin(); try { localStorage.setItem("hive_flow_pin", on ? "1" : "0"); } catch {}
+    tg.classList.toggle("on", on); if (on) { window.__flowOpen = true; box && box.classList.add("open"); }
+    if (typeof toast === "function") toast(on ? "📌 全レースをいつも開いておきます" : "📌 固定を外しました");
+    return;
+  }
+  window.__flowOpen = !pubFlowOpen(); if (box) box.classList.toggle("open", window.__flowOpen);
+}, true);
+function tick() { if (new Date().getSeconds() === 0) { dayNavInfo(); wmUpdate(); } document.querySelectorAll("[data-cd]").forEach(el => { el.textContent = untilText(el.dataset.cd) || el.dataset.fallback || "";
+    const nx = el.closest(".next"); if (nx) { nx.querySelectorAll(".nx-st.go").forEach(g => { g.style.setProperty("--p", pubStepPct(+g.dataset.t0, +g.dataset.t1) + "%"); const due = Date.now() >= +g.dataset.t1; g.classList.toggle("due", due); if (due) { window.__dueAsk = window.__dueAsk || {}; const k = g.dataset.t1; if (!window.__dueAsk[k]) { window.__dueAsk[k] = 1; setTimeout(() => { try { if (!document.hidden && S.pw) refresh(); } catch (e) {} }, 75e3); } } }); const pd = postDate(el.dataset.cd), left = pd ? pd - Date.now() : Infinity; nx.classList.toggle("near", left <= 30 * 60e3 && left > 10 * 60e3); nx.classList.toggle("soon", left <= 10 * 60e3); } });
   document.querySelectorAll("[data-open]").forEach(el => { const [dt, hm] = el.dataset.open.split("|"), left = jstAt(dt, hm) - Date.now(); el.textContent = openLeft(left); el.classList.toggle("soon", left < 3600e3); }); }
 
 /* ---------------------------------------------------------------- 描画 */
@@ -2740,10 +2839,18 @@ function viewHome(d) {
   let h = "";
   const os = d.osusume || [];
   const up = os.filter(x => x.fin == null && postDate(x.post) > Date.now()).sort((a, b) => postDate(a.post) - postDate(b.post));
-  if (up.length) {
-    const n = up[0];
-    h += `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで</small></div>
-      <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars t${n.st}">${starStr(n.st)}</span></div></button>`;
+  {   // 次のおすすめのカード + 全レースの進み具合(2026-11-15・管理用と同じ形。共有用は自動購入・オッズ・期待値を出さない)
+    const n = up[0], fl = d.flow || [];
+    const nf = n ? fl.find(f => String(f.id) === String(n.id)) : null;
+    const pd0 = n ? postDate(n.post) : null;
+    const shime = pd0 ? pubHM(pd0.getTime() - 2 * 60e3) : "";
+    let nxLab = "";
+    if (pd0 && nf) { const nxs = [["m30", -30, "次の見直し"], ["m10", -10, "次の見直し"], ["final", -5, "最終予想"]].find(([k]) => !nf[k]);
+      if (nxs) nxLab = `${nxs[2]} ${pubHM(pd0.getTime() + nxs[1] * 60e3)}`; }
+    const top = n ? `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで${nxLab ? `<span class="nx-lab">${nxLab}</span>` : ""}</small></div>
+      <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走${shime ? `<span class="nx-shime">(締切 ${shime})</span>` : ""}<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars t${n.st}">${starStr(n.st)}</span></div>${nf ? pubFlowSteps(nf) : ""}</button>` : "";
+    const grid = fl.length ? pubFlowGrid(d, os) : "";
+    if (top || grid) h += `<div class="nx-wrap">${top}${grid}</div>`;
   }
   // 開催・買い目・結果・回収率の帯(押すと: 開催→全レース / 買い目→おすすめ / 結果→的中した馬)
   const rp = d.rec_perf, act = rp?.actual || {}, fromLog = rp?.source === "discord";
