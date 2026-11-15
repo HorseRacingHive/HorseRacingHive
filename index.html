@@ -2940,9 +2940,9 @@ function viewHome(d) {
     const outs = os.filter(isOut).sort((a, b) => ((postDate(b.post) || 0) - (postDate(a.post) || 0)) || (Number(a.hno) - Number(b.hno)));   // 新しい結果が上
     if (outs.length) {
       const pin = (() => { try { return localStorage.getItem("hive_done_pin") === "1"; } catch { return false; } })();
-      const opn = window.__doneOpen != null ? window.__doneOpen : pin;
+      const opn = (window.__dn || {}).done != null ? window.__dn.done : pin;
       const plc = outs.filter(x => x.fin <= 3).length;
-      h += `<details class="done-box"${opn ? " open" : ""}><summary class="done-head">はずれた馬<small>${outs.length}頭${plc ? `・2〜3着 ${plc}` : ""}</small><span class="dn-arrow"></span><button type="button" class="dn-pin${pin ? " on" : ""}">📌 ${pin ? "固定中" : "固定"}</button></summary>
+      h += `<details class="done-box" data-pk="done"${opn ? " open" : ""}><summary class="done-head">はずれた馬<small>${outs.length}頭${plc ? `・2〜3着 ${plc}` : ""}</small><span class="dn-arrow"></span><button type="button" class="dn-pin${pin ? " on" : ""}">📌 ${pin ? "固定中" : "固定"}</button></summary>
         <div class="picks">${outs.map(card).join("")}</div></details>`;
     }
   } else {
@@ -3059,7 +3059,19 @@ function kdFold(b, ts, isWon) {
   }
   return out;
 }
-function kdRender(races, opt) {
+function kdRender(races, opt) {   // はずれたレースは下の「はずれたレース」に畳む。的中・これからのレースはそのまま(2026-11-15 本人「他の券種も同じように」)
+  opt = opt || {};
+  if (!races || !races.length) return kdRender0(races, opt);
+  const won = r => [].concat(...["馬単", "馬連", "3連単"].map(b => (r.bets || {})[b] || [])).some(t => opt.pub ? t.hit : t.pay);
+  const outs = races.filter(r => r.result && !won(r)), rest = races.filter(r => !outs.includes(r));
+  if (!outs.length) return kdRender0(races, opt);
+  const pin = (() => { try { return localStorage.getItem("hive_kddone_pin") === "1"; } catch { return false; } })();
+  const opn = (window.__dn || {}).kddone != null ? window.__dn.kddone : pin;
+  return (rest.length ? kdRender0(rest, opt) : "") +
+    `<details class="done-box" data-pk="kddone"${opn ? " open" : ""}><summary class="done-head">はずれたレース<small>${outs.length}レース</small><span class="dn-arrow"></span><button type="button" class="dn-pin${pin ? " on" : ""}">📌 ${pin ? "固定中" : "固定"}</button></summary>
+      ${kdRender0(outs.slice().reverse(), opt)}</details>`;
+}
+function kdRender0(races, opt) {
   opt = opt || {};
   const pub = !!opt.pub;
   if (!races) return `<div class="note">買い目を読み込んでいます…</div>`;
@@ -3093,10 +3105,10 @@ function kdRender(races, opt) {
   }).join("")}</div>`;
 }
 // はずれた馬の開け閉め(描き直しても保つ)と📌固定(次に開いたときも開いたまま)
-document.addEventListener("toggle", e => { const d = e.target; if (d && d.classList && d.classList.contains("done-box")) window.__doneOpen = d.open; }, true);
+document.addEventListener("toggle", e => { const d = e.target; if (d && d.classList && d.classList.contains("done-box")) (window.__dn = window.__dn || {})[d.dataset.pk || "done"] = d.open; }, true);
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".dn-pin"); if (!b) return;
   e.preventDefault(); e.stopPropagation();
-  let on = false; try { on = localStorage.getItem("hive_done_pin") !== "1"; localStorage.setItem("hive_done_pin", on ? "1" : "0"); } catch {}
+  const pk = "hive_" + ((b.closest("details") || {}).dataset?.pk || "done") + "_pin"; let on = false; try { on = localStorage.getItem(pk) !== "1"; localStorage.setItem(pk, on ? "1" : "0"); } catch {}
   b.classList.toggle("on", on); b.textContent = on ? "📌 固定中" : "📌 固定";
   const d = b.closest("details"); if (d && on && !d.open) d.open = true; }, true);
 function kdCopyText(races) {   // 管理用: 買い目をコピー(単勝も含む・見送りは除く)
