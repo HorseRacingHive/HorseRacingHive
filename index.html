@@ -2229,7 +2229,20 @@ async function decrypt2(enc, pw) {
   }
   throw new Error("bad");
 }
-async function open(pw, quiet) {
+// 会場の並びは、その日に最初のレースが発走する順(左・上から)。土日で変わる(2026-11-15 本人)
+function vSortSnap(sn) {
+  const mins = p => { const m = String(p || "").match(/(\d+):(\d+)/); return m ? +m[1] * 60 + +m[2] : 9999; };
+  const VO = ["東京", "中山", "京都", "阪神", "中京", "新潟", "福島", "小倉", "札幌", "函館"];
+  const vo = v => { const i = VO.indexOf(v); return i < 0 ? 99 : i; };
+  for (const d of (sn && sn.days) || []) {
+    if (!Array.isArray(d.venues) || d.venues.length < 2) continue;
+    const first = v => Math.min(...(v.races || []).map(r => mins(r.post)), 9999);
+    d.venues.sort((a, b) => (first(a) - first(b)) || (vo(a.venue) - vo(b.venue)));
+  }
+  return sn;
+}
+async function open(pw, quiet) { return vSortSnap(await open0(pw, quiet)); }
+async function open0(pw, quiet) {
   if (S.demo) { if (pw !== "hive") throw new Error("bad"); return Demo.snap; }
   const enc = await fetchEnc();
   try { return enc.v === 2 ? await decrypt2(enc, pw) : await decrypt(enc, pw); } catch { throw new Error("bad"); }
@@ -2346,7 +2359,7 @@ function pubFlowGrid(d, os) {
   const urg = new Set((d.announce || []).filter(a => a.kind === "急遽").map(a => String(a.id)));
   const vs = {};
   for (const f of fl) { const m = String(f.name || "").match(/^(.+?)(\d+)R$/); if (!m) continue; (vs[m[1]] = vs[m[1]] || {})[Number(m[2])] = f; }
-  const vix = v => { const i = PUB_FLOW_VO.indexOf(v); return i < 0 ? 99 : i; };
+  const vix = v => { const i = (d.venues || []).findIndex(x => x.venue === v); return i >= 0 ? i : 50 + PUB_FLOW_VO.indexOf(v); };   // 会場タブと同じ並び(最初の発走が早い順)
   const order = Object.keys(vs).sort((a, b) => vix(a) - vix(b));
   const done = fl.filter(f => f.result).length;
   const evs = [];
