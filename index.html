@@ -484,6 +484,7 @@ html, body { overscroll-behavior-x: none; }   /* 横に払っても、ページ�
 .fg-ev { white-space: nowrap; color: rgba(251,241,220,.85); } .fg-ev b { color: #f7c948; } .fg-ev.rec { color: #f7c948; } .fg-sep { margin: 0 5px; opacity: .5; }
 .fg-pin { border: 1px solid rgba(247,201,72,.35); background: none; border-radius: 999px; min-width: 30px; min-height: 26px; font-size: 12px; opacity: .55; cursor: pointer; } .fg-pin.on { opacity: 1; background: rgba(247,201,72,.2); }
 .fg-b { display: none; } .fg.open .fg-b { display: block; }
+.fg-h { flex-wrap: wrap; row-gap: 2px !important; } .fg-h .fg-next { order: 3; flex: 1 1 100%; font-size: 10px; padding-left: 2px; } .fg-h .fg-next .fg-ev b { font-weight: 700; }   /* 次の判断は1段下に小さく(2026-11-15 本人) */
 .fg-row { display: grid; grid-template-columns: 34px repeat(12, minmax(0, 1fr)); gap: 3px; align-items: center; margin-top: 4px; }
 .fg-v { font-size: 11px; color: #c9a24a; font-weight: 700; }
 .fg-c { height: 20px; border-radius: 5px; border: 0; padding: 0; font-size: 10px; font-weight: 700; font-family: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer; }
