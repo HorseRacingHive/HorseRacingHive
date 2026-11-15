@@ -3015,7 +3015,6 @@ function viewHome(d) {
     h += `<section id="kd-sec"><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:12.5px;color:var(--honey,#f7c948)">※待ちが長いので、資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
       <p class="note" style="margin-bottom:0">🐴馬単 = おすすめの中から特定の条件で選んだ馬を1着に、2着は相手3頭の3点。<br>🐎馬連 = おすすめの馬を含む組から、特定の条件で選んだ組。<br>🏆3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点。<br>どれも発走5分前の最終予想で決まります。どれも1点同じ金額で。<br><br>1レースあたりの目安(過去13年)<br>🐴馬単3点 的中率3.5%・回収率138%<br>🐎馬連3点 的中率9.7%・回収率116%<br>🏆3連単6点 的中率2.1%・回収率170%</p></section>`;
   }
-  h += `<p class="note" style="margin-top:0">※オッズは生きてるので予想は締切まで変わります</p>`;
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
 }
 // ===== おすすめタブの「🐴馬単・🐎馬連・🏆3連単」(2026-11-07 本人の指定「作り直して・PC・携帯・共有用に」) =====
