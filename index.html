@@ -2952,10 +2952,10 @@ function viewHome(d) {
   const sk = d.skipped || [];
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
-    // 5分前の見送りを「30分以降」(30分前の見直しでは買いだった)と「30分より前」に分ける。成績も混ぜない(2026-11-15 本人)
-    const w30L = x => x.w30 === "after" ? "30分以降の見送り" : x.w30 === "before" ? "30分より前の見送り" : `${esc(x.stage || "")}に見送り`;
-    const w30S = k => { const g = sk.filter(x => x.w30 === k), dn = g.filter(x => x.fin != null); return g.length ? `<span><b>${k === "after" ? "30分以降" : "30分より前"}</b> ${g.length}頭${dn.length ? `・1着 ${dn.filter(x => x.fin === 1).length}/${dn.length}` : ""}</span>` : ""; };
-    const w30Sum = sk.some(x => x.w30) ? `<div class="sk30">${w30S("after")}${w30S("before")}</div>` : "";
+    // 見送りを「5分前で見送り」(直前の見直しでは買いだった)と「5分前より前から外れ」に分ける。成績も混ぜない(2026-11-15 本人)
+    const w30L = x => x.w5 === "at5" ? "5分前で見送り" : x.w5 === "pre5" ? "5分前より前から外れ" : `${esc(x.stage || "")}に見送り`;   // 5分前の判断で見送ったかだけ(2026-11-15 本人)
+    const w30S = k => { const g = sk.filter(x => x.w5 === k), dn = g.filter(x => x.fin != null); return g.length ? `<span><b>${k === "at5" ? "5分前で見送り" : "5分前より前から外れ"}</b> ${g.length}頭${dn.length ? `・1着 ${dn.filter(x => x.fin === 1).length}/${dn.length}` : ""}</span>` : ""; };
+    const w30Sum = sk.some(x => x.w5) ? `<div class="sk30">${w30S("at5")}${w30S("pre5")}</div>` : "";
     h += `<div class="skip-box"><h3 class="skip-head">直前で見送った馬<small>${sk.length}頭・成績には入れません</small>${w30Sum}</h3>
       ${won ? `<div class="skip-peek">${sk.filter(x => x.fin === 1).map(x => `<button type="button" class="sk-peek" data-skip-go="${esc(x.id)}|${x.hno ?? ""}"><span class="pk-no">${x.hno ?? "—"}</span><span class="pk-nm">${esc(x.name)}<small>${esc(x.venue)}${x.no}R ${esc(x.post || "")}発走・${w30L(x)}</small></span><span class="pk-r">1着</span><span class="pk-go">›</span></button>`).join("")}</div>` : ""}
       ${won ? `<div class="skip-alert">見送った馬が${won}頭 1着でした(成績には入れません)</div>` : ""}
@@ -2963,7 +2963,7 @@ function viewHome(d) {
         <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge dim">急遽</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post || "")}発走</span>
           <span class="t">${x.fin != null ? `<span class="pill ${x.fin === 1 ? "skipwin" : "miss"}">${x.fin}着</span>` : `<span class="pill skip">見送り</span>`}</span></div>
         <span class="hex">${x.hno ?? "—"}</span>
-        <div class="ph"><b>${esc(x.name)}</b><small>${w30L(x)}${x.w30 ? "" : `:${esc(x.why)}`}</small></div>
+        <div class="ph"><b>${esc(x.name)}</b><small>${w30L(x)}${x.w5 ? "" : `:${esc(x.why)}`}</small></div>
       </button>`).join("")}</div></div>`;
   }
   const oa = d.oana || [];   // 🎲大穴(単勝100倍超・おすすめとは別枠 2026-11-01)
