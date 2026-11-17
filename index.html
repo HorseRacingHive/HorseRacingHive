@@ -1840,7 +1840,7 @@ function moneyA(periods, cur, attr) {
     <div class="hero"><span class="lab">${esc(a.lab)}の収支</span><span class="big ${has ? (pts >= 0 ? "plus" : "minus") : ""}">${has ? (pts > 0 ? "+" : pts < 0 ? "−" : "±") + Math.abs(pts).toLocaleString("ja-JP") + "点" : "—"}</span></div>
     ${has ? `<div class="hp-wrap">${honeyPool(a.roi)}<div class="hp-side">${hpBadge(a.roi)}
       <span>回収率 <b class="big2 ${ret >= 100 ? "plus" : "minus"}">${ret}%</b></span>
-      <span class="pt-unit-row">${(a.ut || "単勝") === "total" ? `<small>設定した1点の金額なら</small>` : `1点${unitInput(a.ut || "単勝", "pt-unit")}円なら`} <b class="yen ${(a.yen ?? pts) >= 0 ? "plus" : "minus"}">${(() => { const y = a.yen != null ? Math.round(a.yen) : pts * unitOf(a.ut || "単勝"), sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + (v >= 10000 ? (Math.round(v / 1000) / 10).toLocaleString("ja-JP") + "万円" : v.toLocaleString("ja-JP") + "円"); })()}</b></span>
+      <span class="pt-unit-row">${(a.ut || "単勝") === "total" ? `<small>設定した1点の金額なら</small>` : `1点${unitInput(a.ut || "単勝", "pt-unit")}円なら`} <b class="yen ${(a.yen ?? pts) >= 0 ? "plus" : "minus"}">${(() => { const y = a.yen != null ? Math.round(a.yen) : pts * unitOf(a.ut || "単勝"), sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + v.toLocaleString("ja-JP") + "円";   /* 万にまとめず1円まで(2026-11-18 本人「3.5万じゃなく35,000」) */ })()}</b></span>
       <span>的中 <b>${a.hit}/${a.n}</b></span><span>${esc(a.kind || "単勝")} ・ 1点買うのを1として</span></div></div>`
     : `<div class="note">${a.loading ? "集計しています…" : a.empty || "まだ結果が出ていません"}</div>`}</div>`;
 }
@@ -3072,6 +3072,7 @@ const KD_YEN = n => Math.round(n || 0).toLocaleString("ja-JP") + "円";
     ".kd-k span{word-spacing:1px}.kd-k span em{font-style:normal;font-size:10.5px;font-weight:700;margin-left:6px;opacity:.85}" +
     ".kd-m{grid-column:2;font-size:11px;color:var(--muted,#a8977a)}.kd-m b.plus{color:var(--good,#3dd69b)}" +
     ".kd-wait{font-size:12px;color:var(--muted,#a8977a)}" +
+    ".kd-grid,.kd-card{min-width:0;max-width:100%}.kd-l{grid-template-columns:auto minmax(0,1fr)}.kd-k{min-width:0}.kd-k span{white-space:normal;overflow-wrap:anywhere;max-width:100%}" +   // 長い買い目は折り返す(札が横にはみ出して「はずれ」が切れていた・2026-11-18)
     ".kd-card .kd-h .pill.hit.kd-won{margin-left:auto;background:linear-gradient(110deg,var(--amber),var(--honey) 40%,#fff6c4 50%,var(--honey) 60%,var(--amber));background-size:250% 100%;color:var(--comb);font-weight:900;box-shadow:0 0 12px rgba(247,201,72,.65);animation:pillShine 2.2s linear infinite,hitPop .6s cubic-bezier(.2,1.5,.4,1) both}" +
     ".kd-card.kd-hit{position:relative;overflow:visible;opacity:1;border:2px solid transparent;border-left-width:5px;" +
       "background:linear-gradient(100deg,rgba(247,201,72,.30),rgba(232,150,43,.10) 45%,transparent 75%) padding-box,linear-gradient(var(--panel),var(--panel)) padding-box," +
@@ -3652,9 +3653,10 @@ function bkUnitFromWin(v) {   // 単勝の1点の金額(おすすめの帯の下
   v = Math.round(+v / 100) * 100;
   if (!(v >= 100) || v === BK.unit) return "";
   const cur = bkStreaks(BK.bets).cur;
-  if (v > BK.unit * 1.5 && cur >= 3) return `<br>いま${cur}連敗中なので「買った」の金額は変えていません(資金タブで変えられます)`;   // 追い上げ防止は資金タブと同じ
-  if (v > BK.day) return `<br>今日の予算(${yen(BK.day)})より大きいので「買った」の金額は変えていません`;
-  BK.unit = v; bkSave(); return `<br>「買った」の金額も <b>${yen(v)}</b> にしました`;
+  // 2026-11-18 本人「資金管理の金額にも紐づけたい」: いつも資金タブの1点も同じにする。危ない時は止めずに注意だけ出す
+  const warn = (v > BK.unit * 1.5 && cur >= 3 ? `<br>⚠️ いま${cur}連敗中です。取り返そうと金額を上げるのは危険です` : "")
+    + (v > BK.day ? `<br>⚠️ 今日の予算(${yen(BK.day)})より大きい金額です。資金タブで予算も見直してください` : "");
+  BK.unit = v; bkSave(); return `<br>資金タブの1点も <b>${yen(v)}</b> にしました${warn}`;
 }
 function unitSetupPub() {   // おすすめの上の「1点の金額」。初めての人には最初に決めてもらう(2026-11-07 本人の指定・この端末だけに覚える)
   if (!S.snap || !("pool_days" in S.snap)) return "";
