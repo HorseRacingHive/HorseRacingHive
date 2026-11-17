@@ -1144,6 +1144,12 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 /* 下の ‹ › も一緒に隠す(上へ戻す・一番下まで読むとまた出る) */
 .sheet.head-hidden .detail-float.show { opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .sheet .horse-sort { transition: none; } }
+/* 2026-11-17 本人: 出馬表を下へ読み進める間は上の見出し(レース名)をしまい、並べ替えの段(馬番・勝率…)を一番上に貼りつける。上へ戻すと見出しがまた出る */
+.sheet .sheet-head { transition: transform .2s ease; will-change: transform; }
+.sheet.head-hidden .sheet-head { transform: translateY(-100%); pointer-events: none; }
+.sheet .horses > .horse-sort { position: sticky; z-index: 1; background: var(--bg); margin-left: -2px; margin-right: -2px; padding-left: 2px; padding-right: 2px; }
+.sheet.head-hidden .horses > .horse-sort { top: 0; padding-top: env(safe-area-inset-top, 0px); }
+@media (prefers-reduced-motion: reduce) { .sheet .sheet-head { transition: none; } }
 
 /* 下の ‹ › の分だけ、出馬表の一番下に余白 */
 .sheet { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
@@ -1163,6 +1169,24 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 .result-row.hon-win { box-shadow: inset 0 0 0 2px #c99a2e; border-radius: 12px; }
 .res-pat { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: #8a6116; color: #fff; font-size: 10px; font-weight: 800; vertical-align: 1px; }
 /* 急遽バッジ・直前で見送った馬(2026-10-29) */
+.nm-badge.mitsu { background: transparent; color: inherit; border-color: #BA7517; }
+.nm-badge { background: #EF9F27; color: #412402; border: 1px solid #BA7517; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; flex: none; }
+.nm-box { border: 1px solid var(--line, rgba(127,127,127,.25)); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.nm-box.nm { border-color: #EF9F27; }
+.nm-box .nm-h { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+.nm-box .nm-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+.nm-box .nm-g span { display: block; font-size: 11px; opacity: .7; }
+.nm-box .nm-g b { font-size: 18px; }
+.sheet-head .sheet-title { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pay-box { margin: 10px 0 4px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; background: var(--panel); }
+.pay-box table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pay-box td { padding: 3px 4px; border-top: 1px dashed var(--line); white-space: nowrap; }
+.pay-box tr:first-child td { border-top: 0; }
+.pay-box td.pt { font-weight: 800; width: 3.6em; } .pay-box td.pk { font-family: var(--f-disp, inherit); font-weight: 800; }
+.pay-box td.py { text-align: right; font-weight: 800; } .pay-box td.pn { text-align: right; color: var(--muted); font-size: 11px; width: 3.4em; }
+.kd-card[data-kd-race] { cursor: pointer; }
+header.top, #sheet .sheet-head { cursor: pointer; }
+.pay-box summary { padding: 2px 0; } .pay-box table { margin-top: 4px; }
 .urg-badge { background: var(--dang); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; flex: none; }
 .urg-badge.back { background: var(--aim); width: auto; height: auto; display: inline-block; border-radius: 999px; color: #fff; place-items: unset; }   /* 戻るボタンの .back に負けないように(2026-10-29) */
 .urg-badge.dim { background: var(--muted); }
@@ -1508,6 +1532,9 @@ main > .hmsbar + .hms-chips { margin-top: -10px; }   /* 並べ替えの段と札
 .hms-chip button:active { background: rgba(247,201,72,.25); }
 .hms-chip button.x { color: var(--muted); padding: 3px 7px; }
 .hms-chips button.hms-pin { margin-left: auto; flex: none; border: 1px dashed rgba(247,201,72,.45); border-radius: 999px; padding: 4px 11px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.hms-chips button.hms-multi { margin-left: auto; flex: none; border: 1px dashed rgba(247,201,72,.45); border-radius: 999px; padding: 4px 11px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; }
+.hms-chips button.hms-multi.on { border: 1px solid #ffc94a; background: rgba(255,201,74,.16); color: #ffc94a; }
+.hms-chips button.hms-multi + button.hms-pin { margin-left: 6px; }
 .hms-chips button.hms-pin.pin-on { border: 1px solid #ffc94a; background: rgba(255,201,74,.16); color: #ffc94a; box-shadow: 0 0 8px rgba(255,201,74,.3); }
 @keyframes hvSwL { from { transform: translateX(26px); opacity: .55; } to { transform: none; opacity: 1; } }
 @keyframes hvSwR { from { transform: translateX(-26px); opacity: .55; } to { transform: none; opacity: 1; } }
@@ -2058,6 +2085,7 @@ const HMS = {
     if (cur[0].k === k) return s;
     if (base.includes(k)) return { key: k, dir: defDir, then: [] };
     const old = cur.find(x => x.k === k);
+    if (!HMS.multiOn()) return { key: k, dir: old ? old.d : defDir, then: [] };   // 「＋重ねる」が切れている時は、押した1つだけで並べる(2026-11-17 本人)
     return { key: k, dir: old ? old.d : defDir, then: cur.filter(x => x.k !== k && !base.includes(x.k)).slice(0, 4) };
   },
   from(L) { return { key: L[0].k, dir: L[0].d, then: L.slice(1, 5) }; },   // 最大5つ(2026-11-07 本人の指定)
@@ -2067,7 +2095,7 @@ const HMS = {
   swap(s, k, defDir, base) {
     if (base.includes(k)) return { key: k, dir: defDir, then: [] };
     const old = HMS.list(s).find(x => x.k === k);
-    return { key: k, dir: old ? old.d : defDir, then: (s.then || []).filter(x => x.k !== k && !base.includes(x.k)).slice(0, 4) };
+    return { key: k, dir: old ? old.d : defDir, then: HMS.multiOn() ? (s.then || []).filter(x => x.k !== k && !base.includes(x.k)).slice(0, 4) : [] };
   },
   // このレース(この日)に無い項目は外して使う(保存はそのまま)
   fit(s, keys, def) {
@@ -2132,9 +2160,11 @@ const HMS = {
     try { if (on) { localStorage.setItem(name + "_pin", "1"); HMS.save(name, s); } else { localStorage.removeItem(name + "_pin"); HMS.save(name, null); } } catch {}
     return on;
   },
+  multiOn() { try { return localStorage.getItem("hivep_hms_multi") === "1"; } catch { return false; } },   // ＋重ねる: 押している間だけ①②③と重ねる(全画面共通・この端末に覚える)
   pinBtn(name, scope) {   // 固定していない時は「固定する」(押すと固定)、固定中は金色の「固定中 ✕」(押すと解除)
-    const on = HMS.pinned(name);
-    return `<button type="button" class="hms-pin${on ? " pin-on" : ""}" data-hms-pin="${scope}" aria-pressed="${on}" title="${on ? "固定中: どのレースもこの並び(押すと解除)" : "押すと今の並びを固定(どのレースもこの並び)"}">${on ? "📌固定中" : "📌固定"}</button>`;
+    const on = HMS.pinned(name), m = HMS.multiOn();
+    return `<button type="button" class="hms-multi${m ? " on" : ""}" data-hms-multi="${scope}" aria-pressed="${m}" title="${m ? "重ねる中: 押した順に①②③と重ねます(押すと1つだけに戻す)" : "押すと、並べ替えを①②③と重ねられます"}">${m ? "＋重ねる中" : "＋重ねる"}</button>`
+      + `<button type="button" class="hms-pin${on ? " pin-on" : ""}" data-hms-pin="${scope}" aria-pressed="${on}" title="${on ? "固定中: どのレースもこの並び(押すと解除)" : "押すと今の並びを固定(どのレースもこの並び)"}">${on ? "📌固定中" : "📌固定"}</button>`;
   },
 
   pinMsg(on, def) { return on ? "📌 この並びで固定しました<br><small>どのレースを開いてもこの並びです</small>" : `📌 固定を外しました<br><small>${def}に戻しました</small>`; },
@@ -2948,7 +2978,7 @@ function viewHome(d) {
     return [h && h.mark ? `<b class="pk-mark">${esc(h.mark)}</b>` : "", r && r.course ? esc(r.course) : "", r && r.field ? `${r.field}頭` : ""].filter(Boolean).join(" ・ "); };
   const card = x => `
     <button class="pick s${x.st} ${true ? "longname" : ""} ${x.fin != null ? (x.fin === 1 ? "done-hit" : (x.fin <= 3 ? "done-place" : "done-miss") + " done-sm") + ` has-fz pz${x.fin <= 3 ? x.fin : "x"}` : ""}" data-race="${esc(x.id)}" data-race-group="osusume" data-hno="${x.hno ?? ""}">${x.fin === 1 ? hitFx() : ""}
-      <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}${x.back ? `<span class="urg-badge back">✅やっぱり買い</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
+      <div class="where"><span class="stars t${x.st}">${starStr(x.st)}</span>${x.nm ? `<span class="nm-badge">🍯濃蜜</span>` : ""}${x.urg ? `<span class="urg-badge">🚨急遽</span>` : ""}${x.back ? `<span class="urg-badge back">✅やっぱり買い</span>` : ""}<span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post)}発走</span>
         <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">はずれ</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
       <span class="hex m1">${x.hno ?? "—"}</span>
       <div class="ph"><b>${esc(x.name)}</b><small>${pickSub(x)}</small></div>
@@ -2994,7 +3024,7 @@ function viewHome(d) {
       </button>`).join("")}</div></div>`;
   }
   const oa = d.oana || [];   // 🎲大穴(単勝100倍超・おすすめとは別枠 2026-11-01)
-  const oaCard = x => `<button class="pick oana-card${x.fin === 1 ? " done-hit" : x.fin != null ? " done-sm" : ""}" data-race="${esc(x.id)}" data-race-group="oana" data-hno="${x.hno ?? ""}">
+  const oaCard = x => `<button class="pick oana-card${x.fin === 1 ? " done-hit" : x.fin != null ? (x.fin <= 3 ? " done-place" : " done-miss") + " done-sm" : ""}" data-race="${esc(x.id)}" data-race-group="oana" data-hno="${x.hno ?? ""}">
         <div class="where"><span class="oana-tag">🎲 大穴</span><span>${esc(x.venue)}${x.no}R</span><span>${esc(x.post || "")}発走</span>
           <span class="t">${x.fin != null ? (x.fin === 1 ? `<span class="pill hit">🎉 的中！</span>` : `<span class="pill miss">${x.fin}着</span>`) : `<span class="pill wait" data-cd="${esc(x.post)}" data-fallback="結果待ち"></span>`}</span></div>
         <span class="hex">${x.hno ?? "—"}</span>
@@ -3027,7 +3057,7 @@ const KD_YEN = n => Math.round(n || 0).toLocaleString("ja-JP") + "円";
   const st = document.createElement("style"); st.id = "kd-style";
   st.textContent = ".kd-grid{display:grid;gap:10px}" +
     ".kd-card{background:var(--panel,#1d150a);border:1px solid var(--line,#3a2a12);border-radius:12px;padding:10px 12px}" +
-    ".kd-card.kd-done{opacity:.92}" +
+    ".kd-card.kd-done{opacity:.92}" + ".kd-card.kd-miss{opacity:.55;filter:saturate(.5)}" +
     ".kd-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px}.kd-h b{font-size:15px}.kd-h .kd-post{color:var(--muted,#a8977a);font-size:12px}" +
     ".kd-h a{color:inherit;text-decoration:none}" +
     ".kd-h .kd-tag{margin-left:auto;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;border:1px solid var(--line,#3a2a12);color:var(--muted,#a8977a)}" +
@@ -3132,7 +3162,7 @@ function kdRender0(races, opt) {
     }).join("");
     const link = opt.link ? opt.link(r) : "";
     const kHit = r.result && hit.length;   // 的中は単勝の1着と同じく金色に(2026-11-15)
-    return `<div class="kd-card${r.result ? " kd-done" : ""}${kHit ? " kd-hit" : ""}">${kHit ? hitFx() : ""}<div class="kd-h">${link ? `<a ${link}><b>${KD_ESC(r.venue)}${r.no}R</b></a>` : `<b>${KD_ESC(r.venue)}${r.no}R</b>`}<span class="kd-post">${KD_ESC(r.post)}発走</span>${tag}</div>${ax ? `<div class="kd-ax">軸 ${ax}</div>` : ""}${lines}</div>`;
+    return `<div class="kd-card${r.result ? " kd-done" : ""}${kHit ? " kd-hit" : r.result ? " kd-miss" : ""}"${link ? ` data-kd-race="${KD_ESC(r.race_id)}" data-kd-done="${r.result ? 1 : 0}"` : ""}>${kHit ? hitFx() : ""}<div class="kd-h">${link ? `<a ${link}><b>${KD_ESC(r.venue)}${r.no}R</b></a>` : `<b>${KD_ESC(r.venue)}${r.no}R</b>`}<span class="kd-post">${KD_ESC(r.post)}発走</span>${tag}</div>${ax ? `<div class="kd-ax">軸 ${ax}</div>` : ""}${lines}</div>`;
   }).join("")}</div>`;
 }
 // はずれた馬の開け閉め(描き直しても保つ)と📌固定(次に開いたときも開いたまま)
@@ -3638,10 +3668,25 @@ function unitSetupPub() {   // おすすめの上の「1点の金額」。初め
     <button type="button" class="us-ok" data-unit-ok>この金額で見る</button></div>`;
 }
 
+// 🍯濃蜜(特に自信のある推奨)と、いつものおすすめを分けた成績(2026-11-17 本人)。金額の強弱は出さず、1点1,000円の換算だけ
+function nmBlock(d) {
+  const A = S.snap?.nm_stats || {}, ym = String(d.date || "").slice(0, 7), y = ym.slice(0, 4);
+  const P = { day: { tab: "この日", v: d.nm_perf }, month: { tab: ym ? `${+ym.slice(5)}月` : "今月", v: A[ym] }, year: { tab: `${y}年`, v: A[y] }, all: { tab: "通算", v: A.all } };
+  if (!A.all && !d.nm_perf) return "";
+  const cur = P[S.nmPer]?.v ? S.nmPer : (d.nm_perf ? "day" : "all");
+  const v = P[cur].v;
+  const box = (lab, a, cls) => { const [n, hit, ret] = a || [0, 0, 0], pl = (ret - n * 100) * 10;
+    return `<div class="nm-box ${cls}"><div class="nm-h">${lab}</div><div class="nm-g num"><div><span>的中</span><b>${n ? `${hit}/${n}` : "—"}</b></div><div><span>的中率</span><b>${n ? pct(hit / n, 0) : "—"}</b></div><div><span>1点1,000円なら</span><b class="${n ? (pl >= 0 ? "plus" : "minus") : ""}">${n ? (pl === 0 ? "±0円" : yenPM(pl)) : "—"}</b></div></div></div>`; };
+  const seg = `<div class="seg">${Object.entries(P).filter(([, p]) => p.v).map(([k, p]) => `<button type="button" data-nm-per="${k}" class="${k === cur ? "on" : ""}">${p.tab}</button>`).join("")}</div>`;
+  return `<section><h2>🍯濃蜜の成績<span class="sub">おすすめ・単勝</span></h2>${seg}
+    ${box(`<span class="nm-badge">🍯濃蜜</span> 特に自信のある推奨`, v?.nm, "nm")}${box("いつものおすすめ", v?.ot, "")}
+    <p class="note">※🍯濃蜜は、おすすめの中でも特に自信のある馬です。13年の検証では濃蜜のほうが的中も回収も上でしたが、短い期間では逆になることもあります。※1頭同じ金額で計算(${v?.days ? `${v.days}日分` : "結果が出た分"})</p></section>`;
+}
 function viewPerf(d) {
   const p0 = d.perf || {};
   const rp = d.rec_perf || (p0.n ? { source: "app", actual: { n: p0.n, hit: p0.hit, hit_rate: p0.hit / p0.n, roi: p0.roi, profit: p0.roi == null ? null : (p0.roi - 1) * p0.n * 1000 } } : null);
   let h = perfDashboard(d, rp) + (rp ? recPerfBlock(rp, `${esc(d.label)} のおすすめの成績`) : `<section><h2>${esc(d.label)} のおすすめの成績<span class="sub big">単勝</span></h2>${hvEmpty(`${(d.osusume || []).length ? "まだ結果が出ていません" : "この日はおすすめの馬がいませんでした"}`, { fill: false, next: false })}</section>`);
+  h += nmBlock(d);
   h += hist13Block();   // その日のおすすめの成績(見送り)のすぐ下に過去13年の検証(携帯と同じ並び・2026-11-07 本人の指定)
   const per = S.snap.period, PM = pubMonth();
   if (per) {
@@ -3737,7 +3782,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
-    <div class="wrap">${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;   // オッズ・払戻の注意書きはページ下のフッターへ移した(2026-10-31)
+    <div class="wrap">${r.done ? payBlock(r) : ""}${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;   // オッズ・払戻の注意書きはページ下のフッターへ移した(2026-10-31)
   h += `<div class="horse-sort hmsbar${HMS.multi(ds) ? " hm" : ""}" aria-label="並べ替え(押した順に①②③。向きは下の札の⇅で変えます)">${sortKeys.map(([sortKey, label]) => {
     const active = key === sortKey;
     return `<button data-public-sort="${sortKey}" class="${active ? "on" : ""}${HMS.cls(ds, sortKey)}${sortKey === "fin" ? " sm" : ""}" data-direction="${active ? HMS.word(sortKey, direction) : ""}">${label}${HMS.mark(ds, sortKey)}</button>`;
@@ -3767,6 +3812,17 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   if (S.focus && S.focus.id === id) focusHorse(sh, S.focus.no, !isStep || !!S.focusNav);
 }
 
+// 💴 結果の払戻(全券種・結果が確定したレースだけ・2026-11-17 本人)。畳める・📌固定で いつも開く(この端末に覚える)
+function payBlock(r) {
+  const ps = r && r.pays; if (!ps || !ps.length) return "";
+  const rows = []; let last = "";
+  for (const p of ps) { rows.push(`<tr><td class="pt">${p.t === last ? "" : esc(p.t)}</td><td class="pk">${esc(p.k)}</td><td class="py">${Number(p.y).toLocaleString("ja-JP")}円</td><td class="pn">${p.n ? p.n + "人気" : ""}</td></tr>`); last = p.t; }
+  const pin = (() => { try { return localStorage.getItem("hive_pay_pin") === "1"; } catch { return false; } })();
+  const opn = (window.__dn || {}).pay != null ? window.__dn.pay : pin;
+  const one = t => ps.find(p => p.t === t), tan = one("単勝"), san = one("3連単");
+  const peek = [tan ? `単勝 ${esc(tan.k)} ${Number(tan.y).toLocaleString("ja-JP")}円` : "", san ? `3連単 ${Number(san.y).toLocaleString("ja-JP")}円` : ""].filter(Boolean).join("・");
+  return `<details class="done-box pay-box" data-pk="pay"${opn ? " open" : ""}><summary class="done-head">💴 払戻<small>${peek}</small><span class="dn-arrow"></span><button type="button" class="dn-pin${pin ? " on" : ""}">📌 ${pin ? "固定中" : "固定"}</button></summary><table>${rows.join("")}</table></details>`;
+}
 // おすすめから開いたときは、その馬を目立たせて、その位置まで送る
 function focusHorse(sh, no, scroll) {
   if (no == null) return;
@@ -3780,6 +3836,62 @@ function focusHorse(sh, no, scroll) {
     sh.scrollTop = Math.max(0, el.getBoundingClientRect().top - sh.getBoundingClientRect().top - (head ? head.offsetHeight : 0) - (nav ? nav.offsetHeight : 0) - 12); }
 }
 
+
+// 上の帯を押したら一番上へ戻る(2026-11-17 本人「全てのページで」): 出馬表は出馬表の一番上、ほかの画面は画面の一番上。
+// iPhone は押せる見た目(cursor:pointer)が無い所のクリックを拾わないので、CSS で付けてある
+document.addEventListener("click", e => {
+  if (!e.target.closest || e.target.closest("button, a, input, select, label, summary, [data-race]")) return;
+  const sh = document.getElementById("sheet");
+  if (e.target.closest("#sheet .sheet-head")) {
+    if (!sh || sh.hidden) return;
+    try { sh.scrollTo({ top: 0, behavior: "smooth" }); } catch { sh.scrollTop = 0; }
+  } else if (e.target.closest("header.top")) {
+    if (sh && !sh.hidden) return;
+    try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); }
+  }
+});
+// 出馬表など(上に重なる画面)を開いている時も、上を押したら一番上へ(2026-11-17 本人「飛んだ先でも」)
+// ① 見出しの帯を指で押した時: クリックが来ない iPhone もあるので、指を離した時にも拾う
+// ② iPhone の一番上(時計の所)を押した時: iPhone は奥の画面しか上へ送らないので、その動きを拾って重なっている画面を上へ送る
+(() => {
+  const sh = document.getElementById("sheet"); if (!sh) return;
+  const open = () => !sh.hidden;
+  const toTop = () => { try { sh.scrollTo({ top: 0, behavior: "smooth" }); } catch { sh.scrollTop = 0; } };
+  let ts = null, lastTop = 0;
+  document.addEventListener("touchstart", e => {
+    ts = null; if (!open() || e.touches.length !== 1) return;
+    const t = e.target; if (!t.closest || !t.closest("#sheet .sheet-head") || t.closest("button, a, input, select, label, summary")) return;
+    ts = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+  }, { passive: true });
+  document.addEventListener("touchend", e => {
+    const s = ts; ts = null; if (!s || !open()) return;
+    const c = e.changedTouches[0]; if (Math.abs(c.clientX - s.x) > 12 || Math.abs(c.clientY - s.y) > 12 || Date.now() - s.t > 700) return;
+    lastTop = Date.now(); toTop();
+  }, { passive: true });
+  // 奥の画面の位置を少しだけ下げておき、時計の所を押して奥が上へ動いたら、重なっている画面を上へ送って奥は元へ戻す
+  let base = null, back = null, busy = false, fired = false;
+  const arm = () => { base = Math.max(2, window.scrollY); if (window.scrollY < 2) { busy = true; window.scrollTo(0, 2); setTimeout(() => { busy = false; }, 120); } };
+  try { new MutationObserver(() => {
+    if (open() && base == null) arm();
+    else if (!open() && base != null) { const b = base; base = null; if (b === 2 && window.scrollY <= 2) window.scrollTo(0, 0); }
+  }).observe(sh, { attributes: true, attributeFilter: ["hidden"] }); } catch {}
+  window.addEventListener("scroll", () => {
+    if (!open() || base == null || busy) return;
+    if (window.scrollY < base - 1) {
+      if (!fired) { fired = true; if (Date.now() - lastTop > 400) toTop(); }
+      clearTimeout(back);
+      back = setTimeout(() => { busy = true; window.scrollTo(0, base); fired = false; setTimeout(() => { busy = false; }, 120); }, 250);
+    }
+  }, { passive: true });
+})();
+// おすすめの馬単・馬連・3連単の札を押したら、そのレースへ。結果が出ていれば着順の並びで開く(2026-11-17 本人)
+document.addEventListener("click", e => {
+  const c = e.target.closest && e.target.closest(".kd-card[data-kd-race]");
+  if (!c || e.target.closest("summary, .dn-pin")) return;
+  e.preventDefault();
+  S.focusNav = null; S.floatPinned = false;
+  openRace(c.dataset.kdRace, c.dataset.kdDone === "1" ? "results" : "race", false, null);
+});
 function closeSheet() { const sh = $("#sheet"); S.focusNav = null; S.floatPinned = false; sh.classList.remove("head-hidden"); if (sh.hidden) return; sh.hidden = true; sh.innerHTML = ""; document.body.style.overflow = ""; }
 window.addEventListener("popstate", closeSheet);
 // 出馬表: 下へスクロール中は上の見出しを隠す / 上へ戻す・一番上に近づくとまた出す
@@ -4252,7 +4364,7 @@ $("#lockForm").addEventListener("submit", e => { e.preventDefault(); unlock($("#
 document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || t.closest("form")) return;
   if (t.id === "back") { try { history.back(); } catch {} closeSheet(); return; }
-  if (t.dataset.hmsPin || t.dataset.hmsFlip || t.dataset.hmsDel) { hmsAct(t); return; }   // 並べ替えの札(⇅・✕)と📌固定
+  if (t.dataset.hmsPin || t.dataset.hmsFlip || t.dataset.hmsDel || t.dataset.hmsMulti) { hmsAct(t); return; }   // 並べ替えの札(⇅・✕)と📌固定
   if (t.dataset.detailStep) {
     S.floatPinned = true;   // 下の ‹ › で送ったら、次のレースでも出したままにする
     if (S.focusNav) {   // 馬の一覧から開いた時: 次の「対象の馬」へ(同じレースの別の馬もあり)
@@ -4333,6 +4445,7 @@ document.addEventListener("click", e => {
     window.scrollTo(0, y); return;
   }
   if (t.dataset.dashT) { const y = window.scrollY; S.dashT = t.dataset.dashT; store.set("hivep_dash_t", S.dashT); render(); window.scrollTo(0, y); return; }
+  if (t.dataset.nmPer) { const y = window.scrollY; S.nmPer = t.dataset.nmPer; render(); window.scrollTo(0, y); return; }
   if (t.dataset.moneyPer) { const y = window.scrollY; S.moneyPer = t.dataset.moneyPer; render(); window.scrollTo(0, y); return; }
   if (t.dataset.h13) { const y = window.scrollY; S.h13 = t.dataset.h13; render(); window.scrollTo(0, y); return; }
   if (t.hasAttribute && t.hasAttribute("data-unit-ok")) {   // 初めての金額の決定(2026-11-07)
@@ -4462,10 +4575,13 @@ const HMS_SCOPES = {
     draw() { const y = window.scrollY; render(); window.scrollTo(0, y); } },
 };
 function hmsAct(t) {
-  const [scope, k] = (t.dataset.hmsFlip || t.dataset.hmsDel || t.dataset.hmsPin).split(":"), c = HMS_SCOPES[scope]; if (!c) return;
+  const [scope, k] = (t.dataset.hmsFlip || t.dataset.hmsDel || t.dataset.hmsPin || t.dataset.hmsMulti).split(":"), c = HMS_SCOPES[scope]; if (!c) return;
   const sel = scope === "detail" ? "#sheet .hmsbar" : "#view .hmsbar", bar = document.querySelector(sel), left = bar ? bar.scrollLeft : 0;
   let msg = "";
-  if (t.dataset.hmsPin) { const on = HMS.togglePin(c.pin, c.get()); if (!on) c.set(c.def()); msg = HMS.pinMsg(on, c.defName); }   // 固定を外したら、すぐ元の並びに戻す
+  if (t.dataset.hmsMulti) { const on = !HMS.multiOn(); try { localStorage.setItem("hivep_hms_multi", on ? "1" : "0"); } catch {}
+    if (!on) { const cur = c.get(); c.set({ key: cur.key, dir: cur.dir, then: [] }); HMS.keep(c.pin, c.get()); }   // 切ったら①だけ残す
+    msg = on ? "＋ 重ねる: 押した順に①②③と重なります" : "1つだけで並べます(①だけ残しました)"; }
+  else if (t.dataset.hmsPin) { const on = HMS.togglePin(c.pin, c.get()); if (!on) c.set(c.def()); msg = HMS.pinMsg(on, c.defName); }   // 固定を外したら、すぐ元の並びに戻す
   else if (t.dataset.hmsFlip) { c.set(HMS.flip(c.get(), k)); HMS.keep(c.pin, c.get()); }
   else { c.set(HMS.del(c.get(), k, c.def())); HMS.keep(c.pin, c.get()); }
   c.draw(); const nb = document.querySelector(sel); if (nb) nb.scrollLeft = left;
