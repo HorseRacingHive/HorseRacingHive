@@ -1793,7 +1793,7 @@ const RACE_TIER = { 3: "勝負", 2: "注目", 1: "買い" };
 const raceTier = st => st >= 5 ? 3 : st >= 4 ? 2 : st >= 2 ? 1 : 0;
 const tierHtml = st => st >= 2 ? `<span class="stars t${st}">${starStr(st)}</span>` : "";   // 札はおすすめタブと同じ★表示(2026-10-29)
 
-const yenPM = n => n == null ? "—" : (n >= 0 ? "+" : "−") + Math.abs(Math.round(n)).toLocaleString("ja-JP") + "円";
+const yenPM = n => n == null ? "—" : (n >= 0 ? "+" : "−") + (Math.round(Math.abs(n) / 10) * 10).toLocaleString("ja-JP") + "円";   // 馬券の払戻は10円単位。回収率(小数2けた)から出す金額は端数が出るので10円に丸める(2026-11-18 本人)
 // 収支(案A)(2026-10-29・10-31): 金額は出さず、収支は「何点分」・回収率を横に。periods = { key: { lab, roi, n, hit } }
 // 回収率の絵: 巣が満タン(100%)になると蜜がしたたり、下の蜜だまりが広がって蜂が集まる
 let _hpId = 0;
@@ -1840,7 +1840,7 @@ function moneyA(periods, cur, attr) {
     <div class="hero"><span class="lab">${esc(a.lab)}の収支</span><span class="big ${has ? (pts >= 0 ? "plus" : "minus") : ""}">${has ? (pts > 0 ? "+" : pts < 0 ? "−" : "±") + Math.abs(pts).toLocaleString("ja-JP") + "点" : "—"}</span></div>
     ${has ? `<div class="hp-wrap">${honeyPool(a.roi)}<div class="hp-side">${hpBadge(a.roi)}
       <span>回収率 <b class="big2 ${ret >= 100 ? "plus" : "minus"}">${ret}%</b></span>
-      <span class="pt-unit-row">${(a.ut || "単勝") === "total" ? `<small>設定した1点の金額なら</small>` : `1点${unitInput(a.ut || "単勝", "pt-unit")}円なら`} <b class="yen ${(a.yen ?? pts) >= 0 ? "plus" : "minus"}">${(() => { const y = a.yen != null ? Math.round(a.yen) : pts * unitOf(a.ut || "単勝"), sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + v.toLocaleString("ja-JP") + "円";   /* 万にまとめず1円まで(2026-11-18 本人「3.5万じゃなく35,000」) */ })()}</b></span>
+      <span class="pt-unit-row">${(a.ut || "単勝") === "total" ? `<small>設定した1点の金額なら</small>` : `1点${unitInput(a.ut || "単勝", "pt-unit")}円なら`} <b class="yen ${(a.yen ?? pts) >= 0 ? "plus" : "minus"}">${(() => { const y = Math.round((a.yen != null ? a.yen : pts * unitOf(a.ut || "単勝")) / 10) * 10, sg = y > 0 ? "+" : y < 0 ? "−" : "±", v = Math.abs(y); return sg + v.toLocaleString("ja-JP") + "円";   /* 万にまとめず1円まで(2026-11-18 本人「3.5万じゃなく35,000」) */ })()}</b></span>
       <span>的中 <b>${a.hit}/${a.n}</b></span><span>${esc(a.kind || "単勝")} ・ 1点買うのを1として</span></div></div>`
     : `<div class="note">${a.loading ? "集計しています…" : a.empty || "まだ結果が出ていません"}</div>`}</div>`;
 }
