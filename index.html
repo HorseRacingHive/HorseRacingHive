@@ -3673,15 +3673,16 @@ function unitSetupPub() {   // おすすめの上の「1点の金額」。初め
 // 🍯濃蜜(特に自信のある推奨)と、いつものおすすめを分けた成績(2026-11-17 本人)。金額の強弱は出さず、1点1,000円の換算だけ
 function nmBlock(d) {
   const A = S.snap?.nm_stats || {}, ym = String(d.date || "").slice(0, 7), y = ym.slice(0, 4);
-  const P = { day: { tab: "この日", v: d.nm_perf }, month: { tab: ym ? `${+ym.slice(5)}月` : "今月", v: A[ym] }, year: { tab: `${y}年`, v: A[y] }, all: { tab: "通算", v: A.all } };
-  if (!A.all && !d.nm_perf) return "";
-  const cur = P[S.nmPer]?.v ? S.nmPer : (d.nm_perf ? "day" : "all");
+  const dn = d.nm_perf || (S.snap?.nm_days || {})[d.date];   // 過去の日(2014〜8/9)は検証の数字(2026-11-18)
+  const P = { day: { tab: "この日", v: dn }, month: { tab: ym ? `${+ym.slice(5)}月` : "今月", v: A[ym] }, year: { tab: `${y}年`, v: A[y] }, all: { tab: "通算", v: A.all } };
+  if (!A.all && !dn) return "";
+  const cur = P[S.nmPer]?.v ? S.nmPer : (dn ? "day" : "all");
   const v = P[cur].v;
   const box = (lab, a, cls) => { const [n, hit, ret] = a || [0, 0, 0], pl = (ret - n * 100) * 10;
     return `<div class="nm-box ${cls}"><div class="nm-h">${lab}</div><div class="nm-g num"><div><span>的中</span><b>${n ? `${hit}/${n}` : "—"}</b></div><div><span>的中率</span><b>${n ? pct(hit / n, 0) : "—"}</b></div><div><span>1点1,000円なら</span><b class="${n ? (pl >= 0 ? "plus" : "minus") : ""}">${n ? (pl === 0 ? "±0円" : yenPM(pl)) : "—"}</b></div></div></div>`; };
   const seg = `<div class="seg">${Object.entries(P).filter(([, p]) => p.v).map(([k, p]) => `<button type="button" data-nm-per="${k}" class="${k === cur ? "on" : ""}">${p.tab}</button>`).join("")}</div>`;
   return `<section><h2>🍯濃蜜の成績<span class="sub">おすすめ・単勝</span></h2>${seg}
-    ${box(`<span class="nm-badge">🍯濃蜜</span> 特に自信のある推奨`, v?.nm, "nm")}${box("いつものおすすめ", v?.ot, "")}
+    ${box(`<span class="nm-badge">🍯濃蜜</span> 特に自信のある推奨`, v?.nm, "nm")}${box("いつものおすすめ", v?.ot, "")}${v?.kensho ? `<p class="note">📘 ${cur === "day" ? "この日" : "この期間"}には過去の検証が入っています(11/13まで: 各年をその年より前のデータだけで学んだAI・発走4分前のオッズ・単勝の確定払戻)</p>` : ""}
     <p class="note">※🍯濃蜜は、おすすめの中でも特に自信のある馬です。13年の検証では濃蜜のほうが的中も回収も上でしたが、短い期間では逆になることもあります。※1頭同じ金額で計算(${v?.days ? `${v.days}日分` : "結果が出た分"})</p></section>`;
 }
 function viewPerf(d) {
