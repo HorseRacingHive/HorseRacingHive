@@ -1177,6 +1177,10 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 .nm-box .nm-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
 .nm-box .nm-g span { display: block; font-size: 11px; opacity: .7; }
 .nm-box .nm-g b { font-size: 18px; }
+/* 2026-11-18 本人「文字が大きくて見切れる」: 金額の列を広く・数字を画面幅に合わせて小さく・折り返さない */
+.nm-box .nm-g { grid-template-columns: minmax(0, 1.05fr) minmax(0, .6fr) minmax(0, 1.45fr) !important; }
+.nm-box .nm-g > div { min-width: 0; }
+.nm-box .nm-g b { display: block; white-space: nowrap; font-size: clamp(13px, 4.1vw, 18px) !important; line-height: 1.25; letter-spacing: -.01em; }
 .sheet-head .sheet-title { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .pay-box { margin: 10px 0 4px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; background: var(--panel); }
 .pay-box table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -2824,40 +2828,40 @@ function viewOverseas(onDate) {
   const ov = onDate ? ovFor(onDate) : ((S.snap && S.snap.overseas) || []), rc = S.snap && S.snap.overseas_rec;
   if (!ov.length) return hvEmpty("海外のレースはありません");
   const roi = t => t && t.roi != null ? t.roi + "%" : "—";
-  const recHtml = rc && (rc.plan.races || rc.win.races) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(参考程度に・別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
-    <div class="ovs-rec" style="margin-top:6px"><div><small class="note">🎯 おすすめの買い方</small><br><b>${roi(rc.plan)}</b><br><small class="note">${rc.plan.races}レース・的中${rc.plan.hits}</small></div>
-    <div><small class="note">🐝 単勝の買い全部</small><br><b>${roi(rc.win)}</b><br><small class="note">${rc.win.races}レース・的中${rc.win.hits}</small></div>
+  const recBox = (lab, t) => t ? `<div><small class="note">${lab}</small><br><b>${roi(t)}</b><br><small class="note">${t.races}レース${t.pts != null ? "・" + t.pts + "点" : ""}・的中${t.hits}</small></div>` : "";
+  const recHtml = rc && (rc.plan.races || rc.win.races || (rc.rows || []).length) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(参考程度に・別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
+    <div class="ovs-rec" style="margin-top:6px">${recBox(rc.paper ? "🎯 買い全部(単勝+複勝)" : "🎯 おすすめの買い方", rc.plan)}${recBox(rc.paper ? "🐝 単勝" : "🐝 単勝の買い全部", rc.win)}${recBox("🎯 複勝", rc.place)}
     ${rc.base ? `<div><small class="note">📏 基準(外国馬6〜30倍を全部)</small><br><b>${roi(rc.base)}</b><br><small class="note">${rc.base.races}レース・的中${rc.base.hits}</small></div>` : ""}</div>
-    ${(rc.rows || []).slice().reverse().map(x => `<div class="note">${esc(x.date)} ${esc(x.name)}:${esc(x.plan || "見送り")} ${x.hit ? "🎯的中" : "はずれ"}(${(x.order || []).join("-")})</div>`).join("")}</section>` : "";
+    ${(rc.rows || []).slice().reverse().map(x => `<div class="note">${esc(x.date)} ${esc(x.name)}:${esc(x.plan || "見送り")} ${x.plan ? (x.hit ? "🎯的中" : "はずれ") : ""}(${(x.order || []).join("-")})</div>`).join("")}</section>` : "";
   return recHtml + ov.map(r => {
     const head = `<div class="ovs-head"><b>🌏 ${esc(r.name)}</b><br><small>${esc(r.date)} ${r.post ? esc(r.post) + " 発走(日本時間)" : ""}${r.venue ? "・" + esc(r.venue) : ""}</small></div>
       <div class="note" style="border:1px dashed var(--line);border-radius:10px;padding:6px 10px">📝 <b>海外は参考程度に</b>。海外競馬はHIVEの<b>おすすめレースには含まれません</b>(成績も別枠)。</div>`;
     if (!r.open) return `<section class="card ovs-race">${head}<p class="note">🕘 判定は ${esc(r.open_at)} から公開します(日本のオッズが出てから) ${openTag(r.date, r.open_at)}</p>
       <p class="note">出走 ${r.rows.length}頭</p></section>`;
     const fin = r.fin || {};
-    const rs = r.res, nmOf = n => ((r.rows || []).find(x => x.no === n) || {}).name || "";   // 🏁 結果(共有用: 着順と、おすすめの形の当否だけ・2026-11-03)
-    const resBox = rs && (rs.order || []).length ? `<div class="ovs-res"><h3>🏁 結果</h3><b>${rs.order.map((n, i) => `${i + 1}着 ${n} ${esc(nmOf(n))}`).join("・")}</b>${(rs.plan || []).length ? `<div class="note">🎯 おすすめの形(${rs.plan.map(t => t.t + t.no).join("・")}): <span class="${rs.hit ? "plus" : "minus"}">${rs.hit ? "🎯的中" : "はずれ"}</span></div>` : ""}</div>` : "";
-    const buys = r.buys || [];
-    const pl = r.plan || [], pt = t => pl.filter(x => x.t === t).map(x => x.no).join("・"), fb = r.fbuys || [];
-    const planBox = pl.length ? `<div class="ovs-plan"><h3>🎯 おすすめの買い方(参考程度に・各1点・別枠の少額で)</h3><div class="bet">${[pt("単") && "単勝 " + pt("単"), pt("複") && "複勝 " + pt("複")].filter(Boolean).join(" + ")}</div>
-      <div class="note">的中率 約${r.hit}%・どれが当たっても赤字にならない形(単勝で割に合う馬を取りにいき、複勝で当てやすさを足す)</div></div>` : "";
-    const box = planBox + (buys.length || fb.length ? `<div class="ovs-buy"><h3>🐝 割に合う馬</h3><div class="bet" style="font-size:15px">${buys.length ? "単勝 " + [...buys].sort((a, z) => a - z).join("・") : ""}${buys.length && fb.length ? "　" : ""}${fb.length ? "複勝 " + [...fb].sort((a, z) => a - z).join("・") : ""}</div></div>`
-      : `<div class="note"><b>🐝 買いの馬はいません</b>(日本のオッズが現地の見立てより割に合う馬がいない時は、買わないのが正解です)</div>`);
-    const rows = [...r.rows].sort((a, z) => ({ 買い: 0, 検討: 1 }[a.j] ?? 2) - ({ 買い: 0, 検討: 1 }[z.j] ?? 2) || (z.p || 0) - (a.p || 0)).map(x =>
-      `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td><td class="fj ${esc(x.fj || "")}">${{ 買い: "🎯買い", 検討: "検討", 見送り: "—" }[x.fj] || "—"}</td></tr>`).join("");
-    const msgBox = ovAnnBox((r.msgs || []).slice().reverse(), `${r.open_at || ""}の発表から、ここにDiscordと同じお知らせが出ます`, r.id);
+    const rs = r.res, nmOf = n => ((r.rows || []).find(x => x.no === n) || {}).name || "";   // 🏁 結果(共有用: 着順と、買いの形の当否だけ・2026-11-03)
+    const resBox = rs && (rs.order || []).length ? `<div class="ovs-res"><h3>🏁 結果</h3><b>${rs.order.map((n, i) => `${i + 1}着 ${n} ${esc(nmOf(n))}`).join("・")}</b>${(rs.plan || []).length ? `<div class="note">🎯 買いの形(${rs.plan.map(t => t.t + t.no).join("・")}): <span class="${rs.hit ? "plus" : "minus"}">${rs.hit ? "🎯的中" : "はずれ"}</span></div>` : ""}${(rs.bets || []).length ? `<div class="note">${rs.bets.map(b => `${b.t}${b.no} ${b.odds != null ? b.odds + "倍" : ""}→${b.pay ? b.pay.toLocaleString() + "円" : "0円"}`).join("・")}(100円あたり)</div>` : ""}</div>` : "";
+    const pl = r.plan || [], pt = t => pl.filter(x => x.t === t).map(x => x.no).join("・");
+    const box = r.wait ? `<div class="note"><b>⏳ ${esc(r.why || "現地のオッズ待ち")}</b><br>判定は、日本と現地の両方のオッズがそろってから出ます(発走の数時間前から)。</div>`
+      : pl.length ? `<div class="ovs-plan"><h3>🎯 買いの馬(参考程度に・各1点)</h3><div class="bet">${[pt("単") && "単勝 " + pt("単"), pt("複") && "複勝 " + pt("複")].filter(Boolean).join(" + ")}</div>
+      <div class="note">現地の市場の見立てより、日本のオッズが高い馬です(日本馬は入れません)</div></div>`
+      : `<div class="note"><b>🐝 買いの馬はいません</b>(日本のオッズが現地の見立てより割に合う馬がいない時は、買わないのが正解です)</div>`;
+    const ord = { 買い: 0, 検討: 1 }, rk = x => Math.min(ord[x.j] ?? 2, ord[x.fj] ?? 2);
+    const rows = [...r.rows].sort((a, z) => rk(a) - rk(z) || (z.p || 0) - (a.p || 0)).map(x =>
+      `<tr class="${esc(x.j || "")}"><td class="j">${{ 買い: "🐝買い", 検討: "👀検討", 見送り: "見送り", 取消: "取消" }[x.j] || "—"}</td><td class="n">${x.no}</td><td>${esc(x.name)}${x.jpn ? ` <small class="note">日本馬</small>` : ""}${fin[x.no] ? ` <span class="fin">${fin[x.no]}着</span>` : ""}${x.tan != null ? `<br><small class="note">日本${x.tan}倍・現地${x.lo ?? "—"}倍・期待値${x.evw != null ? x.evw.toFixed(2) : "—"}${x.fmin != null && x.evp != null ? `｜複${x.fmin}倍〜・期待値${x.evp.toFixed(2)}` : ""}</small>` : ""}</td><td class="pc">${x.p == null ? "—" : x.p + "%"}</td><td>${x.eb == null ? "" : evMark({ eb: x.eb })}</td><td class="fj ${esc(x.fj || "")}">${{ 買い: "🎯買い", 検討: "検討", 見送り: "—" }[x.fj] || "—"}</td></tr>`).join("");
+    const msgBox = ovAnnBox((r.msgs || []).slice().reverse(), "判定が出たら、ここにお知らせが出ます", r.id);
     return `<section class="card ovs-race">${head}<div>${msgBox}<details class="ann-help"><summary>ℹ️ 海外のお知らせの種類</summary>
 <div class="ah-body">
 <ul class="ah-flow">
-<li><b>📣 発表</b> <span class="ah-t">公開時刻(8:21・午後は12:00)</span> <span class="ah-d">おすすめの買い方</span></li>
-<li><b>⏰ 直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">「そのまま買い」か「見送り」。新しく入った買い目は 🚨急遽</span></li>
-<li><b>🔎 見直し</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">🚨急遽・✅やっぱり買い(ある時だけ)</span></li>
-<li><b>🔔 締切直前</b> <span class="ah-t">発走約4分前</span> <span class="ah-d">最終判断。変わらなくても毎回送ります</span></li>
+<li><b>📣 発表</b> <span class="ah-t">現地のオッズが出たら</span> <span class="ah-d">最初の判定</span></li>
+<li><b>⏰ 直前予想</b> <span class="ah-t">発走約30分前</span> <span class="ah-d">その時点の買いの馬</span></li>
+<li><b>🔎 見直し</b> <span class="ah-t">発走約10分前</span> <span class="ah-d">🚨急遽・❌見送り(変わった時だけ)</span></li>
+<li><b>🔔 締切直前</b> <span class="ah-t">発走約4分前</span> <span class="ah-d">最終判断。変わらなくても毎回出ます</span></li>
 </ul>
-<p class="ah-s">日本のオッズは7:00〜発走までJRAから自動で取り直し(2分ごと・発走15分前からは1分ごと)。Discordの⚡ＡＩ直前速報に届きます。発走後は送りません。</p>
+<p class="ah-s">日本のオッズ(JRA)と現地のオッズを自動で取り直します(発走30分前からは約1分ごと)。Discordの「🌏AI海外予想」にも同じお知らせが届きます。</p>
 </div></details></div>${resBox}${box}
       <table class="ovs-tbl"><thead><tr><th>単勝</th><th>番</th><th>馬名</th><th>勝率</th><th>旨蜜度</th><th>複勝</th></tr></thead><tbody>${rows}</tbody></table>
-      <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝買い・🎯複勝)を出しています。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
+      <p class="note">※海外は、現地の市場の見立ての勝率と日本のオッズの差から、日本で割に合う馬(🐝単勝・🎯複勝)を出しています。👀検討は記録だけの馬です。HIVEのおすすめレース・成績には含めません。日本のオッズは締切直前まで動くので、最後はご自身で確認を。${r.updated ? `判定 ${esc(r.updated)} 時点。` : ""}</p></section>`;
   }).join("");
 }
 function render() {
@@ -2899,12 +2903,12 @@ function render() {
     if (S.tab === "ovs" && !ovFor(S.date).length) S.tab = "home"; }
   if (!d && S.tab === "perf") {   // 開催がない日の成績: 直前の開催日の成績を出す(海外とは混ぜない・2026-11-03)
     const ld = viewDays().filter(x => x.date <= S.date).slice(-1)[0];
-    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 8px">📊 今日はJRAの開催がないので、直前の開催 <b>${esc(ld.label || ld.date)}</b> の成績です(海外の成績は🌏海外のページで別に出します)</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
+    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 8px">📊 今日はJRAの開催がないので、<br>直前の開催 <span style="white-space:nowrap"><b>${esc(ld.label || ld.date)}</b></span> の成績です<br><span style="white-space:nowrap">(海外の成績は🌏海外のページで別に出します)</span></div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
   }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") {   // 開催がない日: 次の開催の案内と、その日の海外のレース(2026-11-03)
     const no = S.snap.next_open, ov = (S.snap.overseas || []).filter(r => r.date === S.date);
     if (S.date !== todayStr() && ovDates().includes(S.date)) { v.innerHTML = h + (ov.length ? viewOverseas(S.date) : hvEmpty("この日の海外の判定は共有ページには残っていません(成績は🌏海外の成績欄に)")); tick(); return; }
-    const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px">次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は <b>${esc(no.open_label)} ${esc(no.open_at)}</b> から。★・おすすめは当日 8:21〜(午後のレースは 12:00〜)</div></section>`
+    const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px">次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は <span style="white-space:nowrap"><b>${esc(no.open_label)} ${esc(no.open_at)}</b> から</span><br>★・おすすめは当日 <span style="white-space:nowrap">8:21〜(午後のレースは 12:00〜)</span></div></section>`
       : S.date > todayStr() ? hvEmpty("まだ予想がありません。出馬表が出たら表示されます。") : hvEmpty("この日はJRAの開催がありません");
     v.innerHTML = h + nx + (ov.length ? viewOverseas(S.date) : ""); tick(); return;
   }
