@@ -947,7 +947,7 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 .ov-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .ov-strip > div { min-width: 0; padding: 5px 6px 6px; text-align: center; border-left: 1px solid var(--line); }
 .ov-strip > div:first-child { border-left: 0; }
-.ov-strip span { display: block; font-size: calc(13px * var(--fz, 1)); color: var(--muted); font-weight: 700; line-height: 1.2; }
+.ov-strip span { display: block; font-size: calc(13px * var(--fz, 1)); color: var(--muted); font-weight: 700; line-height: 1.25; word-break: keep-all; overflow-wrap: anywhere; margin-bottom: 2px; }   /* 見出しは空白の所でだけ折る(「買い/目」と割らない・2026-11-20) */
 .ov-strip b { display: block; font-family: var(--f-disp); font-size: calc(13.5px * var(--fz, 1)); font-weight: 900; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ov-strip b.plus { color: var(--good); } .ov-strip b.minus { color: var(--bad); } .ov-strip small.plus { color: var(--good); font-weight: 800; } .ov-strip small.minus { color: var(--bad); font-weight: 800; }
 .ov-strip small { display: block; font-size: calc(13px * var(--fz, 1)); color: var(--muted); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1128,7 +1128,7 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 .ov-strip b { font-size: calc(14px * var(--fz, 1)); letter-spacing: -.01em; }
 .ov-strip small { font-size: calc(13px * var(--fz, 1)); letter-spacing: -.02em; }
 
-/* 下にスクロールして「前のレース/次のレース」が隠れたら、画面の下に小さな ‹ › を出す(2026-10-28) */
+/* 下にスクロールして「前のレース/次のレース」が隠れたら、画面の下に小さな ‹ › を出す(2026-10-28) */
 .detail-float { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 45; transform: translate(-50%, 16px);
   display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px; background: var(--comb); border: 1px solid rgba(247,201,72,.55);
   box-shadow: 0 6px 20px rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
@@ -1141,7 +1141,7 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 
 /* 出馬表: スクロール中は「前/次」を隠し、上へ戻す・一番下まで読むとまた出す(2026-10-28) */
 .sheet .horse-sort { top: var(--sheet-head-h, 58px); transition: top .18s ease; }
-/* 下の ‹ › も一緒に隠す(上へ戻す・一番下まで読むとまた出る) */
+/* 下の ‹ › も一緒に隠す(上へ戻す・一番下まで読むとまた出る) */
 .sheet.head-hidden .detail-float.show { opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .sheet .horse-sort { transition: none; } }
 /* 2026-11-17 本人: 出馬表を下へ読み進める間は上の見出し(レース名)をしまい、並べ替えの段(馬番・勝率…)を一番上に貼りつける。上へ戻すと見出しがまた出る */
@@ -1151,7 +1151,7 @@ main > .seg + p.note { margin-top: -8px; } main > p.note + .hmsbar { margin-top:
 .sheet.head-hidden .horses > .horse-sort { top: 0; padding-top: env(safe-area-inset-top, 0px); }
 @media (prefers-reduced-motion: reduce) { .sheet .sheet-head { transition: none; } }
 
-/* 下の ‹ › の分だけ、出馬表の一番下に余白 */
+/* 下の ‹ › の分だけ、出馬表の一番下に余白 */
 .sheet { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 
 /* 結果画面: 印の馬が来たら色付け(2026-10-28) */
@@ -1705,6 +1705,13 @@ h2.ann-h2 { display: flex; align-items: center; gap: 8px; } .ann-kind-btn { marg
 #app .pt-unit { font-size: calc(14px * var(--fz, 1)); }
 /* かっこ書きなどの小さな補足(<small>)も13px以上(クラスで大きさを決めている所はそのまま) */
 :where(#app, #sheet) small { font-size: max(calc(13px * var(--fz, 1)), .83em); }
+/* 短い見出し・札は単語の途中で折らない(「点／数」「馬単・馬／連」などにしない・2026-11-20 本人) */
+#app h2, #app .when, #app .why, #app .cap, #app .pool-strip i, #app .kd-b, #sheet h2, #sheet .cap { word-break: keep-all; overflow-wrap: anywhere; }
+#app .h13-tbl th, #app .h13-tbl td:not(:first-child) { white-space: nowrap; }
+#app .card.tbl th, #app .card.tbl td.r, #app .card.tbl td.plus, #app .card.tbl td.minus { white-space: nowrap; }   /* 表の見出しと数字は折り返さない(入りきらなければ表を横にずらす) */
+#app .row { grid-template-columns: calc(52px * var(--fz, 1)) 1fr auto; }   /* 時刻・場・R の欄も文字の大きさに合わせて広く(「福島10／R」と割らない) */
+#app .row .when { white-space: nowrap; }
+#app h2 { flex-wrap: wrap; row-gap: 2px; } #app h2 .sub { white-space: nowrap; }   /* 見出しの補足は折らずに、入りきらなければ次の行へ */
 .fz-pop .fz-n { margin: 8px 0 0; font-size: calc(13px * var(--fz, 1)); color: var(--muted); line-height: 1.5; }
 </style>
 
@@ -2164,7 +2171,7 @@ function announceBlock(list, showEmpty) {
     return showEmpty ? `<section><h2 class="c-ann">直前のお知らせ</h2>${hvEmpty(`※締切約30分前・約10分前の見直し(見送り・やっぱり買い・急遽の買い)と、発走5分前の最終予想がここに出ます`, { fill: false, next: false, style: "font-size:calc(13px * var(--fz, 1))" })}${annHelp()}</section>` : "";
   }
   const row = a => `<div class="ann"><div class="at num">${esc(a.time || "")}<br><span class="kind k-${esc(a.kind)}">${esc(ANN_KIND[a.kind] || a.kind)}</span></div>
-    <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
+    <div class="tx">${a.id ? `<button data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>\n` : ""}${esc(a.text || "")}</div></div>`;
   // 最新の1件を2段で(上: ランプ・種類・レース・時刻・件数 / 下: 中身)。急遽・取消は赤枠で2行、発走10分前を切ったら2行。押すと全部開く
   const a = list[0], rest = list.slice(1);
   const urgent = a.kind === "急遽" || a.kind === "変更";
@@ -2190,7 +2197,7 @@ function announceBlock(list, showEmpty) {
       <span class="at-head"><span class="lamp on ${lampColor} blink" aria-label="新しいお知らせ"></span><b class="at-race">新しいお知らせ ${burst.length}件</b>
         <span class="at-meta num">押すと1行に戻る</span></span></button>
     <div class="at-burst">${burst.map(x => `<div class="ab-row k-${esc(x.kind)}"><div class="ab-head"><span class="kind k-${esc(x.kind)}">${esc(ANN_KIND[x.kind] || x.kind)}</span>${x.race ? `<b class="at-race">${esc(x.race)}${x.post ? ` ${esc(x.post)}発走` : ""}</b>` : ""}<span class="at-meta num">${esc(x.time || "")}</span></div>
-      <div class="ah-text">${esc(x.text || "")}</div>${x.id ? `<button class="ah-race" data-race="${esc(x.id)}" data-race-group="announce">出馬表を見る ›</button>` : ""}</div>`).join("")}</div></div></section>`;
+      <div class="ah-text">${esc(x.text || "")}</div>${x.id ? `<button class="ah-race" data-race="${esc(x.id)}" data-race-group="announce">出馬表を見る ›</button>` : ""}</div>`).join("")}</div></div></section>`;
   }
   let h = `<section class="ann-top"><div class="card ann-tick k-${esc(a.kind)} ${urgent ? "urgent" : ""} ${open ? "open" : ""}">
     <button class="at-row" data-ann-toggle type="button" aria-expanded="${open}">
@@ -2198,7 +2205,7 @@ function announceBlock(list, showEmpty) {
         <span class="at-meta num">${esc(a.time || "")}${rest.length ? ` ・ ${open ? "閉じる ▲" : `他${rest.length}件 ▼`}` : ""}</span></span>
       <span class="at-tx l${lines}">${esc(flat)}</span></button>`;
   if (open) {
-    h += `<div class="at-full">${a.id ? `<button class="ah-race" data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>` : ""}<div class="ah-text">${esc(a.text || "")}</div></div>`;
+    h += `<div class="at-full">${a.id ? `<button class="ah-race" data-race="${esc(a.id)}" data-race-group="announce">${esc(a.race || "")} ${esc(a.post || "")}発走 ›</button>` : ""}<div class="ah-text">${esc(a.text || "")}</div></div>`;
     if (rest.length) h += `<div class="announce scrollbox ah-list">${rest.map(row).join("")}</div>`;
   }
   return h + `</div>${annHelp()}</section>`;
@@ -2978,7 +2985,7 @@ document.addEventListener("click", e => {
 const OV_WAIT = { "日本のオッズ待ち": ["wait", "⏳ 日本のオッズ待ち"], "現地のオッズ待ち": ["wait", "⏳ 現地のオッズ待ち"], "現地のオッズが足りません": ["warn", "⚠️ 現地のオッズが9割未満"], "現地のオッズと馬番が合いません": ["warn", "⚠️ 馬番が合わない"] };
 const ovC = (k, t) => `<span class="ovx-c ${k}">${t}</span>`;
 const ovOut = r => r.win_ok === false && r.place_ok === false;   // 対象外の地域(記録だけ)
-function ovBackBtn() {   // 開催なしの日の［海外ページ ›］から来たとき: 元の日・元のタブへ1タップで戻る
+function ovBackBtn() {   // 開催なしの日の［海外ページ ›］から来たとき: 元の日・元のタブへ1タップで戻る
   const b = S.ovBack; if (!b || S.date !== b.to) return "";
   return `<button type="button" class="ovx-back" data-ovs-back="1">‹ ${esc(hvMDW(b.date))}に戻る</button>`;
 }
@@ -3115,7 +3122,7 @@ function render() {
     if (S.tab === "ovs" && !ovFor(S.date).length) S.tab = "home"; }
   if (!d && S.tab === "perf") {   // 開催がない日の成績: 直前の開催日の成績を出す(海外とは混ぜない・2026-11-03)
     const ld = viewDays().filter(x => x.date <= S.date).slice(-1)[0];
-    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 -12px">📊 開催なし・直前 <span style="white-space:nowrap"><b>${esc(ld.label || ld.date)}</b></span> の成績${(() => { const L = ((S.snap && S.snap.overseas) || []).map(r => r.date).filter(Boolean).sort(), t0 = todayStr(), dd = [...L].reverse().find(x => x <= t0) || L[0]; return dd ? `<br>🌏 海外の成績は<button type="button" data-ovs-go="${esc(dd)}" style="min-height:26px;padding:0 10px;margin:0 2px;border-radius:999px;border:1px solid var(--amber);background:var(--soft);color:var(--accent);font-weight:700;font-size:calc(13px * var(--fz, 1));font-family:inherit;cursor:pointer">海外ページ ›</button>で確認してください` : ""; })()}</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
+    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 -12px">📊 開催なし・直前 <span style="white-space:nowrap"><b>${esc(ld.label || ld.date)}</b></span> の成績${(() => { const L = ((S.snap && S.snap.overseas) || []).map(r => r.date).filter(Boolean).sort(), t0 = todayStr(), dd = [...L].reverse().find(x => x <= t0) || L[0]; return dd ? `<br>🌏 海外の成績は<button type="button" data-ovs-go="${esc(dd)}" style="min-height:26px;padding:0 10px;margin:0 2px;border-radius:999px;border:1px solid var(--amber);background:var(--soft);color:var(--accent);font-weight:700;font-size:calc(13px * var(--fz, 1));font-family:inherit;cursor:pointer">海外ページ ›</button>で確認してください` : ""; })()}</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
   }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") {   // 開催がない日: 次の開催の案内と、その日の海外のレース(2026-11-03)
     const no = S.snap.next_open, ov = (S.snap.overseas || []).filter(r => r.date === S.date);
@@ -3176,10 +3183,10 @@ function viewHome(d) {
   const winN = act.n || d.perf?.n || 0, winRow = done && roiN != null && winN ? [winN, hitN, roiN] : null;
   const winYen = winRow && unitOf("単勝") > 0 ? unitOf("単勝") * winN * (roiN - 1) : null;
   h += `<section class="ov-strip num" aria-label="この日の状況">
-    <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
-    <button type="button" data-ov="buys"><span>🎯単勝 買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "おすすめ"}</small></button>
-    <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>🎯単勝 結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
-    <button type="button" data-ov="perf" aria-label="成績を見る"><span>🎯単勝 回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b>${winYen == null ? "<small>—</small>" : `<small class="${winYen >= 0 ? "plus" : "minus"}">${winYen === 0 ? "±0円" : yenPM(winYen)}</small>`}</button>
+    <button type="button" data-ov="race"><span>開催 ›</span><b>${nRaces}R</b><small>${esc(d.label || "")}</small></button>
+    <button type="button" data-ov="buys"><span>🎯単勝 買い目 ›</span><b class="${buyN === 0 && skipN ? "skip" : ""}">${buyN === 0 && skipN ? "見送り" : `${buyN}点`}</b><small class="${skipN ? "skip" : ""}">${skipN ? `見送り${skipN}頭` : "おすすめ"}</small></button>
+    <button type="button" data-ov="hits" ${hitList ? "" : "disabled"}><span>🎯単勝 結果${hitList ? " ›" : ""}</span><b>${done ? `${hitN}点的中` : "結果待ち"}</b><small>${done ? `${act.n || d.perf?.n || 0}点中` : (buyN ? "発走待ち" : "—")}</small></button>
+    <button type="button" data-ov="perf" aria-label="成績を見る"><span>🎯単勝 回収率 ›</span><b class="${!done || roiN == null ? "" : roiN >= 1 ? "plus" : "minus"}">${!done || roiN == null ? "—" : pct(roiN, 0)}</b>${winYen == null ? "<small>—</small>" : `<small class="${winYen >= 0 ? "plus" : "minus"}">${winYen === 0 ? "±0円" : yenPM(winYen)}</small>`}</button>
   </section>`;
   h += poolWrap(poolStripPub(S.snap?.pool_days?.[d.date], winRow));
   h += unitSetupPub();   // 1点の金額は帯のすぐ下に細く(2026-11-07 本人の指定「やっぱり下で」)
@@ -3526,8 +3533,8 @@ function rtCard(r, isNext, isToday) {
     const pd = postDate(r.post), started = pd && pd <= Date.now();
     const os = r.osN ? `<span class="rt-os">${r.osSt ? tierHtml(r.osSt) : "おすすめ"} ${r.osN}頭が出走</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : "";
     l2 = isNext
-      ? `<div class="rt-pre"><span class="rt-cd">発走まであと <span data-cd="${esc(r.post)}" data-fallback="まもなく"></span></span>${os}</div><div class="rt-pre"><span class="go">予想を見る ›</span></div>`
-      : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
+      ? `<div class="rt-pre"><span class="rt-cd">発走まであと <span data-cd="${esc(r.post)}" data-fallback="まもなく"></span></span>${os}</div><div class="rt-pre"><span class="go">予想を見る ›</span></div>`
+      : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
   }
   return `<div class="rt-row${r.done ? " done" : ""}${r.hit ? " hit" : ""}${isNext ? " rt-next" : ""}"><button class="rt-card" data-race="${esc(r.id)}" data-race-group="race">
     <div class="rt-side ${surf}"><b>${r.no}R</b><small>${r.venue ? esc(r.venue) : surfJa}</small></div><div class="rt-body">${l1}${l2}</div></button></div>`;
@@ -3622,7 +3629,7 @@ function publicCurve() {
 // 公開データの period_months(月ごと・検証データで正確)→ 今月なら period.month → 無ければ手元の90日分のおすすめの成績から数える(1日10%きざみなので目安)
 function pubMonth() {
   const ymD = String(S.date || todayStr()).slice(0, 7), per = S.snap?.period || {};
-  const ym = S.dashMon && S.dashMon.for === S.date && S.dashMon.ym ? S.dashMon.ym : ymD;   // ‹ › で選んだ月(2026-11-20)
+  const ym = S.dashMon && S.dashMon.for === S.date && S.dashMon.ym ? S.dashMon.ym : ymD;   // ‹ › で選んだ月(2026-11-20)
   const lab = ym.slice(0, 4) === ymD.slice(0, 4) ? `${Number(ym.slice(5, 7))}月` : `${ym.slice(2, 4)}年${Number(ym.slice(5, 7))}月`;
   const pm = S.snap?.period_months?.[ym];
   if (pm) return { lab, ym, x: pm };
@@ -3635,7 +3642,7 @@ function pubMonth() {
   }
   return { lab, ym, approx: true, x: n ? { label: ym, n, hit, hit_rate: hit / n, roi: ret / n, days, races: null } : null };
 }
-// ひと目でわかる成績の「○月」を ‹ › で前の月・次の月へ(データがある月だけ・2026-11-20 本人)。選んだ月はその日を見ている間だけ覚える
+// ひと目でわかる成績の「○月」を ‹ › で前の月・次の月へ(データがある月だけ・2026-11-20 本人)。選んだ月はその日を見ている間だけ覚える
 function dashMonths() {
   const KP = S.snap?.kaime_pub, t = KP && KP[S.dashT] && S.dashT !== "単勝" ? S.dashT : "単勝", set = new Set();
   const ok = a => a && (a.n || (Array.isArray(a) && a[0]));
@@ -3896,7 +3903,7 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
   const pl = (t, a) => { const u = unitOf(t); return u > 0 && a && a[0] && a[2] != null ? u * a[0] * (a[2] - 1) : null; };
   const yTag = v => v == null ? "" : `<small class="ps-yen ${v >= 0 ? "plus" : "minus"}">${v === 0 ? "±0円" : yenPM(v)}</small>`;
   // %(名前と回収率)を押す → 成績の「ひと目でわかる」のその券種・この日へ / 点数を押す → 下のその券種の買い目へ(2026-11-07・11-08 本人の指定)
-  const cell = (icon, name, a) => a ? `<span class="pc pc-b"><button type="button" class="pc-go" data-ps-perf="${name}" aria-label="${name}の成績を見る"><i>${icon} ${name} ›</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b></button><button type="button" class="pc-go" data-ps-buys="${name}" aria-label="${name}の買い目を見る"><span class="ps-n"><b>${a[0]}点</b><small>・${a[1]}的中</small></span>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</button></span>`
+  const cell = (icon, name, a) => a ? `<span class="pc pc-b"><button type="button" class="pc-go" data-ps-perf="${name}" aria-label="${name}の成績を見る"><i>${icon} ${name} ›</i><b class="${a[2] >= 1 ? "plus" : "minus"}">${Math.round(a[2] * 100)}%</b></button><button type="button" class="pc-go" data-ps-buys="${name}" aria-label="${name}の買い目を見る"><span class="ps-n"><b>${a[0]}点</b><small>・${a[1]}的中</small></span>${unitOf(name) > 0 ? yTag(pl(name, a)) : `<small class="ps-yen">買わない</small>`}</button></span>`
     : `<span class="pc"><i>${icon} ${name}</i><b>—</b><small>${r ? "なし" : "結果待ち"}</small></span>`;
   // トータル = 券種ごとの1点の金額で重み付け(既定 単勝1,000円・ほか100円。0円の券種は入れない)。単勝の行が無い古いデータは「1点=1」の計
   // 単勝は上の段(回収率)と同じ数字を使う(上と帯で単勝がずれないように)。無ければ送られてきた単勝
@@ -3904,7 +3911,7 @@ function poolStripPub(r, winRow) {   // この日の 馬単・馬連・3連単�
   const ws = UNIT_T.filter(t => unitOf(t) > 0 && rr[t] && rr[t][0] && rr[t][2] != null);
   const wInv = ws.reduce((s, t) => s + unitOf(t) * rr[t][0], 0), wPay = ws.reduce((s, t) => s + unitOf(t) * rr[t][0] * rr[t][2], 0);
   const tr = wInv ? wPay / wInv : null;
-  const tot = tr != null ? `<span class="pc tot pc-b"><button type="button" class="pc-go" data-ps-perf="total" aria-label="トータルの成績を見る"><i>🍯 トータル ›</i><b class="${tr >= 1 ? "plus" : "minus"}">${Math.round(tr * 100)}%</b><small>単勝+3券種</small>${wInv ? yTag(wPay - wInv) : ""}</button></span>`
+  const tot = tr != null ? `<span class="pc tot pc-b"><button type="button" class="pc-go" data-ps-perf="total" aria-label="トータルの成績を見る"><i>🍯 トータル ›</i><b class="${tr >= 1 ? "plus" : "minus"}">${Math.round(tr * 100)}%</b><small>単勝+3券種</small>${wInv ? yTag(wPay - wInv) : ""}</button></span>`
     : `<span class="pc tot"><i>🍯 トータル</i><b>—</b><small>単勝+3券種</small></span>`;
   POOL_PEEK = [...[["🐴", "馬単"], ["🐎", "馬連"], ["🏆", "3連単"]].map(([ic, nm]) => { const a = r?.[nm]; return a ? [ic, `${Math.round(a[2] * 100)}%`, a[2] >= 1 ? "plus" : "minus"] : [ic, "—", ""]; }),
     tr != null ? ["🍯", `${Math.round(tr * 100)}%`, tr >= 1 ? "plus" : "minus"] : ["🍯", "—", ""]];   // 閉じた時の1行
@@ -4009,14 +4016,14 @@ function publicRaceSequence(group) {
 // 馬の一覧から開いた時の 前/次(対象の馬ごと)
 function focusNavHtml() {
   const i = S.focusIdx, n = S.focusNav.length;
-  return `<div class="detail-float show" aria-label="前後の馬"><button data-detail-step="-1" ${i === 0 ? "disabled" : ""}>‹ 前</button><span>${i + 1} / ${n}頭</span><button data-detail-step="1" ${i === n - 1 ? "disabled" : ""}>次 ›</button></div>`;
+  return `<div class="detail-float show" aria-label="前後の馬"><button data-detail-step="-1" ${i === 0 ? "disabled" : ""}>‹ 前</button><span>${i + 1} / ${n}頭</span><button data-detail-step="1" ${i === n - 1 ? "disabled" : ""}>次 ›</button></div>`;
 }
 function publicDetailNav(id) {
   if (S.focusNav) return focusNavHtml();
   const index = S.detailNav.indexOf(id);
   if (index < 0 || S.detailNav.length < 2) return "";
-  // 上の「前のレース/次のレース」の段はなくして、下の ‹ › だけに(開いた時から出す)(2026-10-28)
-  return `<div class="detail-float show" aria-label="前後のレース"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前</button><span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次 ›</button></div>`;
+  // 上の「前のレース/次のレース」の段はなくして、下の ‹ › だけに(開いた時から出す)(2026-10-28)
+  return `<div class="detail-float show" aria-label="前後のレース"><button data-detail-step="-1" ${index === 0 ? "disabled" : ""}>‹ 前</button><span>${index + 1} / ${S.detailNav.length}</span><button data-detail-step="1" ${index === S.detailNav.length - 1 ? "disabled" : ""}>次 ›</button></div>`;
 }
 function openRace(id, group = "race", isStep = false, focusNo = null) {
   const d = curDay(); let r, venue;
@@ -4026,7 +4033,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   S.nextFocusLabel = null;
   const prevRaceId = S.detailRaceId;
   S.detailRaceId = id;
-  if (isStep && prevRaceId !== id && !HMS.pinned("hivep_dsort"))   // ‹ › で別のレースへ: 固定していなければ馬番順に戻す(同じレースの描き直しはそのまま)
+  if (isStep && prevRaceId !== id && !HMS.pinned("hivep_dsort"))   // ‹ › で別のレースへ: 固定していなければ馬番順に戻す(同じレースの描き直しはそのまま)
     S.detailSort = S.detailNavGroup === "results" ? { key: "fin", dir: "asc", then: [] } : { key: "no", dir: "asc", then: [] };
   if (!isStep) {
     S.detailNavGroup = group;
@@ -4176,7 +4183,7 @@ function updateSheetHead(ev) {
   try { new MutationObserver(() => { sh.classList.remove("head-hidden"); sheetHeadIgnoreUntil = Date.now() + 500; requestAnimationFrame(() => updateSheetHead()); }).observe(sh, { childList: true }); } catch {}
 })();
 
-// 出馬表で下にスクロールしたら、画面の下の ‹ › を出す(上の「前のレース/次のレース」が見えている間は隠す)
+// 出馬表で下にスクロールしたら、画面の下の ‹ › を出す(上の「前のレース/次のレース」が見えている間は隠す)
 function updateDetailFloat() {
   const sh = $("#sheet"); if (!sh || sh.hidden) return;
   const f = sh.querySelector(".detail-float"); if (!f) return;
@@ -4630,7 +4637,7 @@ document.addEventListener("click", e => {
   if (t.id === "back") { try { history.back(); } catch {} closeSheet(); return; }
   if (t.dataset.hmsPin || t.dataset.hmsFlip || t.dataset.hmsDel || t.dataset.hmsMulti) { hmsAct(t); return; }   // 並べ替えの札(⇅・✕)と📌固定
   if (t.dataset.detailStep) {
-    S.floatPinned = true;   // 下の ‹ › で送ったら、次のレースでも出したままにする
+    S.floatPinned = true;   // 下の ‹ › で送ったら、次のレースでも出したままにする
     if (S.focusNav) {   // 馬の一覧から開いた時: 次の「対象の馬」へ(同じレースの別の馬もあり)
       const j = S.focusIdx + Number(t.dataset.detailStep), it = S.focusNav[j];
       if (it) { S.focusIdx = j; S.focus = null; if (S.detailNavGroup.startsWith("sig:") || S.detailNavGroup === "all") S.nextFocusLabel = "👀 この馬"; openRace(it.id, S.detailNavGroup, true, it.no); }
@@ -4687,13 +4694,13 @@ document.addEventListener("click", e => {
     S.tab = t.dataset.tab; store.set("hivep_tab", S.tab); render(); window.scrollTo(0, 0); return;
   }
   if (t.dataset.ovsBack) { const b = S.ovBack; S.ovBack = null; if (b) { S.date = b.date; S.tab = b.tab; renderDays(); render(); window.scrollTo(0, 0); } return; }   // 🌏海外ページの［‹ ○/○に戻る］(2026-11-20)
-  if (t.dataset.ovsGo) { S.ovBack = { date: S.date, tab: S.tab, to: t.dataset.ovsGo }; S.date = t.dataset.ovsGo; S.tab = "ovs"; renderDays(); render(); window.scrollTo(0, 0); return; }   // 開催なしの日の「🌏 海外ページ ›」: 直近の海外の日の海外ページへ(2026-11-19 本人「パッと海外ページへ」)
+  if (t.dataset.ovsGo) { S.ovBack = { date: S.date, tab: S.tab, to: t.dataset.ovsGo }; S.date = t.dataset.ovsGo; S.tab = "ovs"; renderDays(); render(); window.scrollTo(0, 0); return; }   // 開催なしの日の「🌏 海外ページ ›」: 直近の海外の日の海外ページへ(2026-11-19 本人「パッと海外ページへ」)
   if (t.dataset.date) { S.date = t.dataset.date; renderDays(); render(); return; }
   if (t.dataset.dayStep) {   // ◀ ▶ で前・次の開催日へ
     const days = viewDays(), has = days.some(d => d.date === S.date), st = Number(t.dataset.dayStep);
     const i = has ? days.findIndex(d => d.date === S.date) : days.filter(d => d.date < S.date).length, j = has ? i + st : (st < 0 ? i - 1 : i);   // 開催がない日からは ‹ で前の開催、› で次の開催へ
     if (days[j]) { S.date = days[j].date; renderDays(); render(); }
-    else if (st > 0 && S.date < todayStr()) { S.date = todayStr(); renderDays(); render(); }   // 前の開催から › で今日(開催なし)へ戻る
+    else if (st > 0 && S.date < todayStr()) { S.date = todayStr(); renderDays(); render(); }   // 前の開催から › で今日(開催なし)へ戻る
     else if (Number(t.dataset.dayStep) > 0) {   // 16:20まで「あと◯分」も出す(16:20を過ぎて翌日が無いなら、翌日は開催なし)
       const no = S.snap?.next_open;   // 次の開催日と公開日時(PC側で計算して送ってくる・2026-10-29)
       const left = no ? jstAt(no.open_date, no.open_at) - Date.now() : 0;
@@ -4710,7 +4717,7 @@ document.addEventListener("click", e => {
     document.querySelector(".seg button[data-sig].on")?.scrollIntoView({ inline: "nearest", block: "nearest" });   // 押したボタンが見えるように
     window.scrollTo(0, y); return;
   }
-  if (t.dataset.dashMon) { const y = window.scrollY, L = dashMonths(), cur = pubMonth().ym, i = L.indexOf(cur), j = t.dataset.dashMon === "prev" ? i - 1 : i + 1; if (j >= 0 && j < L.length) { S.dashMon = { for: S.date, ym: L[j] }; render(); window.scrollTo(0, y); } return; }   // ‹ ›: ひと目の「○月」(2026-11-20)
+  if (t.dataset.dashMon) { const y = window.scrollY, L = dashMonths(), cur = pubMonth().ym, i = L.indexOf(cur), j = t.dataset.dashMon === "prev" ? i - 1 : i + 1; if (j >= 0 && j < L.length) { S.dashMon = { for: S.date, ym: L[j] }; render(); window.scrollTo(0, y); } return; }   // ‹ ›: ひと目の「○月」(2026-11-20)
   if (t.dataset.dashSpan) { const y = window.scrollY; S.dashSpan = t.dataset.dashSpan; store.set("hivep_dash_span", S.dashSpan); render(); window.scrollTo(0, y); return; }   // 📈推移: 過去13年/今年(2026-11-20 管理用と同じ)
   if (t.dataset.dashT) { const y = window.scrollY; S.dashT = t.dataset.dashT; store.set("hivep_dash_t", S.dashT); render(); window.scrollTo(0, y); return; }
   if (t.dataset.nmPer) { const y = window.scrollY; S.nmPer = t.dataset.nmPer; render(); window.scrollTo(0, y); return; }
