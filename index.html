@@ -2901,7 +2901,7 @@ document.addEventListener("click", e => {
   const y = window.scrollY; render(); window.scrollTo(0, y);
 }, true);
 
-/* ===== 🌏海外ページ(2026-11-20 作り直し・本人)。判定の決まりは今のまま(🐝単勝: 期待値1.0以上・日本5〜60倍・香港/ドバイ/欧州・日本馬は除く / 🎯複勝: 期待値1.0以上(下限)・香港だけ / 👀検討は記録だけ / 判定は30・10・4分前・紙上の買いは4分前) ===== */
+/* ===== 🌏海外ページ(2026-11-20 作り直し・本人)。判定の決まりは今のまま(🎯単勝: 期待値1.0以上・日本5〜60倍・香港/ドバイ/欧州・日本馬は除く / 🥉複勝: 期待値1.0以上(下限)・香港だけ / 👀検討は記録だけ / 判定は30・10・4分前・紙上の買いは4分前) ===== */
 const OV_WAIT = { "日本のオッズ待ち": ["wait", "⏳ 日本のオッズ待ち"], "現地のオッズ待ち": ["wait", "⏳ 現地のオッズ待ち"], "現地のオッズが足りません": ["warn", "⚠️ 現地のオッズが9割未満"], "現地のオッズと馬番が合いません": ["warn", "⚠️ 馬番が合わない"] };
 const ovC = (k, t) => `<span class="ovx-c ${k}">${t}</span>`;
 const ovOut = r => r.win_ok === false && r.place_ok === false;   // 対象外の地域(記録だけ)
@@ -2925,7 +2925,7 @@ function ovHead(r) {   // レースの見出し: 場・距離・発走時刻・�
   if (r.wait && !r.res) { const w = OV_WAIT[r.why] || ["wait", "⏳ " + esc(r.why || "オッズ待ち")]; c.push(ovC(w[0], w[1])); }
   else if (!r.res) c.push(ovC("stage", ovStageTx(r)));
   if (ovOut(r)) c.push(ovC("out", "🗂 記録だけ(対象外の地域)"));
-  else if (r.place_ok === false) c.push(ovC("", "🐝単勝だけ対象"));
+  else if (r.place_ok === false) c.push(ovC("", "🎯単勝だけ対象"));
   const left = ovLeft(r);
   return `<div class="ovx-hd"><div class="t">🌏 ${esc(r.name)}</div>
     <div class="m">${r.reg ? esc(r.reg) + "・" : ""}${esc(r.venue || "")}${r.dist ? `・${esc(r.surf || "")}${r.dist}m` : ""}<br>発走 <b>${esc(r.post || "")}</b>(日本時間)${left ? ` ・ <span class="left">${left}</span>` : ""}</div>
@@ -2935,8 +2935,8 @@ function ovTags(x) {   // 馬の札: 単勝と複勝の両方なら2つ。日本
   if (x.j === "取消") return [ovC("out", "取消")];
   if (x.jpn) return [ovC("jpn", "🇯🇵 日本馬・買わない決まり")];
   const t = [];
-  if (x.j === "買い") t.push(ovC("win", "🐝 単勝"));
-  if (x.fj === "買い") t.push(ovC("place", "🎯 複勝"));
+  if (x.j === "買い") t.push(ovC("win", "🎯 単勝"));
+  if (x.fj === "買い") t.push(ovC("place", "🥉 複勝"));
   if (x.j === "検討") t.push(ovC("ken", "👀 単勝の検討(記録だけ)"));
   if (x.fj === "検討") t.push(ovC("ken", "👀 複勝の検討(記録だけ)"));
   return t;
@@ -2947,8 +2947,8 @@ function ovConcl(r) {   // HIVEの結論
   let b;
   if (ovOut(r)) b = `<div class="none">このレースは記録だけ(対象外の地域)</div><div class="sub">香港・ドバイ・欧州のレースだけ買いを出します。ほかの地域は、割に合う馬があっても👀検討として記録だけします。</div>`;
   else if (r.wait) b = `<div class="none">${(OV_WAIT[r.why] || [0, "⏳ " + esc(r.why || "オッズ待ち")])[1]}</div><div class="sub">判定は、日本と現地の両方のオッズがそろってから出ます。</div>`;
-  else if ((r.buys || []).length || (r.fbuys || []).length) b = `<div class="ovx-bets">${(r.buys || []).length ? `<div class="ovx-bet win"><span>🐝 単勝</span>${nums(r.buys)}</div>` : ""}${(r.fbuys || []).length ? `<div class="ovx-bet place"><span>🎯 複勝</span>${nums(r.fbuys)}</div>` : ""}</div><div class="sub">参考程度に・各1点</div>`;
-  else b = `<div class="none">🐝 買いの馬はいません(見送り)</div><div class="sub">日本のオッズが現地の見立てより割に合う馬がいないときは、買わないのが正解です。</div>`;
+  else if ((r.buys || []).length || (r.fbuys || []).length) b = `<div class="ovx-bets">${(r.buys || []).length ? `<div class="ovx-bet win"><span>🎯 単勝</span>${nums(r.buys)}</div>` : ""}${(r.fbuys || []).length ? `<div class="ovx-bet place"><span>🥉 複勝</span>${nums(r.fbuys)}</div>` : ""}</div><div class="sub">参考程度に・各1点</div>`;
+  else b = `<div class="none">買いの馬はいません(見送り)</div><div class="sub">日本のオッズが現地の見立てより割に合う馬がいないときは、買わないのが正解です。</div>`;
   return `<div class="ovx-concl"><div class="cl">HIVEの結論</div>${b}</div>`;
 }
 function ovBar(eb) {   // 割に合う度合い(旨蜜度)のバー: 真ん中より右=割に合う(蜜色)・左=割高(灰色)
@@ -2983,11 +2983,11 @@ function viewOverseas(onDate, noBack) {   // 共有用(2026-11-20 作り直し):
   const big = (k, t, main) => t && t.pts ? `<div class="${main ? "main" : ""}"><div class="k">${k}</div><div class="v">${t.roi != null ? t.roi + "%" : "—"}</div><div class="s">${t.races}レース・${t.pts}点・的中${t.hits}</div></div>`
     : `<div class="${main ? "main" : ""}"><div class="k">${k}</div><div class="v" style="opacity:.5">—</div><div class="s">まだ記録がありません</div></div>`;
   const hk = ov.some(r => r.reg === "香港");
-  const rec = rc && rc.paper ? `<section class="card"><h2 style="margin:0 0 6px">🌏 海外の成績<span class="sub">回収率・紙上記録</span></h2><div class="ovx-rec">${big("🐝🎯 単勝＋複勝", rc.plan, true)}${big("🐝 単勝", rc.win)}${big("🎯 複勝", rc.place)}${big("📏 基準", rc.base)}${hk ? big("🇭🇰 香港の参考", rc.ref) : ""}</div>
+  const rec = rc && rc.paper ? `<section class="card"><h2 style="margin:0 0 6px">🌏 海外の成績<span class="sub">回収率・紙上記録</span></h2><div class="ovx-rec">${big("🎯🥉 単勝＋複勝", rc.plan, true)}${big("🎯 単勝", rc.win)}${big("🥉 複勝", rc.place)}${big("📏 基準", rc.base)}${hk ? big("🇭🇰 香港の参考", rc.ref) : ""}</div>
     <p class="note" style="margin-top:6px">お金は使わない紙上記録(1点100円で数えます)。HIVEのおすすめの成績とは別枠です。📏基準は、対象の地域の外国馬で日本の単勝5〜60倍の馬を全部買っていたらの成績です。${hk ? "🇭🇰香港の参考は、レース後の最終オッズで同じ判定をし直した成績です。" : ""}</p></section>` : "";
   const help = `<section class="card"><details class="ovx-fold"><summary>ℹ️ 見方・お知らせの種類</summary><div class="ovx-help">
     <b>見方</b><ul><li><b>HIVEの結論</b>の馬番が、紙上で買う馬です(参考程度に・各1点)。</li>
-    <li>${ovC("win", "🐝 単勝")}${ovC("place", "🎯 複勝")} 買いの札。単勝と複勝の両方なら札が2つ付きます。</li>
+    <li>${ovC("win", "🎯 単勝")}${ovC("place", "🥉 複勝")} 買いの札。単勝と複勝の両方なら札が2つ付きます。</li>
     <li>${ovC("ken", "👀 検討")} 割に合いそうでも、決まりの外なので記録だけの馬です。</li>
     <li>${ovC("jpn", "🇯🇵 日本馬・買わない決まり")} 日本馬は日本で買われすぎるので買いません。</li>
     <li><b>勝率</b>は現地の市場の見立て。<b>旨蜜度</b>のバーは、日本のオッズがその見立てよりどれだけ割に合うか(右へ伸びるほど割に合う)。</li>
