@@ -1835,6 +1835,8 @@ function moneyA(periods, cur, attr) {
   const keys = Object.keys(periods).filter(k => periods[k]);
   if (!keys.length) return "";
   if (!keys.includes(cur)) cur = keys[0];
+  if (cur === "curve" && periods.curve && periods.curve.html)   // 📈推移: 箱の中を収支の推移グラフに(2026-11-20 管理用と同じ)
+    return `<div class="card money-a"><div class="seg">${keys.map(k => `<button type="button" ${attr}="${k}" class="${k === cur ? "on" : ""}">${periods[k].tab || ({ day: "今日", month: "今月", year: "今年" })[k] || k}</button>`).join("")}</div>${periods.curve.html.replace('class="card chart-card"', 'class="chart-card" style="margin-top:8px"')}</div>`;
   const a = periods[cur], has = a && a.n > 0 && a.roi != null;
   const ret = has ? Math.round(a.roi * 100) : 0, max = Math.max(100, ret, 1);
   const pts = has ? Math.round(a.pts ?? a.n * (a.roi - 1)) : 0;   // 収支は「何点分」(1点買うのを1として・円は出さない。携帯用の収支と同じ形・2026-10-31)
@@ -2241,7 +2243,7 @@ function hvTabOrder(sel) {
 const HMS_SIG_BASE = ["post", "fin"], HMS_DET_BASE = ["no", "fin"];   // それだけで並びが決まる項目(押すとその項目だけに戻る)
 const HOURYOKU_NOTE = "🐝 蜂力度は、オッズを入れない強さだけの順位です。買う順ではありません。";
 const hmsDef = k => k === "post" || k === "fin" || k === "no" || k === "ar" ? "asc" : "desc";   // 最初の向き: 発走順・着順・馬番は小さい方から、ほかは高い方から
-const S = { pw: null, snap: null, demo: false, date: null, curveYen: store.get("hivep_curve_yen") === "1", amtMin: store.get("hivep_amt_min") === "1", unitsNew: store.get("hivep_units") == null, units: (() => { try { return JSON.parse(store.get("hivep_units") || "{}") || {}; } catch { return {}; } })(), dashT: store.get("hivep_dash_t") || "単勝", tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.start("hivep_sigsort", { key: "post", dir: "asc", then: [] }), venue: null, resVenue: null, venuePicked: false, resPicked: false,
+const S = { pw: null, snap: null, demo: false, date: null, curveYen: store.get("hivep_curve_yen") === "1", amtMin: store.get("hivep_amt_min") === "1", unitsNew: store.get("hivep_units") == null, units: (() => { try { return JSON.parse(store.get("hivep_units") || "{}") || {}; } catch { return {}; } })(), dashT: store.get("hivep_dash_t") || "単勝", dashSpan: store.get("hivep_dash_span") || "13", tab: store.get("hivep_tab") || "home", sig: "すべて", sigMode: "all", sigSort: HMS.start("hivep_sigsort", { key: "post", dir: "asc", then: [] }), venue: null, resVenue: null, venuePicked: false, resPicked: false,
   raceOrder: store.get("hivep_race_order") || "asc", raceView: store.get("hivep_race_view") || "order", raceSeq: [],   // レース一覧: レース順・発走順・★あり(携帯と同じ)
   detailNav: [], detailNavGroup: "race", detailRaceId: null, detailSort: HMS.start("hivep_dsort", { key: "no", dir: "asc", then: [] }),
   allSort: HMS.start("hivep_allsort", { key: "post", dir: "asc", then: [] }), allVenue: store.get("hivep_all_venue") || "" };   // レースタブの「全頭」(2026-10-31)
@@ -2903,7 +2905,7 @@ function render() {
     if (S.tab === "ovs" && !ovFor(S.date).length) S.tab = "home"; }
   if (!d && S.tab === "perf") {   // 開催がない日の成績: 直前の開催日の成績を出す(海外とは混ぜない・2026-11-03)
     const ld = viewDays().filter(x => x.date <= S.date).slice(-1)[0];
-    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 -12px">📊 開催なし・直前 <span style="white-space:nowrap"><b>${esc(ld.label || ld.date)}</b></span> の成績<br>🌏 海外の成績は${(() => { const L = ((S.snap && S.snap.overseas) || []).map(r => r.date).filter(Boolean).sort(), t0 = todayStr(), dd = [...L].reverse().find(x => x <= t0) || L[0]; return dd ? `<button type="button" data-ovs-go="${esc(dd)}" style="min-height:26px;padding:0 10px;margin:0 2px;border-radius:999px;border:1px solid var(--amber);background:var(--soft);color:var(--accent);font-weight:700;font-size:12px;font-family:inherit;cursor:pointer">海外ページ ›</button>` : "海外ページ"; })()}で確認してください</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
+    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 -12px">📊 開催なし・直前 <span style="white-space:nowrap"><b>${esc(ld.label || ld.date)}</b></span> の成績${(() => { const L = ((S.snap && S.snap.overseas) || []).map(r => r.date).filter(Boolean).sort(), t0 = todayStr(), dd = [...L].reverse().find(x => x <= t0) || L[0]; return dd ? `<br>🌏 海外の成績は<button type="button" data-ovs-go="${esc(dd)}" style="min-height:26px;padding:0 10px;margin:0 2px;border-radius:999px;border:1px solid var(--amber);background:var(--soft);color:var(--accent);font-weight:700;font-size:12px;font-family:inherit;cursor:pointer">海外ページ ›</button>で確認してください` : ""; })()}</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
   }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") {   // 開催がない日: 次の開催の案内と、その日の海外のレース(2026-11-03)
     const no = S.snap.next_open, ov = (S.snap.overseas || []).filter(r => r.date === S.date);
@@ -3405,8 +3407,9 @@ function publicCurve() {
 // 成績タブの「○月」= 選んでいる日の月(2026-11-03 本人の指定。10月の日を見ているのに今月(11月)が出ていた)。
 // 公開データの period_months(月ごと・検証データで正確)→ 今月なら period.month → 無ければ手元の90日分のおすすめの成績から数える(1日10%きざみなので目安)
 function pubMonth() {
-  const ym = String(S.date || todayStr()).slice(0, 7), per = S.snap?.period || {};
-  const lab = `${Number(ym.slice(5, 7))}月`;
+  const ymD = String(S.date || todayStr()).slice(0, 7), per = S.snap?.period || {};
+  const ym = S.dashMon && S.dashMon.for === S.date && S.dashMon.ym ? S.dashMon.ym : ymD;   // ‹ › で選んだ月(2026-11-20)
+  const lab = ym.slice(0, 4) === ymD.slice(0, 4) ? `${Number(ym.slice(5, 7))}月` : `${ym.slice(2, 4)}年${Number(ym.slice(5, 7))}月`;
   const pm = S.snap?.period_months?.[ym];
   if (pm) return { lab, ym, x: pm };
   if (per.month && per.month.label === ym) return { lab, ym, x: per.month };
@@ -3417,6 +3420,25 @@ function pubMonth() {
     n += a.n; hit += a.hit || 0; ret += a.roi * a.n; days++;
   }
   return { lab, ym, approx: true, x: n ? { label: ym, n, hit, hit_rate: hit / n, roi: ret / n, days, races: null } : null };
+}
+// ひと目でわかる成績の「○月」を ‹ › で前の月・次の月へ(データがある月だけ・2026-11-20 本人)。選んだ月はその日を見ている間だけ覚える
+function dashMonths() {
+  const KP = S.snap?.kaime_pub, t = KP && KP[S.dashT] && S.dashT !== "単勝" ? S.dashT : "単勝", set = new Set();
+  const ok = a => a && (a.n || (Array.isArray(a) && a[0]));
+  if (t === "単勝") {
+    for (const [k, v] of Object.entries(S.snap?.period_months || {})) if (ok(v)) set.add(k);
+    for (const day of S.snap?.days || []) { const a = day.rec_perf?.actual || day.perf; if (a?.n && a.roi != null) set.add(String(day.date).slice(0, 7)); }
+  } else {
+    for (const tt of t === "total" ? UNIT_T : [t]) for (const [k, v] of Object.entries((KP?.[tt] || {}).months || {})) if (ok(v)) set.add(k);
+  }
+  set.add(String(S.date || todayStr()).slice(0, 7));
+  return [...set].filter(k => k <= String(todayStr()).slice(0, 7)).sort();
+}
+function dashMonthNav(PM) {
+  const L = dashMonths(), i = L.indexOf(PM.ym);
+  if (L.length < 2) return "";
+  const b = (dir, on, lab) => `<button type="button" data-dash-mon="${dir}" ${on ? "" : "disabled"} aria-label="${lab}" style="min-height:30px;min-width:40px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:${on ? "var(--accent)" : "var(--muted)"};font-weight:700;font-size:15px;font-family:inherit;cursor:${on ? "pointer" : "default"}">${dir === "prev" ? "‹" : "›"}</button>`;
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 2px">${b("prev", i > 0, "前の月")}<b style="min-width:7em;text-align:center">${esc(PM.ym.slice(0, 4))}年${Number(PM.ym.slice(5, 7))}月</b>${b("next", i >= 0 && i < L.length - 1, "次の月")}</div>`;
 }
 // ひと目でわかる成績の券種(2026-11-07 本人の指定「馬連・馬単・3連単・トータルも・ボタンで」)。公開データの kaime_pub(点数・的中・回収率だけ・金額なし)から
 const DASH_T = [["単勝", "🎯 単勝"], ["馬単", "🐴 馬単"], ["馬連", "🐎 馬連"], ["3連単", "🏆 3連単"], ["total", "🍯 トータル"]];
@@ -3470,7 +3492,11 @@ function perfDashboard(d, rp) {
   const per = other ? { ...(S.snap.period || {}), year: DK.year } : (S.snap.period || {});
   const PM = other ? { ...PM0, x: DK.month, approx: false } : PM0;
   const today = other ? DK.today : rp?.actual;
-  const pts = other ? DK.pts : publicCurve();
+  const tanY = (() => {   // 単勝の「今年」も1年分(券種の公開データの単勝・1分前/5分前の切り替えに合わせる)。無ければ前の「この90日」(2026-11-19 本人「今年なのに90日間」)
+    const D = !other && S.snap?.kaime_pub?.["単勝"]?.days; if (!D) return null;
+    let c = 0; const p = [], py = []; for (const [k, a] of Object.entries(D).sort()) { if (k > (S.date || todayStr()) || !a || !a[0] || a[2] == null) continue; c += a[0] * (a[2] - 1); p.push({ date: k, value: Math.round(c / 5) * 5 }); py.push({ date: k, value: Math.round(c * unitOf("単勝") / 100) * 100 }); }
+    return p.length >= 2 ? { p, py } : null; })();
+  const pts = other ? DK.pts : (tanY ? tanY.p : publicCurve());
   const pm = x => x && x.n && x.roi != null ? { roi: x.roi, n: x.n, hit: x.hit, yen: x.yen, pts: x.pts } : null;   // 金額は使わない(回収率だけ。yen は見る人が入れた1点の金額×何点分)
   const osN = (d.osusume || []).length;   // この日のおすすめの頭数(0なら「おすすめなし」と出す)
   const dayEmpty = osN ? `結果待ち(おすすめ${osN}頭)` : "この日はおすすめの馬がいませんでした";
@@ -3479,22 +3505,26 @@ function perfDashboard(d, rp) {
   const KP = S.snap?.kaime_pub;
   const tbtn = KP ? `<div class="seg dash-t">${DASH_T.map(([v, l]) => { const [ic, ...nm] = l.split(" "); return `<button type="button" data-dash-t="${v}" class="${DK.t === v ? "on" : ""}"><span class="ic">${ic}</span>${nm.join(" ")}</button>`; }).join("")}</div>` : "";
   Object.values(periods).forEach(p => { p.ut = DK.t; if (other) { p.kind = DK.t === "total" ? "トータル" : DK.t; if (!p.n) p.empty = "まだ結果が出ていません"; } });
-  let h = `<section><h2>ひと目でわかる成績<span class="sub">${other ? (DK.t === "total" ? "4券種の合計" : `おすすめ・${DK.t}`) : "おすすめ・単勝"}</span></h2>${tbtn}${KP ? unitPanel(DK.t) : ""}${moneyA(periods, S.moneyPer || "day", "data-money-per")}<div class="dash">`;
+  const ptMode = pts.length && !pts[0].roi;
+  // 点数 ⇔ 「1点○円で買っていたら」(2026-11-05 本人の指定。円は見る人が入れた金額×点数で、この端末だけで計算)
+  const yenMode = ptMode && S.curveYen;
+  const isTot = DK.t === "total", unitY = unitOf(other ? DK.t : "単勝");
+  const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "±");
+  const curvePts = yenMode ? (other ? DK.ptsYen : tanY ? tanY.py : pts.map(p => ({ ...p, value: p.value * unitY }))) : pts;
+  const seg = ptMode ? `<span class="seg" style="gap:4px"><button data-curve-yen="0" class="${yenMode ? "" : "on"}" style="min-height:28px;padding:2px 10px;font-size:11px">点数</button><button data-curve-yen="1" class="${yenMode ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:11px">円</button></span>` : "";
+  const unitBox = yenMode ? (isTot ? `<div class="curve-unit">${unitSumText()}</div>` : `<div class="curve-unit">1点${unitInput(other ? DK.t : "単勝", "", "curve-unit")}円で買っていたら</div>`) : "";
+  const chartCard = `<div class="card chart-card"><div class="cap cap-row"><span class="cap-t">${ptMode ? "収支の推移" : "回収率の推移"}</span>${seg}<small>${ptMode ? (yenMode ? `(${other || tanY ? "今年" : "この90日"}・累積・${isTot ? "それぞれの1点の金額" : `1点${unitY.toLocaleString()}円`}で買っていたら)` : `(${other || tanY ? "今年" : "この90日"}・累積・1点買うのを1として何点分のプラスか・5点きざみ)`) : "(この90日・累積)"}</small></div>${unitBox}${lineSvg(curvePts, ptMode ? { fmt: fmtMD, fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v) + "点"), label: "収支の推移" } : { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>`;
+  const h13c = h13CurveCard(DK.t), span = S.dashSpan === "y" || !h13c ? "y" : "13";   // 推移タブ: 過去13年(既定)/今年(2026-11-15 本人「過去13年の収支の推移のこと」)
+  const spanSeg = h13c ? `<div class="seg" style="gap:4px;margin:8px 0 0"><button type="button" data-dash-span="13" class="${span === "13" ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:12px">過去13年</button><button type="button" data-dash-span="y" class="${span === "y" ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:12px">今年</button></div>` : "";
+  if (pts.length || h13c) periods.curve = { tab: "📈 推移", lab: "収支の推移", html: spanSeg + (span === "13" ? h13c : chartCard) };   // 1分前と5分前の比べは共有には入れない(2026-11-20)   // 券種を選んですぐ推移を見られるように(2026-11-15 本人「グラフまで遠い」A案)
+  let h = `<section><h2>ひと目でわかる成績<span class="sub">${other ? (DK.t === "total" ? "4券種の合計" : `おすすめ・${DK.t}`) : "おすすめ・単勝"}</span></h2>${tbtn}${KP ? unitPanel(DK.t) : ""}${moneyA(periods, S.moneyPer || "day", "data-money-per")}${dashMonthNav(PM)}<div class="dash">`;
   h += gaugeSvg(today?.n ? today.roi : null, `${esc(d.label)}`, today?.n ? `${today.hit}/${today.n}的中` : (osN ? `結果待ち・おすすめ${osN}頭` : "おすすめなし"));
   h += gaugeSvg(PM.x?.n ? PM.x.roi : null, PM.lab, PM.x?.n ? `${PM.x.hit}/${PM.x.n}的中` : "まだ結果なし");
   h += `</div><div class="dash">`;
   h += gaugeSvg(per.year?.n ? per.year.roi : null, `今年${per.year?.label ? `(${esc(per.year.label)})` : ""}`, per.year?.n ? `${per.year.hit}/${per.year.n}的中` : "—");
   const rs = other ? DK.rs : S.snap.rec_stats;
   h += gaugeSvg(rs?.roi ?? null, "2014年〜の検証", rs ? `年${rs.per_year}点 ・ プラスの年 ${esc(rs.plus_years || "")}` : "—");
-  const ptMode = pts.length && !pts[0].roi;
-  // 点数 ⇔ 「1点○円で買っていたら」(2026-11-05 本人の指定。円は見る人が入れた金額×点数で、この端末だけで計算)
-  const yenMode = ptMode && S.curveYen;
-  const isTot = DK.t === "total", unitY = unitOf(other ? DK.t : "単勝");
-  const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "±");
-  const curvePts = yenMode ? (other ? DK.ptsYen : pts.map(p => ({ ...p, value: p.value * unitY }))) : pts;
-  const seg = ptMode ? `<span class="seg" style="gap:4px"><button data-curve-yen="0" class="${yenMode ? "" : "on"}" style="min-height:28px;padding:2px 10px;font-size:11px">点数</button><button data-curve-yen="1" class="${yenMode ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:11px">円</button></span>` : "";
-  const unitBox = yenMode ? (isTot ? `<div class="curve-unit">${unitSumText()}</div>` : `<div class="curve-unit">1点${unitInput(other ? DK.t : "単勝", "", "curve-unit")}円で買っていたら</div>`) : "";
-  h += `</div><div class="card chart-card"><div class="cap cap-row"><span class="cap-t">${ptMode ? "収支の推移" : "回収率の推移"}</span>${seg}<small>${ptMode ? (yenMode ? `(${other ? "今年" : "この90日"}・累積・${isTot ? "それぞれの1点の金額" : `1点${unitY.toLocaleString()}円`}で買っていたら)` : `(${other ? "今年" : "この90日"}・累積・1点買うのを1として何点分のプラスか・5点きざみ)`) : "(この90日・累積)"}</small></div>${unitBox}${lineSvg(curvePts, ptMode ? { fmt: fmtMD, fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v) + "点"), label: "収支の推移" } : { fmt: fmtMD, fmtV: v => (v + 100) + "%", label: "回収率の推移" })}</div>
+  h += `</div>${S.moneyPer === "curve" && periods.curve && span === "y" ? "" : chartCard}
     <p class="note">※データの権利の関係で、配布用にはオッズ・払戻・金額を載せていません。1日の回収率も、1レースごとの払戻が分からないよう10%きざみにしています。オッズ・払戻はJRA公式の出馬表・レース結果で確認してください。</p></section>`;
   return h;
 }
@@ -3558,6 +3588,19 @@ function h13Years(H, md, yenMode, sign) {
     const sy = window.scrollY; render(); window.scrollTo(0, sy);
   }, true);
 })();
+function h13CurveCard(md) {   // 過去13年の収支の推移(グラフだけ)。ひと目でわかる成績の📈推移タブ用(2026-11-15)。計算は hist13Block と同じ
+  const H = S.snap?.hist13; if (!H || !H.months?.length) return "";
+  const TT = ["単勝", "馬単", "馬連", "3連単"];
+  if (!["total", ...TT].includes(md)) md = "単勝";
+  const yenMode = !!S.curveYen, isTot = md === "total", unitY = isTot ? null : unitOf(md);
+  const vals = H.months.map((m, i) => (isTot ? TT.filter(t => unitOf(t) > 0) : [md]).reduce((s, t) => s + ((H.curve[t] || [])[i] || 0) * (yenMode ? unitOf(t) : 1), 0));
+  const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "±");
+  const pts = H.months.map((m, i) => ({ date: m, value: vals[i] }));
+  const seg = `<span class="seg" style="gap:4px"><button data-curve-yen="0" class="${yenMode ? "" : "on"}" style="min-height:28px;padding:2px 10px;font-size:11px">点数</button><button data-curve-yen="1" class="${yenMode ? "on" : ""}" style="min-height:28px;padding:2px 10px;font-size:11px">円</button></span>`;
+  return `<div class="card chart-card"><div class="cap cap-row"><span class="cap-t">過去13年の収支の推移</span>${seg}<small>(${esc(String(H.months[0]).slice(0, 4))}〜${esc(String(H.months[H.months.length - 1]).slice(0, 4))}年・${yenMode ? (isTot ? "それぞれの1点の金額で買っていたら" : `1点${unitY.toLocaleString()}円で買っていたら`) : "1点買うのを1として何点分のプラスか"}・累積)</small></div>
+    ${yenMode ? (isTot ? `<div class="curve-unit">${unitSumText()}</div>` : `<div class="curve-unit">1点${unitInput(md, "", "curve-unit")}円で買っていたら</div>`) : ""}
+    ${lineSvg(pts, { fmt: s => String(s).slice(0, 7).replace("-", "/"), fmtV: yenMode ? (v => sign(v) + Math.abs(v).toLocaleString() + "円") : (v => sign(v) + Math.abs(v).toLocaleString() + "点"), label: "過去13年の収支の推移", ticks: h13Ticks(H.months) })}</div>`;
+}
 function hist13Block() {   // 過去13年の検証・券種ごと(2026-11-06。金額なし: 1点を1として何点分か・10点きざみ。円は見る人が入れた1点の金額×点数で、この端末だけで計算)
   const H = S.snap?.hist13; if (!H || !H.months?.length) return "";
   const T = [["単勝", "🎯 単勝", "おすすめ(★2〜5)を1点"], ["馬単", "🐴 馬単", "選んだおすすめの馬を1着に・相手3頭(3点)"], ["馬連", "🐎 馬連", "おすすめを含む組＋おすすめ-相手3頭"], ["3連単", "🏆 3連単", "おすすめ1着→相手3頭→3頭(6点)"]];
@@ -4452,6 +4495,8 @@ document.addEventListener("click", e => {
     document.querySelector(".seg button[data-sig].on")?.scrollIntoView({ inline: "nearest", block: "nearest" });   // 押したボタンが見えるように
     window.scrollTo(0, y); return;
   }
+  if (t.dataset.dashMon) { const y = window.scrollY, L = dashMonths(), cur = pubMonth().ym, i = L.indexOf(cur), j = t.dataset.dashMon === "prev" ? i - 1 : i + 1; if (j >= 0 && j < L.length) { S.dashMon = { for: S.date, ym: L[j] }; render(); window.scrollTo(0, y); } return; }   // ‹ ›: ひと目の「○月」(2026-11-20)
+  if (t.dataset.dashSpan) { const y = window.scrollY; S.dashSpan = t.dataset.dashSpan; store.set("hivep_dash_span", S.dashSpan); render(); window.scrollTo(0, y); return; }   // 📈推移: 過去13年/今年(2026-11-20 管理用と同じ)
   if (t.dataset.dashT) { const y = window.scrollY; S.dashT = t.dataset.dashT; store.set("hivep_dash_t", S.dashT); render(); window.scrollTo(0, y); return; }
   if (t.dataset.nmPer) { const y = window.scrollY; S.nmPer = t.dataset.nmPer; render(); window.scrollTo(0, y); return; }
   if (t.dataset.moneyPer) { const y = window.scrollY; S.moneyPer = t.dataset.moneyPer; render(); window.scrollTo(0, y); return; }
