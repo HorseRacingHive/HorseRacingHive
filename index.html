@@ -3878,7 +3878,7 @@ function unitSetupPub() {   // おすすめの上の「1点の金額」。初め
     <button type="button" class="us-ok" data-unit-ok>この金額で見る</button></div>`;
 }
 
-// 🍯濃蜜(特に自信のある推奨)と、いつものおすすめを分けた成績(2026-11-17 本人)。金額の強弱は出さず、1点1,000円の換算だけ
+// 🍯濃蜜(特に自信のある推奨)と、いつものおすすめを分けた成績(2026-11-17 本人)。金額の強弱は出さず、上の「1点の金額」の単勝の金額で換算(2026-11-20 本人)
 function nmBlock(d) {
   const A = S.snap?.nm_stats || {}, ym = String(d.date || "").slice(0, 7), y = ym.slice(0, 4);
   const dn = d.nm_perf || (S.snap?.nm_days || {})[d.date];   // 過去の日(2014〜8/9)は検証の数字(2026-11-18)
@@ -3886,8 +3886,8 @@ function nmBlock(d) {
   if (!A.all && !dn) return "";
   const cur = P[S.nmPer]?.v ? S.nmPer : (dn ? "day" : "all");
   const v = P[cur].v;
-  const box = (lab, a, cls) => { const [n, hit, ret] = a || [0, 0, 0], pl = (ret - n * 100) * 10;
-    return `<div class="nm-box ${cls}"><div class="nm-h">${lab}</div><div class="nm-g num"><div><span>的中</span><b>${n ? `${hit}/${n}` : "—"}</b></div><div><span>的中率</span><b>${n ? pct(hit / n, 0) : "—"}</b></div><div><span>1点1,000円なら</span><b class="${n ? (pl >= 0 ? "plus" : "minus") : ""}">${n ? (pl === 0 ? "±0円" : yenPM(pl)) : "—"}</b></div></div></div>`; };
+  const U = unitOf("単勝"), box = (lab, a, cls) => { const [n, hit, ret] = a || [0, 0, 0], pl = Math.round((ret - n * 100) * U / 100);
+    return `<div class="nm-box ${cls}"><div class="nm-h">${lab}</div><div class="nm-g num"><div><span>的中</span><b>${n ? `${hit}/${n}` : "—"}</b></div><div><span>的中率</span><b>${n ? pct(hit / n, 0) : "—"}</b></div><div><span>1点${U.toLocaleString("ja-JP")}円なら</span><b class="${n && U ? (pl >= 0 ? "plus" : "minus") : ""}">${n && U ? (pl === 0 ? "±0円" : yenPM(pl)) : "—"}</b></div></div></div>`; };
   const seg = `<div class="seg">${Object.entries(P).filter(([, p]) => p.v).map(([k, p]) => `<button type="button" data-nm-per="${k}" class="${k === cur ? "on" : ""}">${p.tab}</button>`).join("")}</div>`;
   return `<section><h2>🍯濃蜜の成績<span class="sub">おすすめ・単勝</span></h2>${seg}
     ${box(`<span class="nm-badge">🍯濃蜜</span> 特に自信のある推奨`, v?.nm, "nm")}${box("いつものおすすめ", v?.ot, "")}${v?.kensho ? `<p class="note">📘 ${cur === "day" ? "この日" : "この期間"}には過去の検証が入っています(11/13まで: 各年をその年より前のデータだけで学んだAI・発走4分前のオッズ・単勝の確定払戻)</p>` : ""}
