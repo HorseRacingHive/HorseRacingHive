@@ -2830,7 +2830,7 @@ function viewOverseas(onDate) {
   const roi = t => t && t.roi != null ? t.roi + "%" : "—";
   const recBox = (lab, t) => t ? `<div><small class="note">${lab}</small><br><b>${roi(t)}</b><br><small class="note">${t.races}レース${t.pts != null ? "・" + t.pts + "点" : ""}・的中${t.hits}</small></div>` : "";
   const recHtml = rc && (rc.plan.races || rc.win.races || (rc.rows || []).length) ? `<section class="card"><b>🌏 海外の成績</b> <small class="note">(参考程度に・別枠・1点100円で記録・HIVEのおすすめの成績には入れません)</small>
-    <div class="ovs-rec" style="margin-top:6px">${recBox(rc.paper ? "🎯 買い全部(単勝+複勝)" : "🎯 おすすめの買い方", rc.plan)}${recBox(rc.paper ? "🐝 単勝" : "🐝 単勝の買い全部", rc.win)}${recBox("🎯 複勝", rc.place)}
+    <div class="ovs-rec" style="margin-top:6px">${recBox(rc.paper ? "🎯 買い全部(単勝+複勝)" : "🎯 おすすめの買い方", rc.plan)}${recBox(rc.paper ? "🐝 単勝" : "🐝 単勝の買い全部", rc.win)}${recBox("🎯 複勝", rc.place)}${recBox("📏 香港の参考(レース後の最終オッズで判定)", rc.ref)}
     ${rc.base ? `<div><small class="note">📏 基準(外国馬6〜30倍を全部)</small><br><b>${roi(rc.base)}</b><br><small class="note">${rc.base.races}レース・的中${rc.base.hits}</small></div>` : ""}</div>
     ${(rc.rows || []).slice().reverse().map(x => `<div class="note">${esc(x.date)} ${esc(x.name)}:${esc(x.plan || "見送り")} ${x.plan ? (x.hit ? "🎯的中" : "はずれ") : ""}(${(x.order || []).join("-")})</div>`).join("")}</section>` : "";
   return recHtml + ov.map(r => {
@@ -2903,12 +2903,12 @@ function render() {
     if (S.tab === "ovs" && !ovFor(S.date).length) S.tab = "home"; }
   if (!d && S.tab === "perf") {   // 開催がない日の成績: 直前の開催日の成績を出す(海外とは混ぜない・2026-11-03)
     const ld = viewDays().filter(x => x.date <= S.date).slice(-1)[0];
-    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 8px">📊 今日はJRAの開催がないので、<br>直前の開催 <span style="white-space:nowrap"><b>${esc(ld.label || ld.date)}</b></span> の成績です<br><span style="white-space:nowrap">(海外の成績は🌏海外のページで別に出します)</span></div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
+    v.innerHTML = h + (ld ? `<div class="note" style="margin:0 0 8px">📊 開催なし・直前 <span style="white-space:nowrap"><b>${esc(ld.label || ld.date)}</b></span> の成績<br>🌏 海外の成績は海外ページにて</div>` + viewPerf(ld) : hvEmpty("成績はまだありません")); tick(); return;
   }
   if (!d && S.tab !== "bank" && S.tab !== "ovs") {   // 開催がない日: 次の開催の案内と、その日の海外のレース(2026-11-03)
     const no = S.snap.next_open, ov = (S.snap.overseas || []).filter(r => r.date === S.date);
     if (S.date !== todayStr() && ovDates().includes(S.date)) { v.innerHTML = h + (ov.length ? viewOverseas(S.date) : hvEmpty("この日の海外の判定は共有ページには残っていません(成績は🌏海外の成績欄に)")); tick(); return; }
-    const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px">次の開催 <b>${esc(no.label)}</b>${no.guess ? "(予定)" : ""}の予想は <span style="white-space:nowrap"><b>${esc(no.open_label)} ${esc(no.open_at)}</b> から</span><br>★・おすすめは当日 <span style="white-space:nowrap">8:21〜(午後のレースは 12:00〜)</span></div></section>`
+    const nx = S.date === todayStr() && no && no.date ? `<section class="card"><b>🗓 今日はJRAの開催はありません</b><div class="note" style="margin-top:4px;line-height:2">次の開催 <b style="color:var(--accent)">${esc(no.label)}</b>${no.guess ? "(予定)" : ""}<br>全レース予想(前日) <span style="display:inline-block;white-space:nowrap;background:var(--soft);border:1px solid var(--amber);border-radius:8px;padding:0 8px;color:var(--accent);font-weight:700">${esc(no.open_label)} ${esc(no.open_at)}〜</span><br><span style="color:var(--accent)">★</span>・おすすめ <span style="display:inline-block;white-space:nowrap;background:var(--soft);border:1px solid var(--amber);border-radius:8px;padding:0 8px;color:var(--accent);font-weight:700">当日 8:21〜</span> <span style="font-size:12px;white-space:nowrap">午後は12:00〜</span></div></section>`
       : S.date > todayStr() ? hvEmpty("まだ予想がありません。出馬表が出たら表示されます。") : hvEmpty("この日はJRAの開催がありません");
     v.innerHTML = h + nx + (ov.length ? viewOverseas(S.date) : ""); tick(); return;
   }
