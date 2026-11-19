@@ -304,11 +304,11 @@ header.top::after {
 .day-nav .dn-date { position: relative; }
 .day-nav .dn-baba { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 4px; margin-top: 5px; padding-top: 4px; border-top: 1px solid #241c0c; }
 .day-nav .dn-baba:empty { display: none; }
-.day-nav .lb-v { display: inline-flex; align-items: baseline; gap: 2px; padding: 1px 4px; border: 0; border-radius: 3px; background: none; font: inherit; font-size: 13px; font-weight: 900; white-space: nowrap; cursor: pointer; color: #e9d9b0; }
+.day-nav .lb-v { display: inline-flex; align-items: baseline; gap: 1px; padding: 1px 4px; border: 0; border-radius: 3px; background: none; font: inherit; font-size: 13px; font-weight: 900; white-space: nowrap; cursor: pointer; color: #e9d9b0; }
 .day-nav .lb-v .lb-n { color: #f3e6c4; margin-right: 3px; }
 .day-nav .lb-v.on { background: rgba(247,201,72,.12); }
 .day-nav .lb-v.on .lb-n { color: var(--honey); text-shadow: 0 0 6px rgba(247,201,72,.8); }
-.day-nav .lb-v .lb-k { color: #d8c79a; font-size: 13px; font-weight: 800; margin-left: 3px; }   /* 芝・ダは明るめ(暗いと読みにくい) */
+.day-nav .lb-v .lb-k { color: #d8c79a; font-size: 13px; font-weight: 800; margin-left: 2px; }   /* 芝・ダは明るめ(暗いと読みにくい) */
 .day-nav .lb-v .g1 { color: #58ff7a; text-shadow: 0 0 6px #58ff7a; }
 .day-nav .lb-v .g2 { color: #ffe14d; text-shadow: 0 0 6px #ffe14d; }
 .day-nav .lb-v .g3 { color: #ffa23a; text-shadow: 0 0 6px #ffa23a; }
@@ -324,7 +324,7 @@ header.top::after {
   background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px),
     radial-gradient(circle at 5px 5px, #5a5a5a 2px, transparent 2.5px), radial-gradient(circle at calc(100% - 5px) 5px, #5a5a5a 2px, transparent 2.5px),
     radial-gradient(circle at 5px calc(100% - 5px), #5a5a5a 2px, transparent 2.5px), radial-gradient(circle at calc(100% - 5px) calc(100% - 5px), #5a5a5a 2px, transparent 2.5px); }
-.day-nav .dn-baba { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 6px; padding-top: 0; border-top: 1px solid #262626; }
+.day-nav .dn-baba { display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; margin-top: 6px; padding-top: 0; border-top: 1px solid #262626; }
 .day-nav .lb-v { justify-content: center; padding: 4px 0 2px; border-radius: 0; font-size: 13px; min-width: 0; }   /* 日付の帯は画面の枠なので文字の大きさの設定では変えない・1行のまま(2026-11-20 本人) */
 .day-nav .lb-v + .lb-v { border-left: 1px solid #262626; }
 .day-nav .lb-v.on { background: rgba(247,201,72,.10); box-shadow: inset 0 -2px 0 rgba(247,201,72,.7); }
@@ -1712,6 +1712,7 @@ h2.ann-h2 { display: flex; align-items: center; gap: 8px; } .ann-kind-btn { marg
 #app .row { grid-template-columns: calc(52px * var(--fz, 1)) 1fr auto; }   /* 時刻・場・R の欄も文字の大きさに合わせて広く(「福島10／R」と割らない) */
 #app .row .when { white-space: nowrap; }
 #app h2 { flex-wrap: wrap; row-gap: 2px; } #app h2 .sub { white-space: nowrap; }   /* 見出しの補足は折らずに、入りきらなければ次の行へ */
+@media (max-width: 340px) { .day-nav .lb-v, .day-nav .lb-v .lb-k { font-size: 11px; } }   /* とても狭い携帯(幅340px以下)だけ、3場とも不良でも日付の帯に入るように少し小さく(2026-11-20) */
 .fz-pop .fz-n { margin: 8px 0 0; font-size: calc(13px * var(--fz, 1)); color: var(--muted); line-height: 1.5; }
 </style>
 
@@ -2750,7 +2751,7 @@ function babaFromRaces(day) {
 function ledBabaHtml(venues) {
   if (!venues.length) return "";
   const cls = { "良": "g1", "稍重": "g2", "重": "g3", "不良": "g4" };
-  const short = { "稍重": "稍" };
+  const short = { "稍重": "稍", "不良": "不" };   // 不良も1文字(レース表と同じ・2文字だと帯に入らない 2026-11-20)
   const resMode = S.tab === "race" && S.raceMode === "result";
   const sel = S.tab !== "race" ? null : resMode ? (S.resPicked ? S.resVenue : null) : (S.venuePicked && S.raceView === "order" ? S.venue : null);   // 下線は「自分で会場を押したとき」だけ。未選択なら先頭の会場で代わりに埋めない(2026-10-29 再発防止)
   const g = (k, raw) => { const x = babaGoing(raw); return `<span class="lb-k">${k}</span><span class="${cls[x] || "g0"}">${short[x] || x || "－"}</span>`; };
