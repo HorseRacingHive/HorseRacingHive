@@ -1344,7 +1344,7 @@ nav.tabs.has-ovs { grid-template-columns: repeat(6, 1fr); } nav.tabs.has-ovs but
 .ovs-tbl tr.買い td { background: rgba(74,222,128,.10); } .ovs-tbl tr.買い td.j { color: var(--aim, #4ade80); font-weight: 900; }
 .ovs-tbl tr.検討 td.j { color: #fbbf24; font-weight: 800; } .ovs-tbl tr.見送り td, .ovs-tbl tr.取消 td { color: var(--muted); }
 /* 🌏海外ページ(2026-11-20 作り直し・黒と蜜色・携帯の幅で) */
-.ovx-back { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 14px; margin: 0 0 10px; border-radius: 999px; border: 1px solid var(--amber); background: var(--soft); color: var(--accent); font-weight: 800; font-size: 14px; font-family: inherit; cursor: pointer; }
+.ovx-back { display: inline-flex; align-items: center; gap: 2px; width: max-content; max-width: 100%; justify-self: start; align-self: flex-start; min-height: 26px; padding: 0 10px; margin: 0 0 8px; border-radius: 999px; border: 1px solid var(--amber); background: var(--soft); color: var(--accent); font-weight: 800; font-size: 12px; line-height: 1; font-family: inherit; cursor: pointer; }   /* 左上の小さな札(横いっぱいにしない・2026-11-20) */
 .ovx { display: grid; gap: 10px; }
 .ovx-hd { display: grid; gap: 4px; }
 .ovx-hd .t { font-family: var(--f-disp); font-size: 18px; font-weight: 900; line-height: 1.3; }
@@ -1433,9 +1433,12 @@ nav.tabs.has-ovs { grid-template-columns: repeat(6, 1fr); } nav.tabs.has-ovs but
 .ovx-tbl .ovx-medal { padding: 0 6px; font-size: 10px; margin-left: 2px; }
 .ovx-bh { font-weight: 900; font-size: 14px; margin: 10px 0 5px; } .ovx-bh:first-child { margin-top: 0; }   /* HIVEの結論: 見出し+2列の札 */
 .ovx-bh.win { color: var(--good); } .ovx-bh.place { color: var(--honey); }
-.ovx-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.ovx-pick { display: grid; grid-template-columns: 2em minmax(0, 1fr); align-items: center; gap: 6px; height: 42px; padding: 0 8px; border-radius: 11px; background: var(--comb); border: 2px solid var(--honey); }
-.ovx-pick b { font-size: 21px; font-weight: 900; color: var(--honey); text-align: center; font-variant-numeric: tabular-nums; }
+.ovx-list1 { display: grid; gap: 4px; }   /* HIVEの結論: 縦1列の細い並び(2026-11-20) */
+.ovx-pick { display: grid; grid-template-columns: 1.1em 1.9em minmax(0, 1fr) auto; align-items: center; gap: 6px; min-height: 34px; padding: 2px 10px 2px 8px; border-radius: 10px; background: var(--comb); border: 1.5px solid var(--honey); }
+.ovx-pick b { font-size: 19px; font-weight: 900; color: var(--honey); text-align: center; font-variant-numeric: tabular-nums; }
+.ovx-pick i { font-style: normal; font-size: 11px; font-weight: 800; color: var(--muted); text-align: center; }
+.ovx-pick em { font-style: normal; display: grid; justify-items: end; font-size: 10.5px; line-height: 1.25; color: var(--muted); font-variant-numeric: tabular-nums; } .ovx-pick em u { text-decoration: none; white-space: nowrap; } .ovx-pick em u.on { color: var(--comb-ink); font-weight: 900; font-size: 12px; }
+.ovx-bh small { margin-left: 8px; font-size: 11px; font-weight: 700; color: var(--muted); }
 .ovx-pick span { font-size: 12.5px; font-weight: 800; color: var(--comb-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ovx-pick.win { border-color: var(--good); } .ovx-pick.win b { color: var(--good); }
 .ovx-help { font-size: 12.5px; line-height: 1.7; } .ovx-help ul { margin: 4px 0; padding-left: 1.2em; } .ovx-help li { margin: 2px 0; }
@@ -2949,7 +2952,7 @@ function ovHead(r) {   // レースの見出し: 場・距離・発走時刻・�
   else if (r.place_ok === false) c.push(ovC("", "🎯単勝だけ対象"));
   const left = ovLeft(r);
   return `<div class="ovx-hd"><div class="t">🌏 ${esc(r.name)}</div>
-    <div class="m">${r.reg ? esc(r.reg) + "・" : ""}${esc(r.venue || "")}${r.dist ? `・${esc(r.surf || "")}${r.dist}m` : ""}<br>発走 <b>${esc(r.post || "")}</b>(日本時間)${left ? ` ・ <span class="left">${left}</span>` : ""}</div>
+    <div class="m">${r.reg ? esc(r.reg) + "・" : ""}${esc(r.venue || "")}${r.dist ? `・${esc(r.surf || "")}${r.dist}m` : ""}<br>発走 <b>${esc(r.post || "")}</b>${r.close ? `(締切 <b>${esc(r.close)}</b>)` : ""} 日本時間${left ? ` ・ <span class="left">${left}</span>` : ""}</div>
     <div class="ovx-chips">${c.join("")}</div></div>`;
 }
 function ovTags(x) {   // 馬の札: 単勝と複勝の両方なら2つ。日本馬は「買わない決まり」
@@ -2964,11 +2967,15 @@ function ovTags(x) {   // 馬の札: 単勝と複勝の両方なら2つ。日本
 }
 function ovConcl(r) {   // HIVEの結論
   const nm = n => ((r.rows || []).find(x => x.no === n) || {}).name || "";
-  const grid = (a, k) => `<div class="ovx-grid">${a.map(n => `<div class="ovx-pick ${k}"><b>${n}</b><span>${esc(nm(n))}</span></div>`).join("")}</div>`;   // 馬番と馬名を同じ大きさの札で2列に(長い馬名は…で省略・2026-11-20 本人)
+  // 縦1列の細い並び・期待値の高い順(並べ替えは overseas.py)。管理用だけ各行の右に期待値(単・複)・共有用は数字なし(2026-11-20 本人)
+  const adm = (r.rows || []).some(x => "evw" in x), row1 = n => (r.rows || []).find(z => z.no === n) || {};
+  const evs = (v) => v == null ? "—" : (Math.floor(v * 100 + 1e-9) / 100).toFixed(2);
+  const grid = (a, k) => `<div class="ovx-list1">${a.map((n, i) => `<div class="ovx-pick ${k}"><i>${i + 1}</i><b>${n}</b><span>${esc(nm(n))}</span>${adm ? `<em><u class="${k === "win" ? "on" : ""}">単 ${evs(row1(n).evw)}</u><u class="${k === "place" ? "on" : ""}">複 ${evs(row1(n).evp)}</u></em>` : ""}</div>`).join("")}</div>`;
+  const ordLab = `<small>${adm ? "期待値の高い順" : "🐝 HIVEの推し順"}</small>`;
   let b;
   if (ovOut(r)) b = `<div class="none">👀 このレースは検討だけ(対象外の地域)</div><div class="sub">香港・ドバイ・欧州のレースだけ買いを出します。ほかの地域は、割に合う馬があっても👀検討として記録だけします。</div>`;
   else if (r.wait) b = `<div class="none">${(OV_WAIT[r.why] || [0, "⏳ " + esc(r.why || "オッズ待ち")])[1]}</div><div class="sub">判定は、日本と現地の両方のオッズがそろってから出ます。</div>`;
-  else if ((r.buys || []).length || (r.fbuys || []).length) b = `${(r.buys || []).length ? `<div class="ovx-bh win">🎯 単勝 ${r.buys.length}頭</div>${grid(r.buys, "win")}` : ""}${(r.fbuys || []).length ? `<div class="ovx-bh place">🥉 複勝 ${r.fbuys.length}頭</div>${grid(r.fbuys, "place")}` : ""}<div class="sub">参考程度に・各1点</div>`;
+  else if ((r.buys || []).length || (r.fbuys || []).length) b = `${(r.buys || []).length ? `<div class="ovx-bh win">🎯 単勝 ${r.buys.length}頭${ordLab}</div>${grid(r.buys, "win")}` : ""}${(r.fbuys || []).length ? `<div class="ovx-bh place">🥉 複勝 ${r.fbuys.length}頭${ordLab}</div>${grid(r.fbuys, "place")}` : ""}<div class="sub">参考程度に・各1点</div>`;
   else b = `<div class="none">買いの馬はいません(見送り)</div><div class="sub">日本のオッズが現地の見立てより割に合う馬がいないときは、買わないのが正解です。</div>`;
   return `<div class="ovx-concl"><div class="cl">HIVEの結論</div>${b}</div>`;
 }
