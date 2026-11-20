@@ -1710,6 +1710,7 @@ h2.ann-h2 { display: flex; align-items: center; gap: 8px; } .ann-kind-btn { marg
 .note.nt2 { line-height: 1.55; word-break: keep-all; overflow-wrap: anywhere; }   /* 説明は「見出し＋短い2行」・句読点の所で折る(2026-11-20 本人) */
 .note.nt2 .nt-h { display: block; color: var(--ink); font-weight: 800; margin-bottom: 1px; }
 .note.nt2 .nt-l { display: block; }
+.note.nt2 .nt-p { display: inline-block; white-space: nowrap; }   /* かっこの中は1つのまとまり(「馬(」で折れないように・iPhone)
 .ann-help.hd:not([open]) { display: none; }   /* 閉じている「お知らせの種類」は場所を取らない(iPhone で空白になっていた) */
 section.ann-top + section { margin-top: -8px; }   /* 直前のお知らせと「おすすめ」の間を詰める */
 .fz-pop .fz-n { margin: 8px 0 0; font-size: calc(13px * var(--fz, 1)); color: var(--muted); line-height: 1.5; }
@@ -3261,7 +3262,7 @@ function viewHome(d) {
         const pin = (() => { try { return localStorage.getItem("hive_oanadone_pin") === "1"; } catch { return false; } })();
         const opn = (window.__dn || {}).oanadone != null ? window.__dn.oanadone : pin;
         return `<details class="done-box" data-pk="oanadone"${opn ? " open" : ""}><summary class="done-head">はずれた大穴<small>${outs.length}頭</small><span class="dn-arrow"></span><button type="button" class="dn-pin${pin ? " on" : ""}">📌 ${pin ? "固定中" : "固定"}</button></summary><div class="picks">${outs.map(oaCard).join("")}</div></details>`; })()}
-      <p class="note nt2"><b class="nt-h">🎲 大穴</b><span class="nt-l">おすすめと同じ条件で、単勝100倍をこえる馬(直前に切ると対象外)。</span><span class="nt-l">当たりは数年に1本。買うなら別に<b>1点100円</b>で(成績も別)。</span></p></div>`;   // 見出し＋短い2行(2026-11-20 本人)
+      <p class="note nt2"><b class="nt-h">🎲 大穴</b><span class="nt-l">おすすめと同じ条件で、単勝100倍をこえる馬<span class="nt-p">(直前に切ると対象外)。</span></span><span class="nt-l">当たりは数年に1本。買うなら別に<b>1点100円</b>で<span class="nt-p">(成績も別)。</span></span></p></div>`;   // 見出し＋短い2行(2026-11-20 本人)
   }
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
