@@ -3367,7 +3367,7 @@ function kdRender0(races, opt) {
   opt = opt || {};
   const pub = !!opt.pub;
   if (!races) return `<div class="note">買い目を読み込んでいます…</div>`;
-  if (!races.length) return `<p class="muted" style="font-size:calc(13px * var(--fz, 1))">この日の馬単・馬連・3連単の買い目はまだありません(おすすめの馬が決まると、ここに並びます)。</p>`;
+  if (!races.length) return `<p class="muted" style="font-size:calc(13px * var(--fz, 1))"><span style="white-space:nowrap">この日の馬単・馬連・3連単の</span><span style="white-space:nowrap">買い目はまだありません。</span><br><span style="white-space:nowrap">おすすめの馬が決まると、</span><span style="white-space:nowrap">ここに並びます。</span></p>`;   // いいところで改行(2026-11-20 本人)
   const NAMES = [["馬単", "🐴 馬単"], ["馬連", "🐎 馬連"], ["3連単", "🏆 3連単"]];
   return `<div class="kd-grid">${races.map(r => {
     const all = [].concat(...NAMES.map(([b]) => (r.bets || {})[b] || []));
