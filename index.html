@@ -710,6 +710,7 @@ main > * { min-width: 0; }
 #unlockBtn { border: 0; border-radius: 14px; padding: 14px; font-size: calc(17px * var(--fz, 1)); font-weight: 900; font-family: var(--f-disp); color: var(--comb); background: linear-gradient(135deg, var(--honey), var(--amber)); box-shadow: 0 6px 18px rgba(232,150,43,.35); }
 #unlockBtn:disabled { opacity: .7; }
 .lock-err { margin: 0; min-height: 1.4em; color: #ff9aac; font-size: calc(13px * var(--fz, 1)); font-weight: 700; }
+.lock-err .lock-err-sub { display: block; margin-top: 2px; font-size: calc(11.5px * var(--fz, 1)); font-weight: 500; color: rgba(251,241,220,.72); }
 .lock-note { margin: 18px 0 0; font-size: calc(12px * var(--fz, 1)); color: rgba(251,241,220,.55); }
 .lock-note b { color: var(--honey); }
 .pick .fig .e { font-size: calc(11px * var(--fz, 1)); color: var(--muted); }
@@ -2494,7 +2495,8 @@ async function unlock(pw, remember, manual) {
     pickDate(); renderDays(); render();
   } catch (e) {
     store.del("hivep_pw");
-    err.textContent = e.message === "bad" ? "合言葉がちがいます。もう一度入れてください。" : "予想を読み込めませんでした。少し待ってからもう一度お試しください。";
+    if (e.message === "bad") err.innerHTML = '合言葉がちがいます。もう一度入れてください。<small class="lock-err-sub">受け取ったばかりの方は、2〜3分待ってからもう一度入れてください</small>';   // 新しい方の名簿が届くまで少しかかる(2026-11-20 本人)
+    else err.textContent = "予想を読み込めませんでした。少し待ってからもう一度お試しください。";
   }
   btn.disabled = false; btn.textContent = "ひらく";
 }
