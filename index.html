@@ -3229,7 +3229,7 @@ function viewHome(d) {
   } else {
     h += `${hvEmpty(`${d.date < todayStr() ? "この日のおすすめ(★2以上)はありませんでした" : "当日の朝、オッズが出ると表示されます"}`)}`;
   }
-  if (os.some(x => x.urg)) h += `<p class="note nt2"><b class="nt-h">🚨 急遽</b><span class="nt-l">約30分前・約10分前の見直しで、新しく入った おすすめ。</span><span class="nt-l">Discordの ⚡｜ＡＩ直前速報 にも届きます。</span></p>`;   // 見出し＋短い2行(2026-11-20 本人)
+  if (os.some(x => x.urg)) h += `<p class="note nt2"><b class="nt-h">🚨 急遽</b><span class="nt-l">朝のおすすめに無く、直前に新しく入った おすすめ。</span><span class="nt-l">見直し<span class="nt-p">(約30分前・10分前)</span>と5分前の最終予想で決まります。</span></p>`;   // 見出し＋短い2行(2026-11-20 本人)
   const sk = (d.skipped || []).filter(x => x.w5 !== "pre5");   // 5分前より前から外れていた馬は出さない(裏の記録だけ・2026-11-15 本人)
   if (sk.length) {
     const won = sk.filter(x => x.fin === 1).length;
