@@ -3450,7 +3450,7 @@ function resultsList(d) {
   const vs = [...new Set(all.map(r => r.venue))];
   if (!vs.includes(S.resVenue)) { S.resVenue = vs[0]; S.resPicked = false; }
   const list = all.filter(r => r.venue === S.resVenue);
-  return `<div class="seg vled" style="margin-bottom:8px;--vn:${vs.length}">${vs.map(v => `<button data-res-venue="${esc(v)}" class="${S.resPicked && v === S.resVenue ? "on" : ""}"><span class="vn">${esc(v)}</span><span class="vs">${all.filter(r => r.venue === v).length}R 確定</span></button>`).join("")}</div>
+  return `<div class="seg vled" style="margin-bottom:8px;--vn:${vs.length}">${vs.map(v => `<button data-res-venue="${esc(v)}" class="${v === S.resVenue ? "on" : ""}"><span class="vn">${esc(v)}</span><span class="vs">${all.filter(r => r.venue === v).length}R 確定</span></button>`).join("")}</div>
     <div class="card list">${list.map(r => {
       const top = r.horses.filter(x => x.fin != null && x.fin >= 1).sort((a, b) => a.fin - b.fin).slice(0, 3);
       const honWin = top[0]?.mark === "◎";
@@ -3571,9 +3571,9 @@ function viewRaces(d) {
   if (S.raceMode === "result") return `<section id="res-sec"><h2>${esc(d.label)} の全レース結果</h2>${resultsList(d)}</section><p class="note">もう一度「結果」タブを押すと、レースの一覧に戻ります</p>`;
   const vs = d.venues;
   if (!vs.length) return `${hvEmpty(`レースがありません`)}`;
-  if (!vs.some(v => v.venue === S.venue)) { S.venue = vs[0].venue; S.venuePicked = false; }   // 一覧の表示用に先頭を出すだけ(選んだことにはしない)
+  if (!vs.some(v => v.venue === S.venue)) { S.venue = vs[0].venue; S.venuePicked = false; }   // 一覧の表示用に先頭を出すだけ(選んだことにはしない)。表示している会場のボタンは点ける(全レースに見えないように・2026-11-21 本人)
   const view = ["order", "post", "os", "all"].includes(S.raceView) ? S.raceView : "order";   // 携帯と同じ: レース順・発走順(全会場)・★あり(2026-10-29)・全頭(2026-10-31)
-  let h = `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${(view === "order" && S.venuePicked && x.venue === S.venue) || (view === "all" && S.allVenue === x.venue) ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
+  let h = `<div><div class="seg vled" style="--vn:${vs.length}">${vs.map(x => `<button data-venue="${esc(x.venue)}" class="${(view === "order" && x.venue === S.venue) || (view === "all" && S.allVenue === x.venue) ? "on" : ""}"><span class="vn">${esc(x.venue)}</span>${venueSub(x, S.date === todayStr())}</button>`).join("")}</div>
   <p class="race-warn">※全レースの予想を載せていますが、予想の参考程度でお願いします。</p>
     <div class="race-sort"><div class="sort-head">
       <button data-race-view="order" class="${view === "order" ? "on" : ""}" data-direction="${S.raceOrder === "asc" ? "1Rから" : "12Rから"}" aria-label="レース順(もう一度押すと昇順・降順が入れ替わります)">レース順</button>
