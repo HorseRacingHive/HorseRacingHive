@@ -1717,6 +1717,14 @@ h2.ann-h2 { display: flex; align-items: center; gap: 8px; } .ann-kind-btn { marg
 .ann-help.hd:not([open]) { display: none; }   /* 閉じている「お知らせの種類」は場所を取らない(iPhone で空白になっていた) */
 section.ann-top + section { margin-top: -8px; }   /* 直前のお知らせと「おすすめ」の間を詰める */
 .fz-pop .fz-n { margin: 8px 0 0; font-size: calc(13px * var(--fz, 1)); color: var(--muted); line-height: 1.5; }
+/* 単勝の札を縦に少し詰める(見切れないように高さは決めない・2026-11-21 本人) */
+#app .pick { padding: 8px 12px; row-gap: 2px; }
+#app .pick .where { row-gap: 2px; }
+#app .pick .ph b { line-height: 1.18; }
+#app .pick .ph small { line-height: 1.25; }
+#app .pick .fig { line-height: 1.15; }
+#app .pick .buy-chip { padding: 4px 12px; }
+#app .pick:not(.has-fz) .trail { margin-top: 0 !important; }
 </style>
 
 <!-- ===== HIVEカレンダー(電光掲示板を押したときの日付選び) ここから ===== -->
@@ -3297,7 +3305,7 @@ const KD_YEN = n => Math.round(n || 0).toLocaleString("ja-JP") + "円";
     ".kd-k span{font-family:var(--f-disp,inherit);font-size:calc(13px * var(--fz, 1));font-weight:800;padding:1px 7px;border-radius:7px;background:var(--soft,rgba(255,255,255,.06));border:1px solid var(--line,#3a2a12);white-space:nowrap}" +
     ".kd-k span.won{background:rgba(61,214,155,.16);border-color:var(--good,#3dd69b);color:var(--good,#3dd69b)}" +
     ".kd-k span.sk{text-decoration:line-through;opacity:.55}" +
-    ".kd-k span{word-spacing:1px}.kd-k span em{font-style:normal;font-size:calc(10.5px * var(--fz, 1));font-weight:700;margin-left:6px;opacity:.85}" +
+    ".kd-k span{word-spacing:1px}.kd-k span em{font-style:normal;font-size:calc(15px * var(--fz, 1));font-weight:900;margin-left:8px;opacity:1}" + "/* 券種の的中の組を大きく(2026-11-21 本人) */" +
     ".kd-m{grid-column:2;font-size:calc(11px * var(--fz, 1));color:var(--muted,#a8977a)}.kd-m b.plus{color:var(--good,#3dd69b)}" +
     ".kd-wait{font-size:calc(12px * var(--fz, 1));color:var(--muted,#a8977a)}" +
     ".kd-grid,.kd-card{min-width:0;max-width:100%}.kd-l{grid-template-columns:auto minmax(0,1fr)}.kd-k{min-width:0}.kd-k span{white-space:normal;overflow-wrap:anywhere;max-width:100%}" +   // 長い買い目は折り返す(札が横にはみ出して「はずれ」が切れていた・2026-11-18)
