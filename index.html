@@ -1721,7 +1721,10 @@ section.ann-top + section { margin-top: -8px; }   /* 直前のお知らせと「
 .horse .nm small.jk { font-weight: 700; white-space: normal; overflow: visible; }   /* 騎手名は切らない */
 .pick .ph small .pk-jk { white-space: nowrap; color: var(--ink, #f3e7c8); font-weight: 700; }   /* おすすめの札の騎手名(2026-11-21 本人) */
 .rl-cap { display: block; margin: 6px 0 -2px; font-size: calc(11px * var(--fz, 1)); font-weight: 700; color: var(--muted); }   /* 「印ごとの着順」の見出し(2026-11-21 本人) */
-.res-mk { margin-top: 14px; } .res-mk .result-mark { width: 22px; height: 22px; font-size: calc(11px * var(--fz, 1)); box-shadow: none; } .res-mk tr.sum td { border-top: 1px solid var(--line); font-weight: 800; } .res-mk td.tot-lab { white-space: nowrap; font-size: calc(11px * var(--fz, 1)); padding-left: 0; padding-right: 2px; } .res-mk td.tot-sh b { color: #f7c948; }
+.res-mk { margin-top: 14px; } .res-mk .result-mark { width: 22px; height: 22px; font-size: calc(11px * var(--fz, 1)); box-shadow: none; } .res-mk tr.sum td { border-top: 1px solid var(--line); font-weight: 800; } .res-mk td.tot-sh { white-space: nowrap; } .res-mk tr.sum td.tot-sh b { color: #f7c948; font-weight: 400; font-size: inherit; font-variant-numeric: tabular-nums; -webkit-text-stroke: .7px currentColor; paint-order: stroke fill; }   /* 字の幅は上の行と同じ(太さは縁取りで出す)・%の位置をそろえる */
+.kd-guide { display: flex; gap: 6px; margin: 0 0 2px; } .kd-guide > div { flex: 1; min-width: 0; text-align: center; line-height: 1.15; padding: 3px 2px 4px; border-radius: 9px; background: rgba(255,255,255,.05); border: 1px solid var(--line, #3a2a12); }   /* 馬単・馬連・3連単の目安を札3つに(2026-11-22 本人・案A) */
+.kd-guide b { display: block; font-size: calc(11.5px * var(--fz, 1)); white-space: nowrap; } .kd-guide .g-h { display: block; font-size: calc(15px * var(--fz, 1)); font-weight: 900; color: var(--ink, #f3e7c8); } .kd-guide small { display: block; font-size: calc(10.5px * var(--fz, 1)); color: var(--good, #3dd69b); }   /* 的中率を大きく(注目してほしい・2026-11-22 本人) */
+.kd-guide-cap { margin: 0 0 8px; text-align: right; font-size: calc(10.5px * var(--fz, 1)); color: var(--muted, #a8977a); }
 /* 単勝の札を縦に少し詰める(見切れないように高さは決めない・2026-11-21 本人) */
 #app .pick { padding: 8px 12px; row-gap: 2px; }
 #app .pick .where { row-gap: 2px; }
@@ -2164,7 +2167,7 @@ function biasNote(b) {
   const col = !on ? "#8a7a52" : b.strength === "強め" ? "#ff9f1a" : "#f7c948";   // 黒×蜜色に合わせた色(2026-10-29)
   const bg = !on ? "rgba(255,255,255,.04)" : b.strength === "強め" ? "linear-gradient(90deg,rgba(255,159,26,.18),rgba(255,159,26,.03))" : "linear-gradient(90deg,rgba(247,201,72,.15),rgba(247,201,72,.03))";
   return `<div class="note" style="background:${bg};border-left:3px solid ${col};padding:5px 10px;border-radius:6px;margin:6px 0">
-<b style="color:${on ? "var(--accent)" : col}">🧭 馬場の偏り(参考): ${esc(b.label)}${b.strength ? "・" + esc(b.strength) : ""}</b> <small style="color:var(--muted)">${esc(b.why || "")}${on ? " ※あくまで参考程度に。" : ""}</small></div>`;   // 細く: 改行なしの1行(2026-10-29)
+<b style="color:${on ? "var(--accent)" : col}">🧭 馬場の偏り(参考): ${esc(b.label)}${b.strength ? "・" + esc(b.strength) : ""}</b><small style="color:var(--muted);display:block">${esc(b.why || "")}${on ? " ※参考程度に。" : ""}</small></div>`;   // 黄色い見出しのあとで改行(2026-11-22 本人)
 }
 function raceAnnounce(list, raceId, upcoming) {
   const rows = (list || []).filter(a => String(a.id) === String(raceId));
@@ -3283,8 +3286,8 @@ function viewHome(d) {
   }
   h += `</section>`;
   if (S.snap && "kaime_days" in S.snap) {   // 🐴馬単・🐎馬連・🏆3連単(組だけ・2026-11-07)
-    h += `<section id="kd-sec"><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 8px;font-size:calc(12.5px * var(--fz, 1));color:var(--honey,#f7c948)">※待ちが長いので、資金に余裕がある方のみ</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
-      <p class="note" style="margin-bottom:0">🐴馬単 = おすすめの中から特定の条件で選んだ馬を1着に、2着は相手3頭の3点。<br>🐎馬連 = おすすめの馬を含む組から特定の条件で選んだ組と、選んだおすすめの馬-相手3頭(同じ組は1回)。<br>🏆3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点。<br>どれも発走5分前の最終予想で決まります。どれも1点同じ金額で。<br><br>1レースあたりの目安(過去13年)<br>🐴馬単3点 的中率3.9%・回収率147%<br>🐎馬連(1レース平均4.7点) 的中率8.5%・回収率123%<br>🏆3連単6点 的中率2.2%・回収率184%</p></section>`;
+    h += `<section id="kd-sec"><h2>馬単・馬連・3連単<span class="sub">おすすめの馬から＋特定の条件</span></h2><p class="kd-warn" style="margin:2px 0 6px;font-size:calc(12.5px * var(--fz, 1));color:var(--honey,#f7c948)">※待ちが長いので、資金に余裕がある方のみ</p><div class="kd-guide"><div><b>🐴馬単 3点</b><span class="g-h">的中 3.9%</span><small>回収率 147%</small></div><div><b>🐎馬連 約5点</b><span class="g-h">的中 8.5%</span><small>回収率 123%</small></div><div><b>🏆3連単 6点</b><span class="g-h">的中 2.2%</span><small>回収率 184%</small></div></div><p class="kd-guide-cap">1レースあたりの的中率・過去13年</p>${kdRender((S.snap.kaime_days || {})[d.date] || [], { pub: true, link: r => `href="javascript:void 0" data-race="${KD_ESC(r.race_id)}"` })}
+      <p class="note" style="margin-bottom:0">🐴馬単 = おすすめの中から特定の条件で選んだ馬を1着に、2着は相手3頭の3点。<br>🐎馬連 = おすすめの馬を含む組から特定の条件で選んだ組と、選んだおすすめの馬-相手3頭(同じ組は1回)。<br>🏆3連単 = おすすめの馬を1着に、2・3着は相手3頭の6点。<br>どれも発走5分前の最終予想で決まります。どれも1点同じ金額で。</p></section>`;
   }
   return h;   // 全レース結果は「全レース」タブへ移した(2026-10-28)
 }
@@ -3480,11 +3483,11 @@ function resMarkStats(all) {
   const sh = (k, n) => n ? Math.round(k / n * 100) + "%" : "—";
   const roiT = a => a.pk ? "—" : a.n ? Math.round(a.ret / a.n / 10) * 10 + "%" : "—";   // 共有用は10%刻み(2026-11-21 本人)
   const foot = `<p class="note" style="margin:4px 0 0">占有率 = 3着以内に入った馬のうち、その印の馬の割合。単回収 = その印の馬を全部、単勝1点ずつ買った場合(確定した配当で計算・10%刻み)</p>`;
-  return `<section class="res-mk"><h2>🏅 本日の印の成績<span class="sub">確定 ${all.length}レース</span></h2>
+  return `<section class="res-mk"><h2>🏅 本日の印成績(全レース)<span class="sub">確定 ${all.length}レース</span></h2>
     <p class="note" style="margin:0 0 6px">3着以内の ${slots}頭のうち、印のある馬が <b>${tot}頭(${sh(tot, slots)})</b></p>
     <div class="card tbl"><table><tr><th>印</th><th class="r">頭数</th><th class="r">1着</th><th class="r">勝率</th><th class="r">3着内率</th><th class="r">占有率</th><th class="r">単回収</th></tr>
     ${rows.map(m => { const a = row[m]; return `<tr><td><span class="result-mark ${rmCls(m)}">${esc(m)}</span></td><td class="r">${a.n}</td><td class="r">${a.win}</td><td class="r">${sh(a.win, a.n)}</td><td class="r">${sh(a.top3, a.n)}</td><td class="r">${sh(a.top3, slots)}</td><td class="r">${roiT(a)}</td></tr>`; }).join("")}
-    <tr class="sum"><td>計</td><td class="r">${rows.reduce((s, m) => s + row[m].n, 0)}</td><td class="r">${rows.reduce((s, m) => s + row[m].win, 0)}</td><td class="r tot-lab">総占有率</td><td class="r tot-sh"><b>${sh(tot, slots)}</b></td><td></td><td></td></tr></table></div>${foot}</section>`;
+    <tr class="sum"><td>計</td><td class="r">${rows.reduce((s, m) => s + row[m].n, 0)}</td><td class="r">${rows.reduce((s, m) => s + row[m].win, 0)}</td><td></td><td colspan="2" class="r tot-sh">総占有率 <b>${sh(tot, slots)}</b></td><td></td></tr></table></div>${foot}</section>`;
 }
 
 const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "人気はないが、勝つ見込みが人気以上にある馬"],
