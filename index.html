@@ -2020,7 +2020,7 @@ function runCountUps(root) {
 /* ---------------------------------------------------------------- 視覚効果の部品(ゲージ・折れ線・脚質/馬場の絵文字) */
 const STYLE_ICON = { "逃げ": "🐎", "先行": "🏃", "差し": "⚡", "追込": "🌪️" };
 const STYLE_CLS = { "逃げ": "nige", "先行": "senko", "差し": "sashi", "追込": "oikomi" };
-const styleTag = st => st && STYLE_ICON[st] ? `<span class="style-tag st-${STYLE_CLS[st]}" title="前走の脚質">${STYLE_ICON[st]}${esc(st)}</span>` : "";
+const styleTag = st => st && STYLE_ICON[st] ? `<span class="style-tag st-${STYLE_CLS[st]}" title="近5走の脚質(新しいほど重く)">${STYLE_ICON[st]}${esc(st)}</span>` : "";
 const courseIcon = c => !c ? "" : String(c).startsWith("ダ") ? "🟤" : String(c).startsWith("障") ? "🚧" : "🌿";
 const GOING_ICON = { "良": "☀️", "稍重": "🌤️", "重": "🌧️", "不良": "⛈️" };
 const goingIcon = g => GOING_ICON[g] || "";
@@ -4089,7 +4089,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     const sg = x.sig === "危険" ? "sg-danger" : x.sig === "狙い" ? "sg-aim" : x.sig === "過剰" ? "sg-over" : x.sig === "妙味" ? "sg-ev" : x.himo ? "sg-himo" : "";
     h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${sg}${fzRow(x.fin)}" data-no="${x.no ?? ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
-      <div class="nm"><b>${esc(x.name)}</b>${x.jk ? `<small class="jk">${esc(x.jk)}</small>` : ""}</div>
+      <div class="nm"><b>${esc(x.name)}</b>${styleTag(x.sty)}${x.jk ? `<small class="jk">${esc(x.jk)}</small>` : ""}</div>
       <div class="od num">${x.odds != null ? `<b>${Number(x.odds).toFixed(Number(x.odds) >= 100 ? 0 : 1)}</b><small>倍</small>` : ""}</div>${fzBlock(x.fin)}
       <div class="bar"><span class="num" style="min-width:64px">勝率 ${pct(x.p, 0)}</span><span class="meter"><i style="width:${Math.round((x.p || 0) / maxP * 100)}%"></i></span>
         ${evMark(x)}</div>
