@@ -1721,7 +1721,7 @@ section.ann-top + section { margin-top: -8px; }   /* 直前のお知らせと「
 .horse .nm small.jk { font-weight: 700; white-space: normal; overflow: visible; }   /* 騎手名は切らない */
 .pick .ph small .pk-jk { white-space: nowrap; color: var(--ink, #f3e7c8); font-weight: 700; }   /* おすすめの札の騎手名(2026-11-21 本人) */
 .rl-cap { display: block; margin: 6px 0 -2px; font-size: calc(11px * var(--fz, 1)); font-weight: 700; color: var(--muted); }   /* 「印ごとの着順」の見出し(2026-11-21 本人) */
-.res-mk { margin-top: 14px; } .res-mk .result-mark { width: 22px; height: 22px; font-size: calc(11px * var(--fz, 1)); box-shadow: none; } .res-mk tr.sum td { border-top: 1px solid var(--line); font-weight: 800; }
+.res-mk { margin-top: 14px; } .res-mk .result-mark { width: 22px; height: 22px; font-size: calc(11px * var(--fz, 1)); box-shadow: none; } .res-mk tr.sum td { border-top: 1px solid var(--line); font-weight: 800; } .res-mk td.tot-lab { white-space: nowrap; font-size: calc(11px * var(--fz, 1)); padding-left: 0; padding-right: 2px; } .res-mk td.tot-sh b { color: #f7c948; }
 /* 単勝の札を縦に少し詰める(見切れないように高さは決めない・2026-11-21 本人) */
 #app .pick { padding: 8px 12px; row-gap: 2px; }
 #app .pick .where { row-gap: 2px; }
@@ -3465,23 +3465,26 @@ function resultsList(d) {
 // 🏅 本日の印の成績(結果の下・その日の確定した全レース・2026-11-21 本人): 印ごとの頭数・1着・3着内率と、3着以内の占有率
 function resMarkStats(all) {
   const MK = ["◎", "○", "▲", "△", "☆", "注", "穴"];
-  const row = Object.fromEntries(MK.map(m => [m, { n: 0, win: 0, top3: 0 }]));
+  const row = Object.fromEntries(MK.map(m => [m, { n: 0, win: 0, top3: 0, ret: 0, pk: 0 }]));
   let slots = 0;
   for (const r of all) for (const x of r.horses || []) {
     const f = Number(x.fin), t3 = f >= 1 && f <= 3;
     if (t3) slots++;
     const a = row[x.mark]; if (!a) continue;
-    a.n++; if (f === 1) a.win++; if (t3) a.top3++;
+    a.n++; if (t3) a.top3++;
+    if (f === 1) { a.win++; const p = (r.pays || []).find(p => p.t === "単勝" && Number(p.k) === Number(x.no)); if (p) a.ret += Number(p.y) || 0; else a.pk++; }   // 単勝の払戻(確定した配当・100円あたり)
   }
   const rows = MK.filter(m => row[m].n);
   if (!rows.length || !slots) return "";
   const tot = rows.reduce((s, m) => s + row[m].top3, 0);
   const sh = (k, n) => n ? Math.round(k / n * 100) + "%" : "—";
+  const roiT = a => a.pk ? "—" : a.n ? Math.round(a.ret / a.n / 10) * 10 + "%" : "—";   // 共有用は10%刻み(2026-11-21 本人)
+  const foot = `<p class="note" style="margin:4px 0 0">占有率 = 3着以内に入った馬のうち、その印の馬の割合。単回収 = その印の馬を全部、単勝1点ずつ買った場合(確定した配当で計算・10%刻み)</p>`;
   return `<section class="res-mk"><h2>🏅 本日の印の成績<span class="sub">確定 ${all.length}レース</span></h2>
     <p class="note" style="margin:0 0 6px">3着以内の ${slots}頭のうち、印のある馬が <b>${tot}頭(${sh(tot, slots)})</b></p>
-    <div class="card tbl"><table><tr><th>印</th><th class="r">頭数</th><th class="r">1着</th><th class="r">勝率</th><th class="r">3着内率</th><th class="r">3着内の占有率</th></tr>
-    ${rows.map(m => { const a = row[m]; return `<tr><td><span class="result-mark ${rmCls(m)}">${esc(m)}</span></td><td class="r">${a.n}</td><td class="r">${a.win}</td><td class="r">${sh(a.win, a.n)}</td><td class="r">${sh(a.top3, a.n)}</td><td class="r">${sh(a.top3, slots)}</td></tr>`; }).join("")}
-    <tr class="sum"><td>計</td><td class="r">${rows.reduce((s, m) => s + row[m].n, 0)}</td><td class="r">${rows.reduce((s, m) => s + row[m].win, 0)}</td><td></td><td></td><td class="r"><b>${sh(tot, slots)}</b></td></tr></table></div></section>`;
+    <div class="card tbl"><table><tr><th>印</th><th class="r">頭数</th><th class="r">1着</th><th class="r">勝率</th><th class="r">3着内率</th><th class="r">占有率</th><th class="r">単回収</th></tr>
+    ${rows.map(m => { const a = row[m]; return `<tr><td><span class="result-mark ${rmCls(m)}">${esc(m)}</span></td><td class="r">${a.n}</td><td class="r">${a.win}</td><td class="r">${sh(a.win, a.n)}</td><td class="r">${sh(a.top3, a.n)}</td><td class="r">${sh(a.top3, slots)}</td><td class="r">${roiT(a)}</td></tr>`; }).join("")}
+    <tr class="sum"><td>計</td><td class="r">${rows.reduce((s, m) => s + row[m].n, 0)}</td><td class="r">${rows.reduce((s, m) => s + row[m].win, 0)}</td><td class="r tot-lab">総占有率</td><td class="r tot-sh"><b>${sh(tot, slots)}</b></td><td></td><td></td></tr></table></div>${foot}</section>`;
 }
 
 const SIG_INFO = { "狙い": ["aim", "🎯", "AIの勝率が世間の評価より高い馬"], "妙味": ["ev", "💎", "人気はないが、勝つ見込みが人気以上にある馬"],
