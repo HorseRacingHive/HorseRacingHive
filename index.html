@@ -3182,7 +3182,7 @@ function viewHome(d) {
     let nxWhat = "";
     if (pd0 && nf) { const nxs = [["m30", -30, "次の見直し", "発走30分前"], ["m10", -10, "次の見直し", "発走10分前"], ["final", -5, "最終予想", "発走5分前"]].find(([k]) => !nf[k]);
       if (nxs) { nxLab = `${nxs[2]} ${pubHM(pd0.getTime() + nxs[1] * 60e3)}`; nxWhat = nxs[3]; } }
-    const top = n ? `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで${nxLab ? `<span class="nx-lab">${nxLab}</span>` : ""}${nxWhat ? `<span class="nx-what">(${nxWhat})</span>` : ""}</small></div>
+    const top = n ? `<button class="next" data-race="${esc(n.id)}" data-race-group="upcoming" data-hno="${n.hno ?? ""}"><div class="cd num"><span data-cd="${esc(n.post)}"></span><small>次のおすすめまで${nxLab ? `<span class="nx-lab">${nxLab}</span>` : ""}${nxWhat ? `<span class="nx-what">(${nxWhat})</span>` : ""}</small></div>
       <div class="what">${esc(n.venue)}${n.no}R ${esc(n.post)}発走${shime ? `<span class="nx-shime">(締切 ${shime})</span>` : ""}<b>${n.hno ?? ""} ${esc(n.name)}</b><span class="stars t${n.st}">${starStr(n.st)}</span></div>${nf ? pubFlowSteps(nf) : ""}</button>` : "";
     const grid = fl.length ? pubFlowGrid(d, os) : "";
     if (top || grid) h += `<div class="nx-wrap">${top}${grid}</div>`;
