@@ -1717,6 +1717,8 @@ h2.ann-h2 { display: flex; align-items: center; gap: 8px; } .ann-kind-btn { marg
 .ann-help.hd:not([open]) { display: none; }   /* 閉じている「お知らせの種類」は場所を取らない(iPhone で空白になっていた) */
 section.ann-top + section { margin-top: -8px; }   /* 直前のお知らせと「おすすめ」の間を詰める */
 .fz-pop .fz-n { margin: 8px 0 0; font-size: calc(13px * var(--fz, 1)); color: var(--muted); line-height: 1.5; }
+.jk-tag { display: inline-block; margin-right: 6px; font-size: calc(11.5px * var(--fz, 1)); font-weight: 700; color: var(--muted); white-space: nowrap; }   /* 騎手名(2026-11-21 本人) */
+.horse .nm small.jk { font-weight: 700; }
 /* 単勝の札を縦に少し詰める(見切れないように高さは決めない・2026-11-21 本人) */
 #app .pick { padding: 8px 12px; row-gap: 2px; }
 #app .pick .where { row-gap: 2px; }
@@ -3502,7 +3504,7 @@ function viewSig(d) {
   return h + `<div class="card list">` + list.map(x => { const k = SIG_GROUP[S.sig] ? (SIG_GROUP[S.sig].find(g => g === "紐" ? x.himo : x.sig === g) || "紐") : S.sig; return `<button class="row sig-row ${SIG_GROUP[S.sig] ? rowSgOf(k) : rowSg}" data-race="${esc(x.id)}" data-race-group="sig:${esc(S.sig)}" data-hno="${x.no ?? ""}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
     <b class="sig-line"><span class="sig-no">${x.no ?? ""}</span><span class="sig-nm">${esc(x.name)}</span>${x.mark ? `<span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:calc(11px * var(--fz, 1))">${esc(x.mark)}</span>` : ""}</b>
-      <div class="main"><span class="why">${(SIG_GROUP[S.sig] ? SIG_GROUP[S.sig].filter(g => g === "紐" ? x.himo : x.sig === g) : [k]).concat([]).filter((g, i, a) => a.indexOf(g) === i).map(g => `<span class="sig-badge ${SIG_INFO[g][0]}">${SIG_INFO[g][1]} ${esc(g === "紐" ? "紐" : sigLabel(x))}</span>`).join(" ") || `<span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>`}${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span>` : ""}${x.st ? ` <span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
+      <div class="main"><span class="why">${x.jk ? `<span class="jk-tag">${esc(x.jk)}</span>` : ""}${(SIG_GROUP[S.sig] ? SIG_GROUP[S.sig].filter(g => g === "紐" ? x.himo : x.sig === g) : [k]).concat([]).filter((g, i, a) => a.indexOf(g) === i).map(g => `<span class="sig-badge ${SIG_INFO[g][0]}">${SIG_INFO[g][1]} ${esc(g === "紐" ? "紐" : sigLabel(x))}</span>`).join(" ") || `<span class="sig-badge ${SIG_INFO[k][0]}">${SIG_INFO[k][1]} ${esc(k === "紐" ? "紐" : sigLabel(x))}</span>`}${x.fin != null ? ` <span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span>` : ""}${x.st ? ` <span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
     <div class="right">${["危険", "過剰"].includes(k) ? `${evMark(x)}${(() => { const b = evBand(x); return b != null && b < 0 ? `<br><span class="dg-w">${["", "やや割高", "割高", "かなり割高"][-b]}</span>` : ""; })()}<br><span class="num dg-p">勝率 ${pct(x.p, 0)}</span>` : `<span class="num">勝率 ${pct(x.p, 0)}</span><br>${evMark(x)}`}</div></button>`; }).join("") + `</div>`;
 }
 function sigFitNames() {   // 狙い・危険: 馬名を折り返さず1行に。入りきらない名前だけ文字を少し小さくする(2026-10-29)
@@ -3621,7 +3623,7 @@ function allHorseList(d) {
   return h + `<div class="card list">` + list.map(x => `<button class="row sig-row${x.sig && SIG_INFO[x.sig] ? " sg-" + SIG_INFO[x.sig][0] : ""}" data-race="${esc(x.id)}" data-race-group="all" data-hno="${x.no ?? ""}">
     <div class="when num"><b>${esc(x.post || "")}</b>${esc(x.venue)}${x.rno}R</div>
     <b class="sig-line"><span class="sig-no">${x.no ?? ""}</span><span class="sig-nm">${esc(x.name)}</span>${x.mark ? `<span class="hex ${markCls(x.mark)}" style="width:22px;height:20px;font-size:calc(11px * var(--fz, 1))">${esc(x.mark)}</span>` : ""}</b>
-      <div class="main"><span class="why">${x.sig && SIG_INFO[x.sig] ? `<span class="sig-badge ${SIG_INFO[x.sig][0]}">${SIG_INFO[x.sig][1]} ${esc(sigLabel(x))}</span> ` : ""}${x.fin != null ? `<span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span> ` : ""}${x.st ? `<span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
+      <div class="main"><span class="why">${x.jk ? `<span class="jk-tag">${esc(x.jk)}</span>` : ""}${x.sig && SIG_INFO[x.sig] ? `<span class="sig-badge ${SIG_INFO[x.sig][0]}">${SIG_INFO[x.sig][1]} ${esc(sigLabel(x))}</span> ` : ""}${x.fin != null ? `<span class="fin ${x.fin <= 3 ? "f" + x.fin : ""}">${x.fin === 1 ? "👑 " : ""}${x.fin}着</span> ` : ""}${x.st ? `<span class="stars t${x.st}">${starStr(x.st)}</span>` : ""}</span>${factorLine(x)}</div>
     <div class="right"><span class="num">勝率 ${pct(x.p, 0)}</span><br>${evMark(x)}</div></button>`).join("") + `</div>`;
 }
 
@@ -4086,7 +4088,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
     const sg = x.sig === "危険" ? "sg-danger" : x.sig === "狙い" ? "sg-aim" : x.sig === "過剰" ? "sg-over" : x.sig === "妙味" ? "sg-ev" : x.himo ? "sg-himo" : "";
     h += `<div class="horse ${x.buy || x.st >= 4 ? "buy" : ""} ${sg}${fzRow(x.fin)}" data-no="${x.no ?? ""}">
       <span class="waku w${x.fr || 0}">${x.no ?? "—"}</span><span class="hex ${markCls(x.mark)}">${esc(x.mark)}</span>
-      <div class="nm"><b>${esc(x.name)}</b></div>
+      <div class="nm"><b>${esc(x.name)}</b>${x.jk ? `<small class="jk">${esc(x.jk)}</small>` : ""}</div>
       <div class="od num">${x.odds != null ? `<b>${Number(x.odds).toFixed(Number(x.odds) >= 100 ? 0 : 1)}</b><small>倍</small>` : ""}</div>${fzBlock(x.fin)}
       <div class="bar"><span class="num" style="min-width:64px">勝率 ${pct(x.p, 0)}</span><span class="meter"><i style="width:${Math.round((x.p || 0) / maxP * 100)}%"></i></span>
         ${evMark(x)}</div>
