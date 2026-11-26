@@ -3082,26 +3082,31 @@ function viewOverseas(onDate, noBack) {   // 共有用(2026-11-20 作り直し):
   const line = (x, r) => { const fin = Number((r.fin || {})[x.no]) || 0, buy = x.j === "買い" || x.fj === "買い", done = !!(r.res && (r.res.order || []).length);
     return `<div class="ovx-h ${buy ? "buy" : ord(x) >= 3 ? "skip" : ""}"><span class="no">${x.no}</span><div><div class="nm">${esc(x.name || "")}</div><div class="ovx-tags">${ovTags(x).join("")}</div></div>
       <div class="rt">${done ? ovFin(fin) : `<span class="pc">${x.p == null ? "—" : Math.round(x.p) + "%"}<small>勝率</small></span>${ovBar(x.eb)}`}</div></div>`; };   // 確定したら右端は着順の札(2026-11-20)
+  const helpIn = `<details class="ovx-fold" style="margin:6px 0"><summary>ℹ️ お知らせの種類</summary><div class="ovx-help">${OV_HELP_ANN}<p class="note">Discordの「🌏AI海外予想」にも同じお知らせが届きます。</p></div></details>`;
+  let helpUp = false;
   const races = ov.map(r => {
     const rows = [...(r.rows || [])].sort((a, z) => ord(a) - ord(z) || (z.p || 0) - (a.p || 0));
     const main = rows.filter(x => ord(x) < 3), rest = rows.filter(x => ord(x) >= 3);
     const list = r.wait && !rows.some(x => x.p != null) ? `<div class="ovx-list">${rows.map(x => line(x, r)).join("")}</div>`
       : `${main.length ? `<div class="ovx-list">${main.map(x => line(x, r)).join("")}</div>` : ""}${rest.length ? `<details class="ovx-fold"${main.length ? "" : " open"}><summary>見送りの馬 ${rest.length}頭</summary><div class="ovx-list">${rest.map(x => line(x, r)).join("")}</div></details>` : ""}`;
-    return `<section class="card ovx">${ovHead(r)}${ovResBox(r, false)}${ovConcl(r)}${list}${(r.msgs || []).length ? ovAnnBox(r.msgs.slice().reverse(), "", r.id) : ""}</section>`;
+    const ann = (r.msgs || []).length ? ovAnnBox(r.msgs.slice().reverse(), "", r.id) : "";
+    const fin = !!(r.res && (r.res.order || []).length);   // 結果が出る前は、お知らせ(締切直前など)と「お知らせの種類」を上に(2026-11-26 本人)。結果が出たら今まで通り結果が上・お知らせは下
+    const hin = !fin && !helpUp ? (helpUp = true, helpIn) : "";
+    return `<section class="card ovx">${ovHead(r)}${fin ? "" : ann + hin}${ovResBox(r, false)}${ovConcl(r)}${list}${fin ? ann : ""}</section>`;
   }).join("");
   const big = (k, t, main) => t && t.pts ? `<div class="${main ? "main" : ""}"><div class="k">${k}</div><div class="v">${t.roi != null ? t.roi + "%" : "—"}</div><div class="s">${t.races}レース・${t.pts}点・的中${t.hits}</div></div>`
     : `<div class="${main ? "main" : ""}"><div class="k">${k}</div><div class="v" style="opacity:.5">—</div><div class="s">まだ記録がありません</div></div>`;
   const hk = ov.some(r => r.reg === "香港");
   const rec = rc && rc.paper ? `<section class="card"><h2 style="margin:0 0 6px">🌏 海外の成績<span class="sub">回収率・紙上記録</span></h2><div class="ovx-rec">${big("🎯🥉 単勝＋複勝", rc.plan, true)}${big("🎯 単勝", rc.win)}${big("🥉 複勝", rc.place)}${big("📏 基準", rc.base)}${hk ? big("🇭🇰 香港の参考", rc.ref) : ""}</div>
     <p class="note" style="margin-top:6px">お金は使わない紙上記録(1点100円で数えます)。HIVEのおすすめの成績とは別枠です。📏基準は、対象の地域の外国馬で日本の単勝5〜60倍の馬を全部買っていたらの成績です。${hk ? "🇭🇰香港の参考は、レース後の最終オッズで同じ判定をし直した成績です。" : ""}</p></section>` : "";
-  const help = `<section class="card"><details class="ovx-fold"><summary>ℹ️ 見方・お知らせの種類</summary><div class="ovx-help">
+  const help = `<section class="card"><details class="ovx-fold"><summary>ℹ️ 見方${helpUp ? "" : "・お知らせの種類"}</summary><div class="ovx-help">
     <b>見方</b><ul><li><b>HIVEの結論</b>の馬番が、紙上で買う馬です(参考程度に・各1点)。</li>
     <li>${ovC("win", "🎯 単勝")}${ovC("place", "🥉 複勝")} 買いの札。単勝と複勝の両方なら札が2つ付きます。</li>
     <li>${ovC("ken", "👀 検討")} 割に合いそうでも、決まりの外なので記録だけの馬です。</li>
     <li>${ovC("jpn", "🇯🇵 日本馬・買わない決まり")} 日本馬は日本で買われすぎるので買いません。</li>
     <li><b>勝率</b>は現地の市場の見立て。<b>旨蜜度</b>のバーは、日本のオッズがその見立てよりどれだけ割に合うか(右へ伸びるほど割に合う)。</li>
     <li>判定は発走の30分前・10分前・4分前に出し直します。日本のオッズは締切直前まで動くので、最後はご自身で確認を。</li></ul>
-    <b>お知らせの種類</b>${OV_HELP_ANN}<p class="note">Discordの「🌏AI海外予想」にも同じお知らせが届きます。海外競馬はHIVEのおすすめレースには含まれません(成績も別枠)。</p></div></details></section>`;
+    ${helpUp ? "" : `<b>お知らせの種類</b>${OV_HELP_ANN}`}<p class="note">Discordの「🌏AI海外予想」にも同じお知らせが届きます。海外競馬はHIVEのおすすめレースには含まれません(成績も別枠)。</p></div></details></section>`;
   return (noBack ? "" : ovBackBtn()) + races + rec + help;
 }
 function render() {
