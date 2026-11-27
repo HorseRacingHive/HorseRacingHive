@@ -3630,7 +3630,7 @@ function viewRaces(d) {
   const osAll = d.osusume || [], os = osAll.filter(o => (o.st || 0) >= 2);   // おすすめとして数えるのは★2以上。★1は薄い札だけ
   const toItem = (r, venue) => {
     const top = [1, 2, 3].map(p => r.horses.find(h => h.fin === p)).filter(Boolean).map(h => ({ pos: h.fin, no: h.no, fr: h.fr, name: h.name, mark: h.mark }));
-    return { id: r.id, no: r.no, course: r.course, cls: r.cls || "", name: r.name || "", field: r.field, going: r.going, post: r.post, venue,
+    return { id: r.id, no: r.no, course: r.course, cls: r.cls || "", name: r.name || "", title: r.title || "", grade: r.grade || "", field: r.field, going: r.going, post: r.post, venue,
       done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), lowN: (r.horses || []).filter(h => (h.st || 0) === 1).length, hit: os.some(o => o.id === r.id && o.fin === 1) };
   };
   let list;
