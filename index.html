@@ -1289,6 +1289,7 @@ header.top, #sheet .sheet-head { cursor: pointer; }
 .rt-ttl .rt-name { font-weight: 900; }
 .rt-meta { font-size: calc(11px * var(--fz, 1)); line-height: calc(15px * var(--fz, 1)); }
 .rt-gr { flex: none; padding: 0 5px; border-radius: 4px; font-size: calc(10px * var(--fz, 1)); line-height: calc(16px * var(--fz, 1)); font-weight: 900; background: #4b5563; color: #fff; }
+.sheet-title .rt-gr { display: inline-block; margin-left: 6px; vertical-align: 2px; }   /* レース画面の見出しにもレース名と格(2026-11-28 本人) */
 .rt-gr.g-G1 { background: #1d4ed8; } .rt-gr.g-G2 { background: #dc2626; } .rt-gr.g-G3 { background: #16a34a; } .rt-gr.g-L { background: #4b5563; }
 .rt-gd { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; font-size: calc(9.5px * var(--fz, 1)); color: #fff; font-weight: 800; flex: none; line-height: 1; box-sizing: border-box; }   /* 文字が下にずれないよう行の高さを1に(2026-10-29) */
 .rt-gd.g1 { background: #3f8f4e; } .rt-gd.g2 { background: #d4a92e; color: #2a1d04; } .rt-gd.g3 { background: #c06a2a; } .rt-gd.g4 { background: #3f5fb0; }
@@ -1640,6 +1641,7 @@ nav.tabs button.on[data-tab="bank"] { color: #ffc94a; } nav.tabs button.on[data-
 .sort-head button[data-race-view="all"]::after { content: none !important; }   /* 全頭は向きを下の並べ替えで決める */
 .hmsbar button.on::after { content: none !important; }   /* 向きは下の札に出す */
 main > .hmsbar + .hms-chips { margin-top: -10px; }   /* 並べ替えの段と札の間を詰める(2026-11-07) */
+main > p.all-note { margin: -10px 0 0; } main > p.all-note + .hmsbar { margin-top: -14px; }   /* 全頭の「全場の全頭 N頭」の上下の空白を詰める(2026-11-27 本人) */
 .hms-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 4px; }
 .hms-chip { display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(247,201,72,.35); border-radius: 999px; padding: 2px 4px 2px 10px; background: rgba(247,201,72,.07); font-size: calc(12px * var(--fz, 1)); white-space: nowrap; }
 .hms-chip.first { border-color: rgba(247,201,72,.7); background: rgba(247,201,72,.14); }
@@ -3593,10 +3595,10 @@ function rtCard(r, isNext, isToday) {
   if (r.done && r.top.length) {
     const w = r.top[0], rest = r.top.slice(1);
     l2 = `<div class="rt-win"><span class="rt-trophy${r.hit ? " gold" : ""}" title="${r.hit ? "おすすめが的中" : ""}">${RT_TROPHY}</span><span class="waku w${rtWaku(w.no, r.field, w.fr)}">${w.no ?? "—"}</span><b>${esc(w.name || "")}</b>${rtMk(w.mark)}</div>
-      ${rest.length || r.osN || r.lowN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}">${r.osSt ? tierHtml(r.osSt) : "おすすめ"} ${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
+      ${rest.length || r.osN || r.lowN ? `<div class="rt-sub">${rest.map(x => `<span>${x.pos}着 <span class="rt-num waku w${rtWaku(x.no, r.field, x.fr)}">${x.no ?? "—"}</span>${rtMk(x.mark, true)}</span>`).join("")}${r.osN ? `<span class="rt-os${r.hit ? " hit" : " miss"}" data-jump-hno="${esc(String(r.osNo))}">${r.osSt ? tierHtml(r.osSt) : "おすすめ"} ${r.osN}頭 ${r.hit ? "的中" : "はずれ"}</span>` : r.lowN ? `<span class="rt-os low" data-jump-hno="${esc(String(r.lowNo))}"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : ""}</div>` : ""}`;   // 結果が出たあとも、おすすめ馬がいたレースには札を残す(2026-10-29)
   } else {
     const pd = postDate(r.post), started = pd && pd <= Date.now();
-    const os = r.osN ? `<span class="rt-os">${r.osSt ? tierHtml(r.osSt) : "おすすめ"} ${r.osN}頭が出走</span>` : r.lowN ? `<span class="rt-os low"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : "";
+    const os = r.osN ? `<span class="rt-os" data-jump-hno="${esc(String(r.osNo))}">${r.osSt ? tierHtml(r.osSt) : "おすすめ"} ${r.osN}頭が出走</span>` : r.lowN ? `<span class="rt-os low" data-jump-hno="${esc(String(r.lowNo))}"><span class="stars">${starStr(1)}</span> ${r.lowN}頭</span>` : "";
     l2 = isNext
       ? `<div class="rt-pre"><span class="rt-cd">発走まであと <span data-cd="${esc(r.post)}" data-fallback="まもなく"></span></span>${os}</div><div class="rt-pre"><span class="go">予想を見る ›</span></div>`
       : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
@@ -3635,7 +3637,8 @@ function viewRaces(d) {
   const toItem = (r, venue) => {
     const top = [1, 2, 3].map(p => r.horses.find(h => h.fin === p)).filter(Boolean).map(h => ({ pos: h.fin, no: h.no, fr: h.fr, name: h.name, mark: h.mark }));
     return { id: r.id, no: r.no, course: r.course, cls: r.cls || "", name: r.name || "", title: r.title || "", grade: r.grade || "", field: r.field, going: r.going, post: r.post, venue,
-      done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), lowN: (r.horses || []).filter(h => (h.st || 0) === 1).length, hit: os.some(o => o.id === r.id && o.fin === 1) };
+      done: !!(r.done && top.length), top, osN: os.filter(o => o.id === r.id).length, osSt: Math.max(0, ...os.filter(o => o.id === r.id).map(o => o.st || 0)), lowN: (r.horses || []).filter(h => (h.st || 0) === 1).length, hit: os.some(o => o.id === r.id && o.fin === 1),
+      osNo: ([...os.filter(o => o.id === r.id)].sort((a, b) => (b.st || 0) - (a.st || 0))[0] || {}).hno ?? "", lowNo: ((r.horses || []).find(h => (h.st || 0) === 1) || {}).no ?? "" };   // 札を押すとその馬へ飛ぶ(2026-11-27 本人)
   };
   let list;
   if (view === "order") list = (vs.find(x => x.venue === S.venue).races || []).map(r => toItem(r, ""));
@@ -3661,7 +3664,7 @@ function allHorseList(d) {
   const ss = HMS.fit(S.allSort, ["post", ...sortKeys.map(([k]) => k)], { key: "post", dir: "asc" });
   const { key: sk, dir: sd } = ss;
   const sBtn = (k, text) => `<button data-all-sort="${k}" class="${sk === k ? "on" : ""}${HMS.cls(ss, k)}" data-direction="${sk === k ? HMS.word(k, sd) : ""}">${text}${HMS.mark(ss, k)}</button>`;
-  let h = `<p class="note" style="margin:8px 0 0">${vn ? `${esc(vn)}の全頭 ${list.length}頭(もう一度「${esc(vn)}」を押すと全場)` : `全場の全頭 ${list.length}頭(上の会場を押すと場ごと)`}</p>`;
+  let h = `<p class="note all-note">${vn ? `${esc(vn)}の全頭 ${list.length}頭(もう一度「${esc(vn)}」を押すと全場)` : `全場の全頭 ${list.length}頭(上の会場を押すと場ごと)`}</p>`;
   h += `<div class="horse-sort hmsbar${HMS.multi(ss) ? " hm" : ""}" aria-label="全頭の並べ替え(押した順に①②③。向きは下の札の⇅で変えます)">${sBtn("post", "発走順")}${sortKeys.map(([k, l]) => sBtn(k, l.endsWith("順") ? l : l + "順")).join("")}</div>`;
   h += HMS.chips(ss, "all", "hivep_allsort", HMS_SIG_BASE, Object.fromEntries([["post", "発走順"], ...sortKeys]));   // 条件の札(向き⇅・外す✕)と📌
   if (sk === "eb") h += `<p class="note" style="margin:0">${EV_NOTE}</p>`;
@@ -4116,7 +4119,7 @@ function openRace(id, group = "race", isStep = false, focusNo = null) {
   const sortedHorses = [...r.horses].sort(HMS.cmp(ds, val, (a, b) => Number(a.no) - Number(b.no)));   // 同じ値なら次の条件、最後は馬番で固定
   const maxP = Math.max(...r.horses.map(x => x.p || 0), 0.01);
   let h = `<div class="sheet-head"><div class="wrap"><button class="back" id="back" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <div class="sheet-title"><b>${esc(venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
+    <div class="sheet-title"><b>${esc(venue)}${r.no}R ${r.title ? esc(r.title) : esc(r.name)}${r.title && r.grade ? `<span class="rt-gr g-${esc(r.grade.replace(/[^A-Z0-9]/g, ""))}">${esc(r.grade)}</span>` : ""}</b><small>${esc(r.post)}発走 ・ ${esc(r.course)} ・ ${r.field ?? ""}頭${r.going ? " ・ " + esc(r.going) : ""}</small></div></div></div>
     ${publicDetailNav(id)}
     <div class="wrap">${r.done ? payBlock(r) : ""}${raceAnnounce(d.announce, id, !r.done && d.date === todayStr())}${biasNote(r.bias)}<div class="horses">${r.locked ? `<div class="note">🕘 このレースの★・おすすめは${esc(r.open_at || "")}から公開します ${openTag(d.date, r.open_at)}</div>` : ""}${r.ai ? "" : `<div class="note">※オッズ発表前は能力だけのAI勝率。★・期待値は当日に出ます</div>`}`;   // オッズ・払戻の注意書きはページ下のフッターへ移した(2026-10-31)
   h += `<div class="horse-sort hmsbar${HMS.multi(ds) ? " hm" : ""}" aria-label="並べ替え(押した順に①②③。向きは下の札の⇅で変えます)">${sortKeys.map(([sortKey, label]) => {
@@ -4848,7 +4851,9 @@ document.addEventListener("click", e => {
     }
     if (g0.startsWith("sig:") || g0 === "all") S.nextFocusLabel = "👀 この馬";   // 狙い・危険・全頭の一覧から開いた馬に「おすすめ」と出さない
     if (g0 === "skipped") S.nextFocusLabel = "見送った馬";
-    openRace(t.dataset.race, g0, false, t.dataset.hno ?? null); return;
+    const jmp = e.target.closest && e.target.closest("[data-jump-hno]");   // レース一覧の★の札を押したら、その馬の所へ(2026-11-27 本人)
+    const hno0 = jmp && jmp.dataset.jumpHno !== "" ? jmp.dataset.jumpHno : (t.dataset.hno ?? null);
+    openRace(t.dataset.race, g0, false, hno0); return;
   }
 });
 document.addEventListener("change", e => {
