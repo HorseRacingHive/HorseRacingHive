@@ -1279,6 +1279,13 @@ header.top, #sheet .sheet-head { cursor: pointer; }
 .rt-cls.new { background: #fce7f3; color: #be185d; border-color: #f9a8d4; }
 .rt-cls.g { background: linear-gradient(90deg, #f7c948, #e8962b); color: #3a2604; border-color: transparent; }
 .rt-name { color: var(--ink); font-weight: 800; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.rt-card:has(.rt-ttl) { grid-template-columns: 50px minmax(0, 1fr); }
+.rt-side .rt-st { font-family: var(--f-disp); font-size: calc(11.5px * var(--fz, 1)); font-weight: 900; opacity: 1; letter-spacing: .2px; }
+.rt-ttl { font-size: calc(14px * var(--fz, 1)); line-height: calc(20px * var(--fz, 1)); }
+.rt-ttl .rt-name { font-weight: 900; }
+.rt-meta { font-size: calc(11px * var(--fz, 1)); line-height: calc(16px * var(--fz, 1)); }
+.rt-gr { flex: none; padding: 0 5px; border-radius: 4px; font-size: calc(10px * var(--fz, 1)); line-height: calc(16px * var(--fz, 1)); font-weight: 900; background: #4b5563; color: #fff; }
+.rt-gr.g-G1 { background: #1d4ed8; } .rt-gr.g-G2 { background: #dc2626; } .rt-gr.g-G3 { background: #16a34a; } .rt-gr.g-L { background: #4b5563; }
 .rt-gd { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; font-size: calc(9.5px * var(--fz, 1)); color: #fff; font-weight: 800; flex: none; line-height: 1; box-sizing: border-box; }   /* 文字が下にずれないよう行の高さを1に(2026-10-29) */
 .rt-gd.g1 { background: #3f8f4e; } .rt-gd.g2 { background: #d4a92e; color: #2a1d04; } .rt-gd.g3 { background: #c06a2a; } .rt-gd.g4 { background: #3f5fb0; }
 .rt-post { margin-left: auto; font-family: var(--f-disp); font-size: calc(12.5px * var(--fz, 1)); color: var(--ink); font-weight: 900; flex: none; padding-left: 6px; }
@@ -3572,7 +3579,11 @@ function rtCard(r, isNext, isToday) {
   const cls = String(r.cls || "").replace("以上", "上").replace(/クラス$/, ""), graded = /G|重賞|L|OP|オープン/.test(cls);
   const showName = r.name && r.name !== r.cls && !/(新馬|未勝利|[123]勝|クラス|オープン)$/.test(r.name);   // 特別戦・重賞の名前だけ出す
   const gd = RT_GD[r.going];
-  const l1 = `<div class="rt-l1">${cls ? `<span class="rt-cls${/新馬/.test(cls) ? " new" : graded ? " g" : ""}">${esc(cls)}</span>` : ""}${showName ? `<span class="rt-name">${esc(r.name)}</span>` : ""}
+  // JRA の出馬表の形(2026-11-27 本人): レース名を太く・グレードの札・その下に 芝/ダ 距離 頭数。発走時刻は左の色の欄(R番号の下)へ
+  const l1 = r.title
+    ? `<div class="rt-l1 rt-ttl"><span class="rt-name">${esc(r.title)}</span>${r.grade ? `<span class="rt-gr g-${esc(r.grade.replace(/[^A-Z0-9]/g, ""))}">${esc(r.grade)}</span>` : ""}</div>
+    <div class="rt-l1 rt-meta"><span>${surfJa} ${esc(dist)}</span><span>${r.field ?? ""}頭</span>${gd ? `<span class="rt-gd ${gd[1]}" title="馬場 ${esc(r.going)}">${gd[0]}</span>` : ""}</div>`
+    : `<div class="rt-l1">${cls ? `<span class="rt-cls${/新馬/.test(cls) ? " new" : graded ? " g" : ""}">${esc(cls)}</span>` : ""}${showName ? `<span class="rt-name">${esc(r.name)}</span>` : ""}
     <span>${esc(dist)}</span><span>${r.field ?? ""}頭</span>${gd ? `<span class="rt-gd ${gd[1]}" title="馬場 ${esc(r.going)}">${gd[0]}</span>` : ""}<span class="rt-post num">${esc(r.post || "")}</span></div>`;
   let l2;
   if (r.done && r.top.length) {
@@ -3587,7 +3598,7 @@ function rtCard(r, isNext, isToday) {
       : `<div class="rt-pre"><span>${started ? "結果待ち" : "発走前"}・予想を見る ›</span>${os}</div>`;
   }
   return `<div class="rt-row${r.done ? " done" : ""}${r.hit ? " hit" : ""}${isNext ? " rt-next" : ""}"><button class="rt-card" data-race="${esc(r.id)}" data-race-group="race">
-    <div class="rt-side ${surf}"><b>${r.no}R</b><small>${r.venue ? esc(r.venue) : surfJa}</small></div><div class="rt-body">${l1}${l2}</div></button></div>`;
+    <div class="rt-side ${surf}">${r.title && r.venue ? `<small>${esc(r.venue)}</small>` : ""}<b>${r.no}R</b>${r.title ? `<small class="rt-st num">${esc(r.post || "")}</small>` : `<small>${r.venue ? esc(r.venue) : surfJa}</small>`}</div><div class="rt-body">${l1}${l2}</div></button></div>`;
 }
 function raceTimeline(list, order, isToday, byPost, cmp) {
   const asc = [...list].sort(cmp || ((a, b) => byPost ? (a.post || "").localeCompare(b.post || "", "ja", { numeric: true }) || a.no - b.no : a.no - b.no));
