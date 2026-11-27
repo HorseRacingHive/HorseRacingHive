@@ -1279,11 +1279,15 @@ header.top, #sheet .sheet-head { cursor: pointer; }
 .rt-cls.new { background: #fce7f3; color: #be185d; border-color: #f9a8d4; }
 .rt-cls.g { background: linear-gradient(90deg, #f7c948, #e8962b); color: #3a2604; border-color: transparent; }
 .rt-name { color: var(--ink); font-weight: 800; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.rt-card:has(.rt-ttl) { grid-template-columns: 50px minmax(0, 1fr); }
-.rt-side .rt-st { font-family: var(--f-disp); font-size: calc(11.5px * var(--fz, 1)); font-weight: 900; opacity: 1; letter-spacing: .2px; }
-.rt-ttl { font-size: calc(14px * var(--fz, 1)); line-height: calc(20px * var(--fz, 1)); }
+.rt-card:has(.rt-ttl) { grid-template-columns: 58px minmax(0, 1fr); }
+.rt-card:has(.rt-ttl) .rt-body { padding: 4px 10px 4px; gap: 1px; }
+.rt-card:has(.rt-ttl) .rt-side { padding: 3px 1px; gap: 1px; }
+.rt-card:has(.rt-ttl) .rt-side b { font-size: calc(20px * var(--fz, 1)); }
+.rt-card:has(.rt-ttl) .rt-pre { line-height: calc(17px * var(--fz, 1)); }
+.rt-side .rt-st { font-family: var(--f-disp); font-size: calc(13.5px * var(--fz, 1)); font-weight: 900; opacity: 1; letter-spacing: .2px; }
+.rt-ttl { font-size: calc(14px * var(--fz, 1)); line-height: calc(18px * var(--fz, 1)); }
 .rt-ttl .rt-name { font-weight: 900; }
-.rt-meta { font-size: calc(11px * var(--fz, 1)); line-height: calc(16px * var(--fz, 1)); }
+.rt-meta { font-size: calc(11px * var(--fz, 1)); line-height: calc(15px * var(--fz, 1)); }
 .rt-gr { flex: none; padding: 0 5px; border-radius: 4px; font-size: calc(10px * var(--fz, 1)); line-height: calc(16px * var(--fz, 1)); font-weight: 900; background: #4b5563; color: #fff; }
 .rt-gr.g-G1 { background: #1d4ed8; } .rt-gr.g-G2 { background: #dc2626; } .rt-gr.g-G3 { background: #16a34a; } .rt-gr.g-L { background: #4b5563; }
 .rt-gd { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; font-size: calc(9.5px * var(--fz, 1)); color: #fff; font-weight: 800; flex: none; line-height: 1; box-sizing: border-box; }   /* 文字が下にずれないよう行の高さを1に(2026-10-29) */
