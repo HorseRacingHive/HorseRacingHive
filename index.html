@@ -5,7 +5,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="HIVE">
 <meta name="theme-color" content="#000000"><link rel="apple-touch-icon" href="icon.png?v=3"><link rel="icon" href="icon.png?v=3">
 <link rel="manifest" href="manifest.json?v=2">
-<style>:root{padding-top:env(safe-area-inset-top,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px)}[hidden]{display:none!important}img{max-width:100%}
+/* 🎫 IPATで買う(2026-11-28) */
+.ipat-bar { margin: 8px 0 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(245,168,0,.35); background: rgba(245,168,0,.06); }
+.ipat-h { font-weight: 800; font-size: 15px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.ipat-h small { font-weight: 500; font-size: 11.5px; color: var(--muted); }
+.ipat-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.ipat-chip { font: inherit; display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--ink); font-size: 14px; }
+.ipat-chip span { color: var(--muted); font-size: 12px; }
+.ipat-chip .ipat-no { color: #f5c542; font-weight: 800; font-size: 14px; }
+.ipat-open { display: inline-block; padding: 7px 14px; border-radius: 99px; background: linear-gradient(90deg, #f5a800, #f59e0b); color: #1a1205; font-weight: 800; text-decoration: none; font-size: 14px; }
+.ipat-note { margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+</style>
 </head><body>
 <!-- ===== 着順掲示板ローディング ここから（<body> のすぐ下に貼る） ===== -->
 <!-- ★★★ 変更禁止(2026-10-29 ユーザー確認済み・「完璧」) ★★★
@@ -2532,6 +2543,13 @@ async function unlock(pw, remember, manual) {
   btn.disabled = false; btn.textContent = "ひらく";
 }
 let toastTimer = null;
+document.addEventListener("click", e => {   // 🎫 IPATで買う の札を押したらコピー(2026-11-28)
+  const c = e.target.closest("[data-ipat-copy]"); if (!c) return;
+  e.preventDefault(); e.stopPropagation();
+  const t = c.dataset.ipatCopy;
+  const ok = () => toast(`📋 コピーしました: ${esc(t)}`);
+  try { navigator.clipboard.writeText(t).then(ok, () => toast(esc(t))); } catch { toast(esc(t)); }
+}, true);
 function toast(html) {
   const el = $("#toast"); if (!el) return;
   el.innerHTML = html; el.classList.add("show");
@@ -3247,6 +3265,15 @@ function viewHome(d) {
       ${true ? `<div class="figs">` : ""}<div class="fig num"><div class="e">AI勝率</div><div class="o">${pct(x.p, 0)}</div></div>${true ? `</div>` : ""}${x.fin != null ? fzBlock(x.fin) : ""}${bkChip(x)}
     </button>`;
   h += `<section id="os-sec"><h2 class="c-aim">おすすめ ★2〜5${(() => { const left = os.filter(x => x.fin == null).length; return `<span class="sub os-count"><span class="osc-n"><b>${os.length}</b>頭</span><span class="osc-split"><span>残り <b class="left">${left}</b></span><span>確定 <b>${os.length - left}</b></span></span></span>`; })()}</h2>`;
+  // 🎫 IPATで買う(2026-11-28 本人「確定押すだけに近づけたい」): まだ結果の出ていない おすすめ を、IPATで入れやすい形で並べる。押すとコピー。
+  // IPATへは外から買い目を入れられないので、入力と金額・確定は見る人が自分で。金額・オッズは出さない(共有の決まり)
+  if (d.date === todayStr() && os.some(x => x.fin == null)) {
+    const pend = os.filter(x => x.fin == null).sort((a, b) => (postDate(a.post) || 0) - (postDate(b.post) || 0) || (Number(a.hno) - Number(b.hno)));
+    h += `<div class="ipat-bar"><div class="ipat-h">🎫 IPATで買う<small>押すとコピー・入力と金額はご自身で</small></div>
+      <div class="ipat-list">${pend.map(x => `<button type="button" class="ipat-chip" data-ipat-copy="${esc(`${x.venue}${x.no}R 単勝 ${x.hno}`)}"><b>${esc(x.venue)}${x.no}R</b><span>${esc(x.post)}</span><span class="ipat-no">単勝 ${x.hno ?? "—"}</span></button>`).join("")}</div>
+      <a class="ipat-open" href="https://www.ipat.jra.go.jp/" target="_blank" rel="noopener">IPATを開く ›</a>
+      <div class="ipat-note">🏁最終予想(発走5分前)で急遽買い・見送りに変わることがあります</div></div>`;
+  }
   if (os.length) {
     const g = S.snap.star_guide || {};
     const isOut = x => x.fin != null && x.fin !== 1;   // はずれ(2着以下)は下の「はずれた馬」に畳む。1着はそのまま残す(2026-11-15 本人)
