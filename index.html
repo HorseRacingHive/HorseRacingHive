@@ -3269,9 +3269,9 @@ function viewHome(d) {
   // IPATへは外から買い目を入れられないので、入力と金額・確定は見る人が自分で。金額・オッズは出さない(共有の決まり)
   if (d.date === todayStr() && os.some(x => x.fin == null)) {
     const pend = os.filter(x => x.fin == null).sort((a, b) => (postDate(a.post) || 0) - (postDate(b.post) || 0) || (Number(a.hno) - Number(b.hno)));
-    h += `<div class="ipat-bar"><div class="ipat-h">🎫 IPATで買う<small>押すとコピー・入力と金額はご自身で</small></div>
+    h += `<div class="ipat-bar"><div class="ipat-h">🎫 即PATで買う<small>押すとコピー・入力と金額はご自身で</small></div>
       <div class="ipat-list">${pend.map(x => `<button type="button" class="ipat-chip" data-ipat-copy="${esc(`${x.venue}${x.no}R 単勝 ${x.hno}`)}"><b>${esc(x.venue)}${x.no}R</b><span>${esc(x.post)}</span><span class="ipat-no">単勝 ${x.hno ?? "—"}</span></button>`).join("")}</div>
-      <a class="ipat-open" href="https://www.ipat.jra.go.jp/" target="_blank" rel="noopener">IPATを開く ›</a>
+      <a class="ipat-open" href="https://www.ipat.jra.go.jp/" target="_blank" rel="noopener">即PATを開く ›</a>
       <div class="ipat-note">🏁最終予想(発走5分前)で急遽買い・見送りに変わることがあります</div></div>`;
   }
   if (os.length) {
